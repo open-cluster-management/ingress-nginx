@@ -16,7 +16,7 @@ import (
 	"k8s.io/kubernetes/pkg/apis/extensions"
 	"k8s.io/kubernetes/pkg/kubectl/scheme"
 	"k8s.io/kubernetes/pkg/util/filesystem"
-	"k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/file"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
