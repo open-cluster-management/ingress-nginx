@@ -60,13 +60,7 @@ type Sync interface {
 type Config struct {
 	Client clientset.Interface
 
-	PublishService string
-
 	ElectionID string
-
-	UpdateStatusOnShutdown bool
-
-	UseNodeInternalIP bool
 
 	IngressLister store.IngressLister
 
@@ -101,11 +95,6 @@ func (s statusSync) Shutdown() {
 	go s.syncQueue.Shutdown()
 	// remove IP from Ingress
 	if !s.elector.IsLeader() {
-		return
-	}
-
-	if !s.UpdateStatusOnShutdown {
-		glog.Warningf("skipping update of status of Ingress rules")
 		return
 	}
 
@@ -229,25 +218,6 @@ func NewStatusSyncer(config Config) Sync {
 func (s *statusSync) runningAddresses() ([]string, error) {
 	addrs := []string{}
 
-	if s.PublishService != "" {
-		ns, name, _ := k8s.ParseNameNS(s.PublishService)
-		svc, err := s.Client.CoreV1().Services(ns).Get(name, metav1.GetOptions{})
-		if err != nil {
-			return nil, err
-		}
-
-		for _, ip := range svc.Status.LoadBalancer.Ingress {
-			if ip.IP == "" {
-				addrs = append(addrs, ip.Hostname)
-			} else {
-				addrs = append(addrs, ip.IP)
-			}
-		}
-
-		addrs = append(addrs, svc.Spec.ExternalIPs...)
-		return addrs, nil
-	}
-
 	// get information about all the pods running the ingress controller
 	pods, err := s.Client.CoreV1().Pods(s.pod.Namespace).List(metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(s.pod.Labels).String(),
@@ -257,7 +227,7 @@ func (s *statusSync) runningAddresses() ([]string, error) {
 	}
 
 	for _, pod := range pods.Items {
-		name := k8s.GetNodeIPOrName(s.Client, pod.Spec.NodeName, s.UseNodeInternalIP)
+		name := k8s.GetNodeIPOrName(s.Client, pod.Spec.NodeName, false)
 		if !sliceutils.StringInSlice(name, addrs) {
 			addrs = append(addrs, name)
 		}

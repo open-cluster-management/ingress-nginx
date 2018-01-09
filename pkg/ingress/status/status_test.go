@@ -29,8 +29,8 @@ import (
 
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/class"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/store"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/k8s"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/task"
+	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/k8s"
+	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/task"
 )
 
 func buildLoadBalancerIngressByIP() []apiv1.LoadBalancerIngress {
@@ -245,9 +245,8 @@ func buildStatusSync() statusSync {
 		},
 		syncQueue: task.NewTaskQueue(fakeSynFn),
 		Config: Config{
-			Client:         buildSimpleClientSet(),
-			PublishService: apiv1.NamespaceDefault + "/" + "foo",
-			IngressLister:  buildIngressListener(),
+			Client:        buildSimpleClientSet(),
+			IngressLister: buildIngressListener(),
 		},
 	}
 }
@@ -257,12 +256,10 @@ func TestStatusActions(t *testing.T) {
 	os.Setenv("POD_NAME", "foo1")
 	os.Setenv("POD_NAMESPACE", apiv1.NamespaceDefault)
 	c := Config{
-		Client:                 buildSimpleClientSet(),
-		PublishService:         "",
-		IngressLister:          buildIngressListener(),
-		DefaultIngressClass:    "nginx",
-		IngressClass:           "",
-		UpdateStatusOnShutdown: true,
+		Client:              buildSimpleClientSet(),
+		IngressLister:       buildIngressListener(),
+		DefaultIngressClass: "nginx",
+		IngressClass:        "",
 	}
 	// create object
 	fkSync := NewStatusSyncer(c)
@@ -334,22 +331,8 @@ func TestKeyfunc(t *testing.T) {
 	}
 }
 
-func TestRunningAddresessWithPublishService(t *testing.T) {
-	fk := buildStatusSync()
-
-	r, _ := fk.runningAddresses()
-	if r == nil {
-		t.Fatalf("returned nil but expected valid []string")
-	}
-	rl := len(r)
-	if len(r) != 4 {
-		t.Errorf("returned %v but expected %v", rl, 4)
-	}
-}
-
 func TestRunningAddresessWithPods(t *testing.T) {
 	fk := buildStatusSync()
-	fk.PublishService = ""
 
 	r, _ := fk.runningAddresses()
 	if r == nil {

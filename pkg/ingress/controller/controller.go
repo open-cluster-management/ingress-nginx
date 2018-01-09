@@ -23,8 +23,11 @@ import (
 )
 
 const (
-	defServerName = "mycluster.icp"
-	rootLocation  = "/"
+	defServerName          = "_"
+	rootLocation           = "/"
+	kubernetesLocation     = "/kubernetes/"
+	kubernetesSvc          = "default/kubernetes"
+	kubernetesUpstreamName = "upstream-kubernetes"
 )
 
 // Configuration contains all the settings required by an Ingress controller
@@ -141,10 +144,33 @@ func (n *NGINXController) readSecrets(ing *extensions.Ingress) {
 	n.syncSecret(key)
 }
 
+// getKubernetesUpstream create kubernetes upstream
+func (n *NGINXController) getKubernetesUpstream() *ingress.Backend {
+	upstream := &ingress.Backend{
+		Name: kubernetesUpstreamName,
+	}
+
+	svcObj, svcExists, err := n.listers.Service.GetByKey(kubernetesSvc)
+	if err != nil {
+		glog.Warningf("unexpected error searching the kubernetes backend %v: %v", kubernetesSvc, err)
+		return upstream
+	}
+
+	if !svcExists {
+		glog.Warningf("service %v does not exist", kubernetesSvc)
+		return upstream
+	}
+
+	svc := svcObj.(*apiv1.Service)
+	upstream.Service = svc
+	return upstream
+}
+
 // createUpstreams creates the NGINX upstreams for each service referenced in
 // Ingress rules. The servers inside the upstream are endpoints.
-func (n *NGINXController) createUpstreams(data []*extensions.Ingress) map[string]*ingress.Backend {
+func (n *NGINXController) createUpstreams(data []*extensions.Ingress, ku *ingress.Backend) map[string]*ingress.Backend {
 	upstreams := make(map[string]*ingress.Backend)
+	upstreams[kubernetesUpstreamName] = ku
 
 	for _, ing := range data {
 		anns := n.getIngressAnnotations(ing)
@@ -221,7 +247,8 @@ func (n *NGINXController) createUpstreams(data []*extensions.Ingress) map[string
 // SSL certificates. Each server is configured with location / using a default
 // backend specified by the user or the one inside the ingress spec.
 func (n *NGINXController) createServers(data []*extensions.Ingress,
-	upstreams map[string]*ingress.Backend) map[string]*ingress.Server {
+	upstreams map[string]*ingress.Backend,
+	ku *ingress.Backend) map[string]*ingress.Server {
 
 	servers := make(map[string]*ingress.Server, len(data))
 
@@ -233,6 +260,19 @@ func (n *NGINXController) createServers(data []*extensions.Ingress,
 		defaultPemFileName = defaultCertificate.PemFileName
 		defaultPemSHA = defaultCertificate.PemSHA
 	}
+
+	// initialize the default server
+	servers[defServerName] = &ingress.Server{
+		Hostname:       defServerName,
+		SSLCertificate: defaultPemFileName,
+		SSLPemChecksum: defaultPemSHA,
+		Locations: []*ingress.Location{
+			{
+				Path:    kubernetesLocation,
+				Backend: ku.Name,
+				Service: ku.Service,
+			},
+		}}
 
 	// initialize all the servers
 	for _, ing := range data {
@@ -346,8 +386,9 @@ func (n *NGINXController) createServers(data []*extensions.Ingress,
 // getBackendServers returns a list of Upstream and Server to be used by the backend
 // An upstream can be used in multiple servers if the namespace, service name and port are the same
 func (n *NGINXController) getBackendServers(ingresses []*extensions.Ingress) ([]*ingress.Backend, []*ingress.Server) {
-	upstreams := n.createUpstreams(ingresses)
-	servers := n.createServers(ingresses, upstreams)
+	ku := n.getKubernetesUpstream()
+	upstreams := n.createUpstreams(ingresses, ku)
+	servers := n.createServers(ingresses, upstreams, ku)
 
 	for _, ing := range ingresses {
 		anns := n.getIngressAnnotations(ing)

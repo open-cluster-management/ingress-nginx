@@ -88,20 +88,17 @@ func NewNGINXController(config *Configuration, fs file.Filesystem) *NGINXControl
 
 	n.annotations = annotations.NewAnnotationExtractor(n)
 
-	// if config.UpdateStatus {
-	// 	n.syncStatus = status.NewStatusSyncer(status.Config{
-	// 		Client:                 config.Client,
-	// 		PublishService:         config.PublishService,
-	// 		IngressLister:          n.listers.Ingress,
-	// 		ElectionID:             config.ElectionID,
-	// 		IngressClass:           class.IngressClass,
-	// 		DefaultIngressClass:    class.DefaultClass,
-	// 		UpdateStatusOnShutdown: config.UpdateStatusOnShutdown,
-	// 		UseNodeInternalIP:      config.UseNodeInternalIP,
-	// 	})
-	// } else {
-	// 	glog.Warning("Update of ingress status is disabled (flag --update-status=false was specified)")
-	// }
+	if config.UpdateStatus {
+		n.syncStatus = status.NewStatusSyncer(status.Config{
+			Client:              config.Client,
+			IngressLister:       n.listers.Ingress,
+			ElectionID:          config.ElectionID,
+			IngressClass:        class.IngressClass,
+			DefaultIngressClass: class.DefaultClass,
+		})
+	} else {
+		glog.Warning("Update of ingress status is disabled (flag --update-status=false was specified)")
+	}
 
 	var onChange func()
 	onChange = func() {

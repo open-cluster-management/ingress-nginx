@@ -27,7 +27,7 @@ import (
 
 var (
 	// AnnotationsPrefix defines the common prefix used in the nginx ingress controller
-	AnnotationsPrefix = "nginx.ingress.kubernetes.io"
+	AnnotationsPrefix = "icp.management.ibm.com"
 )
 
 // IngressAnnotation has a method to parse annotations located in Ingress

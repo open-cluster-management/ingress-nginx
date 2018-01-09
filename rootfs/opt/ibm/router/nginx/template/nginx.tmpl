@@ -1,0 +1,330 @@
+{{ $all := . }}
+{{ $servers := .Servers }}
+{{ $cfg := .Cfg }}
+{{ $IsIPV6Enabled := .IsIPV6Enabled }}
+{{ $backends := .Backends }}
+
+{{ if $cfg.EnableOpentracing }}
+load_module /etc/nginx/modules/ngx_http_opentracing_module.so;
+{{ end }}
+
+{{ if (and $cfg.EnableOpentracing (ne $cfg.ZipkinCollectorHost "")) }}
+load_module /etc/nginx/modules/ngx_http_zipkin_module.so;
+{{ end }}
+
+daemon off;
+
+worker_processes {{ $cfg.WorkerProcesses }};
+pid /run/nginx.pid;
+
+# Make env vars accessible from within Lua modules.
+env SECRET_KEY_FILE_PATH;
+env AUTH_ERROR_PAGE_DIR_PATH;
+env OAUTH_CLIENT_ID;
+env OAUTH_AUTH_REDIRECTOR;
+env WLP_CLIENT_ID;
+env LEADER_MASTER_IP;
+
+events {
+    multi_accept        on;
+    worker_connections  {{ $cfg.MaxWorkerConnections }};
+    use                 epoll;
+}
+
+http {
+    sendfile            on;
+    keepalive_timeout  {{ $cfg.KeepAlive }}s;
+
+    {{ if $cfg.EnableOpentracing }}
+    opentracing on;
+    {{ end }}
+
+    {{ if (and $cfg.EnableOpentracing (ne $cfg.ZipkinCollectorHost "")) }}
+    zipkin_collector_host           {{ $cfg.ZipkinCollectorHost }};
+    zipkin_collector_port           {{ $cfg.ZipkinCollectorPort }};
+    zipkin_service_name             {{ $cfg.ZipkinServiceName }};
+    {{ end }}
+
+    include mime.types;
+    default_type application/octet-stream;
+
+    {{ if $cfg.DisableAccessLog }}
+    access_log off;
+    {{ else }}
+    access_log {{ $cfg.AccessLogPath }} upstreaminfo if=$loggable;
+    {{ end }}
+    error_log  {{ $cfg.ErrorLogPath }} {{ $cfg.ErrorLogLevel }};
+
+    {{ buildResolvers $cfg.Resolver }}
+
+    {{/* Whenever nginx proxies a request without a "Connection" header, the "Connection" header is set to "close" */}}
+    {{/* when making the target request.  This means that you cannot simply use */}}
+    {{/* "proxy_set_header Connection $http_connection" for WebSocket support because in this case, the */}}
+    {{/* "Connection" header would be set to "" whenever the original request did not have a "Connection" header, */}}
+    {{/* which would mean no "Connection" header would be in the target request.  Since this would deviate from */}}
+    {{/* normal nginx behavior we have to use this approach. */}}
+    # Retain the default nginx handling of requests without a "Connection" header
+    map $http_upgrade $connection_upgrade {
+        default          upgrade;
+        ''               close;
+    }
+
+    map {{ buildForwardedFor $cfg.ForwardedForHeader }} $the_real_ip {
+    {{ if $cfg.UseProxyProtocol }}
+        # Get IP address from Proxy Protocol
+        default          $proxy_protocol_addr;
+    {{ else }}
+        default          $remote_addr;
+    {{ end }}
+    }
+
+    # trust http_x_forwarded_proto headers correctly indicate ssl offloading
+    map $http_x_forwarded_proto $pass_access_scheme {
+        default          $http_x_forwarded_proto;
+        ''               $scheme;
+    }
+
+    # validate $pass_access_scheme and $scheme are http to force a redirect
+    map "$scheme:$pass_access_scheme" $redirect_to_https {
+        default          0;
+        "http:http"      1;
+        "http:https"     1;
+    }
+
+    map $http_x_forwarded_port $pass_server_port {
+        default           $http_x_forwarded_port;
+        ''                $server_port;
+    }
+
+    map $http_x_forwarded_host $best_http_host {
+        default          $http_x_forwarded_host;
+        ''               $this_host;
+    }
+
+    # Obtain best http host
+    map $http_host $this_host {
+        default          $http_host;
+        ''               $host;
+    }
+
+
+    server_name_in_redirect off;
+    port_in_redirect        off;
+
+    ssl_protocols {{ $cfg.SSLProtocols }};
+
+    # turn on session caching to drastically improve performance
+    {{ if $cfg.SSLSessionCache }}
+    ssl_session_cache builtin:1000 shared:SSL:{{ $cfg.SSLSessionCacheSize }};
+    ssl_session_timeout {{ $cfg.SSLSessionTimeout }};
+    {{ end }}
+
+    # slightly reduce the time-to-first-byte
+    ssl_buffer_size {{ $cfg.SSLBufferSize }};
+
+    {{ if not (empty $cfg.SSLCiphers) }}
+    # allow configuring custom ssl ciphers
+    ssl_ciphers '{{ $cfg.SSLCiphers }}';
+    ssl_prefer_server_ciphers on;
+    {{ end }}
+
+    {{ range $name, $upstream := $backends }}
+
+    upstream {{ $upstream.Name }} {
+        {{ if $upstream.UpstreamHashBy }}
+        hash {{ $upstream.UpstreamHashBy }} consistent;
+        {{ else }}
+        # Load balance algorithm; empty for round robin, which is the default
+        {{ if ne $cfg.LoadBalanceAlgorithm "round_robin" }}{{ $cfg.LoadBalanceAlgorithm }};{{ end }}
+        {{ end }}
+
+        {{ if (gt $cfg.UpstreamKeepaliveConnections 0) }}
+        keepalive {{ $cfg.UpstreamKeepaliveConnections }};
+        {{ end }}
+
+        {{ range $server := $upstream.Endpoints }}server {{ $server.Address | formatIP }}:{{ $server.Port }} max_fails={{ $server.MaxFails }} fail_timeout={{ $server.FailTimeout }};
+        {{ end }}
+    }
+
+    {{ end }}
+
+    lua_package_path '$prefix/conf/?.lua;;';
+    lua_shared_dict shmlocks 1m;
+
+    # Loading the auth module in the global Lua VM in the master process is a
+    # requirement, so that code is executed under the user that spawns the
+    # master process instead of 'nobody' (which workers operate under).
+    init_by_lua '
+        common = require "common"
+        auth = require "oidc"
+        ngx.log(ngx.NOTICE, "Use oidc module.")
+    ';
+
+    {{ range $index, $server := $servers }}
+
+    ## start server {{ $server.Hostname }}
+    server {
+        server_name {{ $server.Hostname }} {{ $server.Alias }};
+        {{ template "SERVER" serverConfig $all $server }}
+    }
+    ## end server {{ $server.Hostname }}
+
+    {{ end }}
+}
+
+
+{{/* definition of server-template to avoid repetitions with server-alias */}}
+{{ define "SERVER" }}
+        {{ $all := .First }}
+        {{ $server := .Second }}
+        {{ range $address := $all.Cfg.BindAddressIpv4 }}
+        listen {{ $address }}:{{ $all.ListenPorts.HTTP }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}};
+        {{ else }}
+        listen {{ $all.ListenPorts.HTTP }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}};
+        {{ end }}
+        {{ if $all.IsIPV6Enabled }}
+        {{ range $address := $all.Cfg.BindAddressIpv6 }}
+        listen {{ $address }}:{{ $all.ListenPorts.HTTP }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{ end }};
+        {{ else }}
+        listen [::]:{{ $all.ListenPorts.HTTP }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{ end }};
+        {{ end }}
+        {{ end }}
+        set $proxy_upstream_name "-";
+
+        {{/* Listen on {{ $all.ListenPorts.SSLProxy }} because port {{ $all.ListenPorts.HTTPS }} is used in the TLS sni server */}}
+        {{/* This listener must always have proxy_protocol enabled, because the SNI listener forwards on source IP info in it. */}}
+        {{ if not (empty $server.SSLCertificate) }}
+        {{ range $address := $all.Cfg.BindAddressIpv4 }}
+        listen {{ $address }}:{{ if $all.IsSSLPassthroughEnabled }}{{ $all.ListenPorts.SSLProxy }} proxy_protocol {{ else }}{{ $all.ListenPorts.HTTPS }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ end }} {{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}} ssl {{ if $all.Cfg.UseHTTP2 }}http2{{ end }};
+        {{ else }}
+        listen {{ if $all.IsSSLPassthroughEnabled }}{{ $all.ListenPorts.SSLProxy }} proxy_protocol {{ else }}{{ $all.ListenPorts.HTTPS }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ end }} {{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}} ssl {{ if $all.Cfg.UseHTTP2 }}http2{{ end }};
+        {{ end }}
+        {{ if $all.IsIPV6Enabled }}
+        {{ range $address := $all.Cfg.BindAddressIpv6 }}
+        {{ if not (empty $server.SSLCertificate) }}listen {{ $address }}:{{ if $all.IsSSLPassthroughEnabled }}{{ $all.ListenPorts.SSLProxy }} proxy_protocol{{ else }}{{ $all.ListenPorts.HTTPS }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ end }}{{ end }} {{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}} ssl {{ if $all.Cfg.UseHTTP2 }}http2{{ end }};
+        {{ else }}
+        {{ if not (empty $server.SSLCertificate) }}listen [::]:{{ if $all.IsSSLPassthroughEnabled }}{{ $all.ListenPorts.SSLProxy }} proxy_protocol{{ else }}{{ $all.ListenPorts.HTTPS }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ end }}{{ end }} {{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}} ssl {{ if $all.Cfg.UseHTTP2 }}http2{{ end }};
+        {{ end }}
+        {{ end }}
+        {{/* comment PEM sha is required to detect changes in the generated configuration and force a reload */}}
+        # PEM sha: {{ $server.SSLPemChecksum }}
+        ssl_certificate                         {{ $server.SSLCertificate }};
+        ssl_certificate_key                     {{ $server.SSLCertificate }};
+        {{ if not (empty $server.SSLFullChainCertificate)}}
+        ssl_trusted_certificate                 {{ $server.SSLFullChainCertificate }};
+        ssl_stapling                            on;
+        ssl_stapling_verify                     on;
+        {{ end }}
+        {{ end }}
+
+        {{ if (and (not (empty $server.SSLCertificate)) $all.Cfg.HSTS) }}
+        more_set_headers                        "Strict-Transport-Security: max-age={{ $all.Cfg.HSTSMaxAge }}{{ if $all.Cfg.HSTSIncludeSubdomains }}; includeSubDomains{{ end }};{{ if $all.Cfg.HSTSPreload }} preload{{ end }}";
+        {{ end }}
+
+
+        {{ if not (empty $server.CertificateAuth.CAFileName) }}
+        # PEM sha: {{ $server.CertificateAuth.PemSHA }}
+        ssl_client_certificate                  {{ $server.CertificateAuth.CAFileName }};
+        ssl_verify_client                       {{ $server.CertificateAuth.VerifyClient }};
+        ssl_verify_depth                        {{ $server.CertificateAuth.ValidationDepth }};
+        {{ if not (empty $server.CertificateAuth.ErrorPage)}}
+        error_page 495 496 = {{ $server.CertificateAuth.ErrorPage }};
+        {{ end }}
+        {{ end }}
+
+        {{ if not (empty $server.ServerSnippet) }}
+        {{ $server.ServerSnippet }}
+        {{ end }}
+
+        {{ range $location := $server.Locations }}
+        {{ $path := buildLocation $location }}
+        {{ $authPath := buildAuthLocation $location }}
+
+        {{ if not (empty $location.Rewrite.AppRoot)}}
+        if ($uri = /) {
+            return 302 {{ $location.Rewrite.AppRoot }};
+        }
+        {{ end }}
+
+        location {{ $path }} {
+            set $proxy_upstream_name "{{ buildUpstreamName $server.Hostname $all.Backends $location }}";
+
+            {{ $ing := (getIngressInformation $location.Ingress $path) }}
+            {{/* $ing.Metadata contains the Ingress metadata */}}
+            set $namespace      "{{ $ing.Namespace }}";
+            set $ingress_name   "{{ $ing.Rule }}";
+            set $service_name   "{{ $ing.Service }}";
+
+            proxy_set_header Host                   $best_http_host;
+
+            # Pass the extracted client certificate to the backend
+            {{ if not (empty $server.CertificateAuth.CAFileName) }}
+            {{ if $server.CertificateAuth.PassCertToUpstream }}
+            proxy_set_header ssl-client-cert        $ssl_client_escaped_cert;
+            {{ else }}
+            proxy_set_header ssl-client-cert        "";
+            {{ end }}
+            proxy_set_header ssl-client-verify      $ssl_client_verify;
+            proxy_set_header ssl-client-dn          $ssl_client_s_dn;
+            {{ else }}
+            proxy_set_header ssl-client-cert        "";
+            proxy_set_header ssl-client-verify      "";
+            proxy_set_header ssl-client-dn          "";
+            {{ end }}
+
+            # Allow websocket connections
+            proxy_set_header                        Upgrade           $http_upgrade;
+            proxy_set_header                        Connection        $connection_upgrade;
+
+            proxy_set_header X-Real-IP              $the_real_ip;
+            {{ if $all.Cfg.ComputeFullForwardedFor }}
+            proxy_set_header X-Forwarded-For        $full_x_forwarded_for;
+            {{ else }}
+            proxy_set_header X-Forwarded-For        $the_real_ip;
+            {{ end }}
+            proxy_set_header X-Forwarded-Host       $best_http_host;
+            proxy_set_header X-Forwarded-Port       $pass_port;
+            proxy_set_header X-Forwarded-Proto      $pass_access_scheme;
+            proxy_set_header X-Original-URI         $request_uri;
+            proxy_set_header X-Scheme               $pass_access_scheme;
+
+            # mitigate HTTPoxy Vulnerability
+            # https://www.nginx.com/blog/mitigating-the-httpoxy-vulnerability-with-nginx/
+            proxy_set_header Proxy                  "";
+
+            {{/* Add any additional configuration defined */}}
+            {{ $location.ConfigurationSnippet }}
+
+            {{ if not (empty $all.Cfg.LocationSnippet) }}
+            # Custom code snippet configured in the configuration configmap
+            {{ $all.Cfg.LocationSnippet }}
+            {{ end }}
+
+
+            {{ if not (empty $location.Backend) }}
+            {{ buildProxyPass $server.Hostname $all.Backends $location }}
+            {{ else }}
+            # No endpoints available for the request
+            return 503;
+            {{ end }}
+            {{ else }}
+            # Location denied. Reason: {{ $location.Denied }}
+            return 503;
+            {{ end }}
+        }
+
+        {{ end }}
+
+        {{ if eq $server.Hostname "_" }}
+        location /dcos-metadata/ui-config.json {
+            try_files /dcos-metadata/ui-config.json =404;
+        }
+
+        location /metadata {
+            access_by_lua 'auth.validate_access_token_or_exit()';
+            content_by_lua_file conf/metadata.lua;
+        }
+
+        {{ end }}
+
+{{ end }}

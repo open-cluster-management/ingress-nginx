@@ -54,7 +54,7 @@ func parseFlags() (bool, *controller.Configuration, error) {
 		watchNamespace = flags.String("watch-namespace", apiv1.NamespaceAll,
 			`Namespace to watch for Ingress. Default is to watch all namespaces`)
 
-		annotationsPrefix = flags.String("annotations-prefix", "nginx.ingress.kubernetes.io", `Prefix of the ingress annotations.`)
+		annotationsPrefix = flags.String("annotations-prefix", "icp.management.ibm.com", `Prefix of the ingress annotations.`)
 
 		syncRateLimit = flags.Float32("sync-rate-limit", 0.3,
 			`Define the sync frequency upper limit`)

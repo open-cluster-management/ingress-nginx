@@ -15,4 +15,4 @@ docker-binary:
 image:: docker-binary
 
 test:
-	go test ./...
+	go test -v -race $(shell go list github.ibm.com/IBMPrivateCloud/icp-management-ingress/... | grep -v vendor | grep -v '/test/e2e')
