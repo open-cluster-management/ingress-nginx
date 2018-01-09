@@ -1,9 +1,64 @@
 package config
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	"runtime"
+	"strconv"
 
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
+)
+
+const (
+	// http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size
+	// Sets the maximum allowed size of the client request body
+	bodySize = "1m"
+
+	// http://nginx.org/en/docs/ngx_core_module.html#error_log
+	// Configures logging level [debug | info | notice | warn | error | crit | alert | emerg]
+	// Log levels above are listed in the order of increasing severity
+	errorLevel = "notice"
+
+	// HTTP Strict Transport Security (often abbreviated as HSTS) is a security feature (HTTP header)
+	// that tell browsers that it should only be communicated with using HTTPS, instead of using HTTP.
+	// https://developer.mozilla.org/en-US/docs/Web/Security/HTTP_strict_transport_security
+	// max-age is the time, in seconds, that the browser should remember that this site is only to be accessed using HTTPS.
+	hstsMaxAge = "15724800"
+
+	gzipTypes = "application/atom+xml application/javascript application/x-javascript application/json application/rss+xml application/vnd.ms-fontobject application/x-font-ttf application/x-web-app-manifest+json application/xhtml+xml application/xml font/opentype image/svg+xml image/x-icon text/css text/plain text/x-component"
+
+	brotliTypes = "application/xml+rss application/atom+xml application/javascript application/x-javascript application/json application/rss+xml application/vnd.ms-fontobject application/x-font-ttf application/x-web-app-manifest+json application/xhtml+xml application/xml font/opentype image/svg+xml image/x-icon text/css text/plain text/x-component"
+
+	logFormatUpstream = `%v - [$the_real_ip] - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" $request_length $request_time [$proxy_upstream_name] $upstream_addr $upstream_response_length $upstream_response_time $upstream_status`
+
+	logFormatStream = `[$time_local] $protocol $status $bytes_sent $bytes_received $session_time`
+
+	// http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_buffer_size
+	// Sets the size of the buffer used for sending data.
+	// 4k helps NGINX to improve TLS Time To First Byte (TTTFB)
+	// https://www.igvita.com/2013/12/16/optimizing-nginx-tls-time-to-first-byte/
+	sslBufferSize = "4k"
+
+	// Enabled ciphers list to enabled. The ciphers are specified in the format understood by the OpenSSL library
+	// http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_ciphers
+	sslCiphers = "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
+
+	// SSL enabled protocols to use
+	// http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_protocols
+	sslProtocols = "TLSv1.2"
+
+	// Time during which a client may reuse the session parameters stored in a cache.
+	// http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_session_timeout
+	sslSessionTimeout = "10m"
+
+	// Size of the SSL shared cache between all worker processes.
+	// http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_session_cache
+	sslSessionCacheSize = "10m"
+
+	// Default setting for load balancer algorithm
+	defaultLoadBalancerAlgorithm = "least_conn"
+
+	// Parameters for a shared memory zone that will keep states for various keys.
+	// http://nginx.org/en/docs/http/ngx_http_limit_conn_module.html#limit_conn_zone
+	defaultLimitConnZoneVariable = "$binary_remote_addr"
 )
 
 // Configuration represents the content of nginx.conf file
@@ -361,20 +416,18 @@ type Configuration struct {
 
 // TemplateConfig contains the nginx configuration to render the file nginx.conf
 type TemplateConfig struct {
-	ProxySetHeaders         map[string]string
-	AddHeaders              map[string]string
-	MaxOpenFiles            int
-	BacklogSize             int
-	Backends                []*ingress.Backend
-	Servers                 []*ingress.Server
-	HealthzURI              string
-	CustomErrors            bool
-	Cfg                     Configuration
-	IsIPV6Enabled           bool
-	IsSSLPassthroughEnabled bool
-	RedirectServers         map[string]string
-	ListenPorts             *ListenPorts
-	PublishService          *apiv1.Service
+	ProxySetHeaders map[string]string
+	AddHeaders      map[string]string
+	MaxOpenFiles    int
+	BacklogSize     int
+	Backends        []*ingress.Backend
+	Servers         []*ingress.Server
+	HealthzURI      string
+	CustomErrors    bool
+	Cfg             Configuration
+	IsIPV6Enabled   bool
+	RedirectServers map[string]string
+	ListenPorts     *ListenPorts
 }
 
 // ListenPorts describe the ports required to run the
@@ -382,4 +435,77 @@ type TemplateConfig struct {
 type ListenPorts struct {
 	HTTP  int
 	HTTPS int
+}
+
+// NewDefault returns the default nginx configuration
+func NewDefault() Configuration {
+	defIPCIDR := make([]string, 0)
+	defIPCIDR = append(defIPCIDR, "0.0.0.0/0")
+	defBindAddress := make([]string, 0)
+	cfg := Configuration{
+		AllowBackendServerHeader:   false,
+		AccessLogPath:              "/var/log/nginx/access.log",
+		ErrorLogPath:               "/var/log/nginx/error.log",
+		BrotliLevel:                4,
+		BrotliTypes:                brotliTypes,
+		ClientHeaderBufferSize:     "1k",
+		ClientHeaderTimeout:        60,
+		ClientBodyBufferSize:       "8k",
+		ClientBodyTimeout:          60,
+		EnableDynamicTLSRecords:    true,
+		EnableUnderscoresInHeaders: false,
+		ErrorLogLevel:              errorLevel,
+		ForwardedForHeader:         "X-Forwarded-For",
+		ComputeFullForwardedFor:    false,
+		HTTP2MaxFieldSize:          "4k",
+		HTTP2MaxHeaderSize:         "16k",
+		HTTPRedirectCode:           308,
+		HSTS:                       true,
+		HSTSIncludeSubdomains:        true,
+		HSTSMaxAge:                   hstsMaxAge,
+		HSTSPreload:                  false,
+		IgnoreInvalidHeaders:         true,
+		GzipTypes:                    gzipTypes,
+		KeepAlive:                    75,
+		KeepAliveRequests:            100,
+		LargeClientHeaderBuffers:     "4 8k",
+		LogFormatEscapeJSON:          false,
+		LogFormatStream:              logFormatStream,
+		LogFormatUpstream:            logFormatUpstream,
+		MaxWorkerConnections:         16384,
+		MapHashBucketSize:            64,
+		ProxyRealIPCIDR:              defIPCIDR,
+		ServerNameHashMaxSize:        1024,
+		ProxyHeadersHashMaxSize:      512,
+		ProxyHeadersHashBucketSize:   64,
+		ProxyStreamResponses:         1,
+		ShowServerTokens:             true,
+		SSLBufferSize:                sslBufferSize,
+		SSLCiphers:                   sslCiphers,
+		SSLECDHCurve:                 "auto",
+		SSLProtocols:                 sslProtocols,
+		SSLSessionCache:              true,
+		SSLSessionCacheSize:          sslSessionCacheSize,
+		SSLSessionTickets:            true,
+		SSLSessionTimeout:            sslSessionTimeout,
+		EnableBrotli:                 true,
+		UseGzip:                      true,
+		WorkerProcesses:              strconv.Itoa(runtime.NumCPU()),
+		WorkerShutdownTimeout:        "10s",
+		LoadBalanceAlgorithm:         defaultLoadBalancerAlgorithm,
+		VtsStatusZoneSize:            "10m",
+		VtsDefaultFilterKey:          "$geoip_country_code country::*",
+		VariablesHashBucketSize:      128,
+		VariablesHashMaxSize:         2048,
+		UseHTTP2:                     true,
+		ProxyStreamTimeout:           "600s",
+		UpstreamKeepaliveConnections: 32,
+		LimitConnZoneVariable:        defaultLimitConnZoneVariable,
+		BindAddressIpv4:              defBindAddress,
+		BindAddressIpv6:              defBindAddress,
+		ZipkinCollectorPort:          9411,
+		ZipkinServiceName:            "nginx",
+	}
+
+	return cfg
 }

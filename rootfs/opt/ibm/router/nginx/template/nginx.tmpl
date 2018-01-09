@@ -177,68 +177,24 @@ http {
 {{ define "SERVER" }}
         {{ $all := .First }}
         {{ $server := .Second }}
-        {{ range $address := $all.Cfg.BindAddressIpv4 }}
-        listen {{ $address }}:{{ $all.ListenPorts.HTTP }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}};
-        {{ else }}
-        listen {{ $all.ListenPorts.HTTP }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}};
-        {{ end }}
+        listen {{ $all.ListenPorts.HTTP }}{{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}};
         {{ if $all.IsIPV6Enabled }}
-        {{ range $address := $all.Cfg.BindAddressIpv6 }}
-        listen {{ $address }}:{{ $all.ListenPorts.HTTP }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{ end }};
-        {{ else }}
-        listen [::]:{{ $all.ListenPorts.HTTP }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{ end }};
-        {{ end }}
+        listen [::]:{{ $all.ListenPorts.HTTP }}{{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{ end }};
         {{ end }}
         set $proxy_upstream_name "-";
 
         {{/* Listen on {{ $all.ListenPorts.SSLProxy }} because port {{ $all.ListenPorts.HTTPS }} is used in the TLS sni server */}}
         {{/* This listener must always have proxy_protocol enabled, because the SNI listener forwards on source IP info in it. */}}
         {{ if not (empty $server.SSLCertificate) }}
-        {{ range $address := $all.Cfg.BindAddressIpv4 }}
-        listen {{ $address }}:{{ if $all.IsSSLPassthroughEnabled }}{{ $all.ListenPorts.SSLProxy }} proxy_protocol {{ else }}{{ $all.ListenPorts.HTTPS }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ end }} {{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}} ssl {{ if $all.Cfg.UseHTTP2 }}http2{{ end }};
-        {{ else }}
-        listen {{ if $all.IsSSLPassthroughEnabled }}{{ $all.ListenPorts.SSLProxy }} proxy_protocol {{ else }}{{ $all.ListenPorts.HTTPS }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ end }} {{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}} ssl {{ if $all.Cfg.UseHTTP2 }}http2{{ end }};
-        {{ end }}
-        {{ if $all.IsIPV6Enabled }}
-        {{ range $address := $all.Cfg.BindAddressIpv6 }}
-        {{ if not (empty $server.SSLCertificate) }}listen {{ $address }}:{{ if $all.IsSSLPassthroughEnabled }}{{ $all.ListenPorts.SSLProxy }} proxy_protocol{{ else }}{{ $all.ListenPorts.HTTPS }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ end }}{{ end }} {{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}} ssl {{ if $all.Cfg.UseHTTP2 }}http2{{ end }};
-        {{ else }}
-        {{ if not (empty $server.SSLCertificate) }}listen [::]:{{ if $all.IsSSLPassthroughEnabled }}{{ $all.ListenPorts.SSLProxy }} proxy_protocol{{ else }}{{ $all.ListenPorts.HTTPS }}{{ if $all.Cfg.UseProxyProtocol }} proxy_protocol{{ end }}{{ end }}{{ end }} {{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}} ssl {{ if $all.Cfg.UseHTTP2 }}http2{{ end }};
-        {{ end }}
+        listen {{ $all.ListenPorts.HTTPS }} {{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}} ssl;
         {{ end }}
         {{/* comment PEM sha is required to detect changes in the generated configuration and force a reload */}}
         # PEM sha: {{ $server.SSLPemChecksum }}
         ssl_certificate                         {{ $server.SSLCertificate }};
         ssl_certificate_key                     {{ $server.SSLCertificate }};
-        {{ if not (empty $server.SSLFullChainCertificate)}}
-        ssl_trusted_certificate                 {{ $server.SSLFullChainCertificate }};
-        ssl_stapling                            on;
-        ssl_stapling_verify                     on;
-        {{ end }}
-        {{ end }}
-
-        {{ if (and (not (empty $server.SSLCertificate)) $all.Cfg.HSTS) }}
-        more_set_headers                        "Strict-Transport-Security: max-age={{ $all.Cfg.HSTSMaxAge }}{{ if $all.Cfg.HSTSIncludeSubdomains }}; includeSubDomains{{ end }};{{ if $all.Cfg.HSTSPreload }} preload{{ end }}";
-        {{ end }}
-
-
-        {{ if not (empty $server.CertificateAuth.CAFileName) }}
-        # PEM sha: {{ $server.CertificateAuth.PemSHA }}
-        ssl_client_certificate                  {{ $server.CertificateAuth.CAFileName }};
-        ssl_verify_client                       {{ $server.CertificateAuth.VerifyClient }};
-        ssl_verify_depth                        {{ $server.CertificateAuth.ValidationDepth }};
-        {{ if not (empty $server.CertificateAuth.ErrorPage)}}
-        error_page 495 496 = {{ $server.CertificateAuth.ErrorPage }};
-        {{ end }}
-        {{ end }}
-
-        {{ if not (empty $server.ServerSnippet) }}
-        {{ $server.ServerSnippet }}
-        {{ end }}
 
         {{ range $location := $server.Locations }}
         {{ $path := buildLocation $location }}
-        {{ $authPath := buildAuthLocation $location }}
 
         {{ if not (empty $location.Rewrite.AppRoot)}}
         if ($uri = /) {
@@ -249,6 +205,10 @@ http {
         location {{ $path }} {
             set $proxy_upstream_name "{{ buildUpstreamName $server.Hostname $all.Backends $location }}";
 
+            {{ if eq $location.AuthType "id-token" }} access_by_lua 'auth.validate_id_token_or_exit()';{{end}}
+            {{ if eq $location.AuthType "access-token" }} access_by_lua 'auth.validate_access_token_or_exit()';{{end}}
+            {{ if eq $location.AuthzType "rbac" }} access_by_lua 'auth.validate_policy_or_exit()';{{end}}
+
             {{ $ing := (getIngressInformation $location.Ingress $path) }}
             {{/* $ing.Metadata contains the Ingress metadata */}}
             set $namespace      "{{ $ing.Namespace }}";
@@ -256,21 +216,6 @@ http {
             set $service_name   "{{ $ing.Service }}";
 
             proxy_set_header Host                   $best_http_host;
-
-            # Pass the extracted client certificate to the backend
-            {{ if not (empty $server.CertificateAuth.CAFileName) }}
-            {{ if $server.CertificateAuth.PassCertToUpstream }}
-            proxy_set_header ssl-client-cert        $ssl_client_escaped_cert;
-            {{ else }}
-            proxy_set_header ssl-client-cert        "";
-            {{ end }}
-            proxy_set_header ssl-client-verify      $ssl_client_verify;
-            proxy_set_header ssl-client-dn          $ssl_client_s_dn;
-            {{ else }}
-            proxy_set_header ssl-client-cert        "";
-            proxy_set_header ssl-client-verify      "";
-            proxy_set_header ssl-client-dn          "";
-            {{ end }}
 
             # Allow websocket connections
             proxy_set_header                        Upgrade           $http_upgrade;
@@ -280,7 +225,7 @@ http {
             {{ if $all.Cfg.ComputeFullForwardedFor }}
             proxy_set_header X-Forwarded-For        $full_x_forwarded_for;
             {{ else }}
-            proxy_set_header X-Forwarded-For        $the_real_ip;
+            proxy_set_header X-Forwarded-For        $proxy_add_x_forwarded_for;
             {{ end }}
             proxy_set_header X-Forwarded-Host       $best_http_host;
             proxy_set_header X-Forwarded-Port       $pass_port;
@@ -294,12 +239,6 @@ http {
 
             {{/* Add any additional configuration defined */}}
             {{ $location.ConfigurationSnippet }}
-
-            {{ if not (empty $all.Cfg.LocationSnippet) }}
-            # Custom code snippet configured in the configuration configmap
-            {{ $all.Cfg.LocationSnippet }}
-            {{ end }}
-
 
             {{ if not (empty $location.Backend) }}
             {{ buildProxyPass $server.Hostname $all.Backends $location }}

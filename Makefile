@@ -1,3 +1,5 @@
+include Configfile
+
 .PHONY: build doc fmt lint run test vendor_clean vendor_get vendor_update vet
 
 default: build
@@ -9,10 +11,12 @@ build:
 	go build -v -i -o bin/icp-management-ingress github.ibm.com/IBMPrivateCloud/icp-management-ingress/cmd/nginx
 
 docker-binary:
-	CGO_ENABLED=0 go build -a -installsuffix cgo -v -i -o bin/icp-management-ingress github.ibm.com/IBMPrivateCloud/icp-management-ingress/cmd/nginx
-	strip bin/icp-management-ingress
+	CGO_ENABLED=0 go build -a -installsuffix cgo -v -i -o rootfs/icp-management-ingress github.ibm.com/IBMPrivateCloud/icp-management-ingress/cmd/nginx
+	strip rootfs/icp-management-ingress
 
 image:: docker-binary
 
 test:
 	go test -v -race $(shell go list github.ibm.com/IBMPrivateCloud/icp-management-ingress/... | grep -v vendor | grep -v '/test/e2e')
+
+include Makefile.docker

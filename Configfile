@@ -1,0 +1,10 @@
+GIT_REMOTE_URL = $(shell git config --get remote.origin.url)
+DOCKER_SERVER ?= registry.ng.bluemix.net
+DOCKER_USERNAME ?= token
+DOCKER_PASSWORD ?=
+IMAGE_DESCRIPTION =
+IMAGE_NAME = icp-management-ingress
+IMAGE_REPO ?= registry.ng.bluemix.net/mdelder
+RELEASE_TAG ?= latest
+ARCH = $(shell uname -m)
+DOCKER_FLAG =

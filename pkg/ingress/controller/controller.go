@@ -268,9 +268,10 @@ func (n *NGINXController) createServers(data []*extensions.Ingress,
 		SSLPemChecksum: defaultPemSHA,
 		Locations: []*ingress.Location{
 			{
-				Path:    kubernetesLocation,
-				Backend: ku.Name,
-				Service: ku.Service,
+				Path:     kubernetesLocation,
+				Backend:  ku.Name,
+				Service:  ku.Service,
+				AuthType: ingress.IDToken,
 			},
 		}}
 
@@ -436,6 +437,10 @@ func (n *NGINXController) getBackendServers(ingresses []*extensions.Ingress) ([]
 						loc.ConfigurationSnippet = anns.ConfigurationSnippet
 						loc.Rewrite = anns.Rewrite
 						loc.XForwardedPrefix = anns.XForwardedPrefix
+						loc.AuthType = anns.AuthType
+						loc.AuthzType = anns.AuthzType
+						loc.UpstreamURI = anns.UpstreamURI
+						loc.LocationModifier = anns.LocationModifier
 						break
 					}
 				}
@@ -451,6 +456,10 @@ func (n *NGINXController) getBackendServers(ingresses []*extensions.Ingress) ([]
 						ConfigurationSnippet: anns.ConfigurationSnippet,
 						Rewrite:              anns.Rewrite,
 						XForwardedPrefix:     anns.XForwardedPrefix,
+						AuthType:             anns.AuthType,
+						AuthzType:            anns.AuthzType,
+						LocationModifier:     anns.LocationModifier,
+						UpstreamURI:          anns.UpstreamURI,
 					}
 
 					server.Locations = append(server.Locations, loc)

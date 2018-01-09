@@ -1,10 +1,14 @@
 package controller
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
+	"strconv"
 	"sync"
 	"syscall"
 	"time"
@@ -24,6 +28,7 @@ import (
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/class"
+	ngx_config "github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/controller/config"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/controller/process"
 	ngx_template "github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/controller/template"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/status"
@@ -320,5 +325,109 @@ func (n *NGINXController) start(cmd *exec.Cmd) {
 // returning nill implies the backend will be reloaded.
 // if an error is returned means requeue the update
 func (n *NGINXController) OnUpdate(ingressCfg ingress.Configuration) error {
+	cfg := ngx_config.NewDefault()
+
+	// the limit of open files is per worker process
+	// and we leave some room to avoid consuming all the FDs available
+	wp, err := strconv.Atoi(cfg.WorkerProcesses)
+	glog.V(3).Infof("number of worker processes: %v", wp)
+	if err != nil {
+		wp = 1
+	}
+	maxOpenFiles := (sysctlFSFileMax() / wp) - 1024
+	glog.V(3).Infof("maximum number of open file descriptors : %v", sysctlFSFileMax())
+	if maxOpenFiles < 1024 {
+		// this means the value of RLIMIT_NOFILE is too low.
+		maxOpenFiles = 1024
+	}
+
+	tc := ngx_config.TemplateConfig{
+		MaxOpenFiles: maxOpenFiles,
+		BacklogSize:  sysctlSomaxconn(),
+		Backends:     ingressCfg.Backends,
+		Servers:      ingressCfg.Servers,
+		Cfg:          cfg,
+		ListenPorts:  n.cfg.ListenPorts,
+	}
+
+	content, err := n.t.Write(tc)
+
+	if err != nil {
+		return err
+	}
+
+	err = n.testTemplate(content)
+	if err != nil {
+		return err
+	}
+
+	if glog.V(2) {
+		src, _ := ioutil.ReadFile(cfgPath)
+		if !bytes.Equal(src, content) {
+			tmpfile, err := ioutil.TempFile("", "new-nginx-cfg")
+			if err != nil {
+				return err
+			}
+			defer tmpfile.Close()
+			err = ioutil.WriteFile(tmpfile.Name(), content, 0644)
+			if err != nil {
+				return err
+			}
+
+			// executing diff can return exit code != 0
+			diffOutput, _ := exec.Command("diff", "-u", cfgPath, tmpfile.Name()).CombinedOutput()
+
+			glog.Infof("NGINX configuration diff\n")
+			glog.Infof("%v\n", string(diffOutput))
+
+			// Do not use defer to remove the temporal file.
+			// This is helpful when there is an error in the
+			// temporal configuration (we can manually inspect the file).
+			// Only remove the file when no error occurred.
+			os.Remove(tmpfile.Name())
+		}
+	}
+
+	err = ioutil.WriteFile(cfgPath, content, 0644)
+	if err != nil {
+		return err
+	}
+
+	o, err := exec.Command(n.binary, "-s", "reload", "-c", cfgPath).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%v\n%v", err, string(o))
+	}
+
+	return nil
+}
+
+// testTemplate checks if the NGINX configuration inside the byte array is valid
+// running the command "nginx -t" using a temporal file.
+func (n NGINXController) testTemplate(cfg []byte) error {
+	if len(cfg) == 0 {
+		return fmt.Errorf("invalid nginx configuration (empty)")
+	}
+	tmpfile, err := ioutil.TempFile("", "nginx-cfg")
+	if err != nil {
+		return err
+	}
+	defer tmpfile.Close()
+	err = ioutil.WriteFile(tmpfile.Name(), cfg, 0644)
+	if err != nil {
+		return err
+	}
+	out, err := exec.Command(n.binary, "-t", "-c", tmpfile.Name()).CombinedOutput()
+	if err != nil {
+		// this error is different from the rest because it must be clear why nginx is not working
+		oe := fmt.Sprintf(`
+-------------------------------------------------------------------------------
+Error: %v
+%v
+-------------------------------------------------------------------------------
+`, err, string(out))
+		return errors.New(oe)
+	}
+
+	os.Remove(tmpfile.Name())
 	return nil
 }

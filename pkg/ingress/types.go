@@ -20,6 +20,13 @@ var (
 	DefaultSSLDirectory = "/opt/ibm/router/nginx/ssl"
 )
 
+const (
+	// IDToken auth type
+	IDToken = "id-token"
+	// AccessToken auth type
+	AccessToken = "access-token"
+)
+
 // StoreLister returns the configured stores for ingresses, services,
 // endpoints, secrets and configmaps.
 type StoreLister struct {
@@ -119,4 +126,12 @@ type Location struct {
 	// original location.
 	// +optional
 	XForwardedPrefix bool `json:"xForwardedPrefix,omitempty"`
+	// AuthType indicates the authentication method used in the location
+	AuthType string `json:"authType,omitempty"`
+	// AuthzType indicates the authorization method used in the location
+	AuthzType string `json:"authzType,omitempty"`
+	// Location Modifier indicates the location match operator
+	LocationModifier string `json:"locationModifier,omitempty"`
+	// Upstream uri gives the additional uri to the current path of location
+	UpstreamURI string `json:"upstreamURI,omitempty"`
 }

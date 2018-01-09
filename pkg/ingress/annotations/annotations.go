@@ -23,11 +23,15 @@ import (
 	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/auth"
+	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/authz"
+	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/locationmodifier"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/parser"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/rewrite"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/secureupstream"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/snippet"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/upstreamhashby"
+	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/upstreamuri"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/xforwardedprefix"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/errors"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/resolver"
@@ -39,8 +43,12 @@ const DeniedKeyName = "Denied"
 // Ingress defines the valid annotations present in one NGINX Ingress rule
 type Ingress struct {
 	metav1.ObjectMeta
+	AuthType             string
+	AuthzType            string
 	ConfigurationSnippet string
+	LocationModifier     string
 	UpstreamHashBy       string
+	UpstreamURI          string
 	Rewrite              rewrite.Config
 	SecureUpstream       secureupstream.Config
 	XForwardedPrefix     bool
@@ -55,11 +63,15 @@ type Extractor struct {
 func NewAnnotationExtractor(cfg resolver.Resolver) Extractor {
 	return Extractor{
 		map[string]parser.IngressAnnotation{
+			"AuthType":             auth.NewParser(cfg),
+			"AuthzType":            authz.NewParser(cfg),
 			"ConfigurationSnippet": snippet.NewParser(cfg),
 			"SecureUpstream":       secureupstream.NewParser(cfg),
 			"Rewrite":              rewrite.NewParser(cfg),
 			"UpstreamHashBy":       upstreamhashby.NewParser(cfg),
 			"XForwardedPrefix":     xforwardedprefix.NewParser(cfg),
+			"LocationModifier":     locationmodifier.NewParser(cfg),
+			"UpstreamURI":          upstreamuri.NewParser(cfg),
 		},
 	}
 }
