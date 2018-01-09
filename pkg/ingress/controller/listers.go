@@ -34,11 +34,10 @@ import (
 )
 
 type cacheController struct {
-	Ingress   cache.Controller
-	Endpoint  cache.Controller
-	Service   cache.Controller
-	Secret    cache.Controller
-	Configmap cache.Controller
+	Ingress  cache.Controller
+	Endpoint cache.Controller
+	Service  cache.Controller
+	Secret   cache.Controller
 }
 
 func (c *cacheController) Run(stopCh chan struct{}) {
@@ -46,7 +45,6 @@ func (c *cacheController) Run(stopCh chan struct{}) {
 	go c.Endpoint.Run(stopCh)
 	go c.Service.Run(stopCh)
 	go c.Secret.Run(stopCh)
-	go c.Configmap.Run(stopCh)
 
 	// Wait for all involved caches to be synced, before processing items from the queue is started
 	if !cache.WaitForCacheSync(stopCh,
@@ -54,7 +52,6 @@ func (c *cacheController) Run(stopCh chan struct{}) {
 		c.Endpoint.HasSynced,
 		c.Service.HasSynced,
 		c.Secret.HasSynced,
-		c.Configmap.HasSynced,
 	) {
 		runtime.HandleError(fmt.Errorf("Timed out waiting for caches to sync"))
 	}
@@ -167,36 +164,8 @@ func (n *NGINXController) createListers(stopCh chan struct{}) (*ingress.StoreLis
 		},
 	}
 
-	mapEventHandler := cache.ResourceEventHandlerFuncs{
-		AddFunc: func(obj interface{}) {
-			upCmap := obj.(*apiv1.ConfigMap)
-			mapKey := fmt.Sprintf("%s/%s", upCmap.Namespace, upCmap.Name)
-			if mapKey == n.cfg.ConfigMapName {
-				glog.V(2).Infof("adding configmap %v to backend", mapKey)
-				n.SetConfig(upCmap)
-				n.SetForceReload(true)
-			}
-		},
-		UpdateFunc: func(old, cur interface{}) {
-			if !reflect.DeepEqual(old, cur) {
-				upCmap := cur.(*apiv1.ConfigMap)
-				mapKey := fmt.Sprintf("%s/%s", upCmap.Namespace, upCmap.Name)
-				if mapKey == n.cfg.ConfigMapName {
-					glog.V(2).Infof("updating configmap backend (%v)", mapKey)
-					n.SetConfig(upCmap)
-					n.SetForceReload(true)
-				}
-				// updates to configuration configmaps can trigger an update
-				if mapKey == n.cfg.ConfigMapName || mapKey == n.cfg.TCPConfigMapName || mapKey == n.cfg.UDPConfigMapName {
-					n.recorder.Eventf(upCmap, apiv1.EventTypeNormal, "UPDATE", fmt.Sprintf("ConfigMap %v", mapKey))
-					n.syncQueue.Enqueue(cur)
-				}
-			}
-		},
-	}
-
 	watchNs := apiv1.NamespaceAll
-	if n.cfg.ForceNamespaceIsolation && n.cfg.Namespace != apiv1.NamespaceAll {
+	if n.cfg.Namespace != apiv1.NamespaceAll {
 		watchNs = n.cfg.Namespace
 	}
 
@@ -216,10 +185,6 @@ func (n *NGINXController) createListers(stopCh chan struct{}) (*ingress.StoreLis
 	lister.Secret.Store, controller.Secret = cache.NewInformer(
 		cache.NewListWatchFromClient(n.cfg.Client.CoreV1().RESTClient(), "secrets", watchNs, fields.Everything()),
 		&apiv1.Secret{}, n.cfg.ResyncPeriod, secrEventHandler)
-
-	lister.ConfigMap.Store, controller.Configmap = cache.NewInformer(
-		cache.NewListWatchFromClient(n.cfg.Client.CoreV1().RESTClient(), "configmaps", watchNs, fields.Everything()),
-		&apiv1.ConfigMap{}, n.cfg.ResyncPeriod, mapEventHandler)
 
 	lister.Service.Store, controller.Service = cache.NewInformer(
 		cache.NewListWatchFromClient(n.cfg.Client.CoreV1().RESTClient(), "services", n.cfg.Namespace, fields.Everything()),

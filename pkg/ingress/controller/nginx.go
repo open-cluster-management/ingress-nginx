@@ -2,6 +2,7 @@ package controller
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"os/exec"
 	"sync"
@@ -11,12 +12,13 @@ import (
 	"github.com/golang/glog"
 
 	apiv1 "k8s.io/api/core/v1"
+	extensions "k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/kubernetes/scheme"
+	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/flowcontrol"
-	"k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/kubectl/scheme"
 	"k8s.io/kubernetes/pkg/util/filesystem"
-	"k8s.io/apimachinery/pkg/util/wait"
 
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/file"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
@@ -26,9 +28,9 @@ import (
 	ngx_template "github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/controller/template"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/status"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/store"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/net"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/net/dns"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/task"
+	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/watch"
 )
 
 var (
@@ -58,8 +60,7 @@ func NewNGINXController(config *Configuration, fs file.Filesystem) *NGINXControl
 	}
 
 	n := &NGINXController{
-		backendDefaults: ngx_config.NewDefault().Backend,
-		binary:          ngx,
+		binary: ngx,
 
 		configmap: &apiv1.ConfigMap{},
 
@@ -311,4 +312,16 @@ func (n *NGINXController) start(cmd *exec.Cmd) {
 	go func() {
 		n.ngxErrCh <- cmd.Wait()
 	}()
+}
+
+// OnUpdate is called periodically by syncQueue to keep the configuration in sync.
+//
+// 1. converts configmap configuration to custom configuration object
+// 2. write the custom template (the complexity depends on the implementation)
+// 3. write the configuration file
+//
+// returning nill implies the backend will be reloaded.
+// if an error is returned means requeue the update
+func (n *NGINXController) OnUpdate(ingressCfg ingress.Configuration) error {
+	return nil
 }
