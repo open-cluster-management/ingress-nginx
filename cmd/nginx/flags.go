@@ -59,7 +59,7 @@ func parseFlags() (bool, *controller.Configuration, error) {
 		syncRateLimit = flags.Float32("sync-rate-limit", 0.3,
 			`Define the sync frequency upper limit`)
 
-		defSSLCertificate = flags.String("default-ssl-certificate", "", `Name of the secret
+		defSSLCertificate = flags.String("default-ssl-certificate", "kube-system/router-certs", `Name of the secret
 		that contains a SSL certificate to be used as default for a HTTPS catch-all server.
 		Takes the form <namespace>/<secret name>.`)
 

@@ -235,6 +235,7 @@ func (n *NGINXController) createUpstreams(data []*extensions.Ingress, ku *ingres
 				}
 
 				upstreams[name].Service = s
+				upstreams[name].ClusterIP = s.Spec.ClusterIP
 			}
 		}
 	}

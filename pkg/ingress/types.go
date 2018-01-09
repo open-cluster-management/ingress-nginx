@@ -51,9 +51,10 @@ type Configuration struct {
 // +k8s:deepcopy-gen=true
 type Backend struct {
 	// Name represents an unique apiv1.Service name formatted as <namespace>-<name>-<port>
-	Name    string             `json:"name"`
-	Service *apiv1.Service     `json:"service,omitempty"`
-	Port    intstr.IntOrString `json:"port"`
+	Name      string             `json:"name"`
+	Service   *apiv1.Service     `json:"service,omitempty"`
+	Port      intstr.IntOrString `json:"port"`
+	ClusterIP string             `json:"clusterIP"`
 	// This indicates if the communication protocol between the backend and the endpoint is HTTP or HTTPS
 	// Allowing the use of HTTPS
 	// The endpoint/s must provide a TLS connection.

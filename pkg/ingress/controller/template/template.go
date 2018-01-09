@@ -179,6 +179,9 @@ func buildLocation(input interface{}) string {
 	}
 
 	path := location.Path
+	if location.LocationModifier != "" {
+		return fmt.Sprintf("%s %s", location.LocationModifier, path)
+	}
 	if len(location.Rewrite.Target) > 0 && location.Rewrite.Target != path {
 		if path == slash {
 			return fmt.Sprintf("~* %s", path)
@@ -231,6 +234,10 @@ func buildProxyPass(host string, b interface{}, loc interface{}) string {
 	// if the path in the ingress rule is equals to the target: no special rewrite
 	if path == location.Rewrite.Target {
 		return defProxyPass
+	}
+
+	if location.UpstreamURI != "" {
+		path = fmt.Sprintf("%s%s", path, location.UpstreamURI)
 	}
 
 	if !strings.HasSuffix(path, slash) {

@@ -95,6 +95,9 @@ func (b1 *Backend) Equal(b2 *Backend) bool {
 	if b1.UpstreamHashBy != b2.UpstreamHashBy {
 		return false
 	}
+	if b1.ClusterIP != b2.ClusterIP {
+		return false
+	}
 
 	return true
 }

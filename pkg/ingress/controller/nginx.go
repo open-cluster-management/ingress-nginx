@@ -41,7 +41,7 @@ import (
 var (
 	tmplPath    = "/opt/ibm/router/nginx/template/nginx.tmpl"
 	cfgPath     = "/opt/ibm/router/nginx/conf/nginx.conf"
-	nginxBinary = "/usr/sbin/nginx"
+	nginxBinary = "/opt/ibm/router/nginx/sbin"
 )
 
 // NewNGINXController creates a new NGINX Ingress controller.
