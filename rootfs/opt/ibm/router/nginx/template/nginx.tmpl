@@ -45,13 +45,13 @@ http {
     zipkin_service_name             {{ $cfg.ZipkinServiceName }};
     {{ end }}
 
-    include mime.types;
+    include /opt/ibm/router/nginx/conf/mime.types;
     default_type application/octet-stream;
 
     {{ if $cfg.DisableAccessLog }}
     access_log off;
     {{ else }}
-    access_log {{ $cfg.AccessLogPath }} upstreaminfo if=$loggable;
+    access_log {{ $cfg.AccessLogPath }};
     {{ end }}
     error_log  {{ $cfg.ErrorLogPath }} {{ $cfg.ErrorLogLevel }};
 
