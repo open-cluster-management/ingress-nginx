@@ -192,6 +192,12 @@ http {
         ssl_certificate                         {{ $server.SSLCertificate }};
         ssl_certificate_key                     {{ $server.SSLCertificate }};
 
+        root /opt/ibm/router/nginx/html;
+
+        add_header X-Frame-Options "SAMEORIGIN";
+        add_header X-Content-Type-Options nosniff;
+        add_header X-XSS-Protection "1; mode=block";
+
         {{ range $location := $server.Locations }}
         {{ $path := buildLocation $location }}
 

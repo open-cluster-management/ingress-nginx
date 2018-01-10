@@ -240,7 +240,7 @@ func buildProxyPass(host string, b interface{}, loc interface{}) string {
 	}
 
 	if location.UpstreamURI != "" {
-		path = fmt.Sprintf("%s%s", path, location.UpstreamURI)
+		path = fmt.Sprintf("%s%s", defProxyPass, location.UpstreamURI)
 	}
 
 	if !strings.HasSuffix(path, slash) {
