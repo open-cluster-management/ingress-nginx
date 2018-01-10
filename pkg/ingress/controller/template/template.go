@@ -26,7 +26,7 @@ import (
 	"strings"
 	text_template "text/template"
 
-	"k8s.io/kubernetes/pkg/apis/extensions"
+	extensions "k8s.io/api/extensions/v1beta1"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
