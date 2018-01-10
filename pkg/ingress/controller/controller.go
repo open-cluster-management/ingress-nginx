@@ -10,8 +10,9 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apimachinery/pkg/util/sets"
 	clientset "k8s.io/client-go/kubernetes"
-	"k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/sets"
 
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations"
@@ -163,6 +164,9 @@ func (n *NGINXController) getKubernetesUpstream() *ingress.Backend {
 
 	svc := svcObj.(*apiv1.Service)
 	upstream.Service = svc
+	upstream.ClusterIP = svc.Spec.ClusterIP
+	upstream.Port = intstr.FromInt(443)
+	upstream.Secure = true
 	return upstream
 }
 
