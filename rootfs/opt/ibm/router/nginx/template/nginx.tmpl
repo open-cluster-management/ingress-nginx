@@ -142,7 +142,7 @@ http {
         keepalive {{ $cfg.UpstreamKeepaliveConnections }};
         {{ end }}
 
-        server {{ $upstream.ClusterIP | formatIP }}:{{ $upstream.Port }} max_fails={{ $server.MaxFails }} fail_timeout={{ $server.FailTimeout }};
+        server {{ $upstream.ClusterIP | formatIP }}:{{ $upstream.Port }};
     }
 
     {{ end }}

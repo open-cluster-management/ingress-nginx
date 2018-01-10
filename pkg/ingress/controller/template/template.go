@@ -26,6 +26,8 @@ import (
 	"strings"
 	text_template "text/template"
 
+	"k8s.io/kubernetes/pkg/apis/extensions"
+
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 
@@ -111,18 +113,19 @@ var (
 			}
 			return true
 		},
-		"buildLocation":     buildLocation,
-		"buildProxyPass":    buildProxyPass,
-		"buildResolvers":    buildResolvers,
-		"buildUpstreamName": buildUpstreamName,
-		"getenv":            os.Getenv,
-		"contains":          strings.Contains,
-		"hasPrefix":         strings.HasPrefix,
-		"hasSuffix":         strings.HasSuffix,
-		"toUpper":           strings.ToUpper,
-		"toLower":           strings.ToLower,
-		"buildForwardedFor": buildForwardedFor,
-		"formatIP":          formatIP,
+		"buildLocation":         buildLocation,
+		"buildProxyPass":        buildProxyPass,
+		"buildResolvers":        buildResolvers,
+		"buildUpstreamName":     buildUpstreamName,
+		"getenv":                os.Getenv,
+		"contains":              strings.Contains,
+		"hasPrefix":             strings.HasPrefix,
+		"hasSuffix":             strings.HasSuffix,
+		"toUpper":               strings.ToUpper,
+		"toLower":               strings.ToLower,
+		"buildForwardedFor":     buildForwardedFor,
+		"formatIP":              formatIP,
+		"getIngressInformation": getIngressInformation,
 		"serverConfig": func(all config.TemplateConfig, server *ingress.Server) interface{} {
 			return struct{ First, Second interface{} }{all, server}
 		},
@@ -328,6 +331,56 @@ func buildUpstreamName(host string, b interface{}, loc interface{}) string {
 
 	upstreamName := location.Backend
 	return upstreamName
+}
+
+type ingressInformation struct {
+	Namespace   string
+	Rule        string
+	Service     string
+	Annotations map[string]string
+}
+
+func getIngressInformation(i, p interface{}) *ingressInformation {
+	ing, ok := i.(*extensions.Ingress)
+	if !ok {
+		glog.Errorf("expected an '*extensions.Ingress' type but %T was returned", i)
+		return &ingressInformation{}
+	}
+
+	path, ok := p.(string)
+	if !ok {
+		glog.Errorf("expected a 'string' type but %T was returned", p)
+		return &ingressInformation{}
+	}
+
+	if ing == nil {
+		return &ingressInformation{}
+	}
+
+	info := &ingressInformation{
+		Namespace:   ing.GetNamespace(),
+		Rule:        ing.GetName(),
+		Annotations: ing.Annotations,
+	}
+
+	if ing.Spec.Backend != nil {
+		info.Service = ing.Spec.Backend.ServiceName
+	}
+
+	for _, rule := range ing.Spec.Rules {
+		if rule.HTTP == nil {
+			continue
+		}
+
+		for _, rPath := range rule.HTTP.Paths {
+			if path == rPath.Path {
+				info.Service = rPath.Backend.ServiceName
+				return info
+			}
+		}
+	}
+
+	return info
 }
 
 func buildForwardedFor(input interface{}) string {
