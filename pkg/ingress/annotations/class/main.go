@@ -47,16 +47,5 @@ func IsValid(ing *extensions.Ingress) bool {
 		glog.V(3).Infof("annotation %v is not present in ingress %v/%v", IngressKey, ing.Namespace, ing.Name)
 	}
 
-	// we have 2 valid combinations
-	// 1 - ingress with default class | blank annotation on ingress
-	// 2 - ingress with specific class | same annotation on ingress
-	//
-	// and 2 invalid combinations
-	// 3 - ingress with default class | fixed annotation on ingress
-	// 4 - ingress with specific class | different annotation on ingress
-	if ingress == "" && IngressClass == DefaultClass {
-		return true
-	}
-
-	return ingress == IngressClass
+	return ingress == IngressClass || ingress == DefaultClass
 }

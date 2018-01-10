@@ -40,7 +40,7 @@ func TestIsValidClass(t *testing.T) {
 		isValid    bool
 	}{
 		{"", "", "nginx", true},
-		{"", "nginx", "nginx", true},
+		{"", "nginx", "nginx", false},
 		{"nginx", "nginx", "nginx", true},
 		{"custom", "custom", "nginx", true},
 		{"", "killer", "nginx", false},
