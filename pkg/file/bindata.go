@@ -75,7 +75,7 @@ var _etcNginxNginxConf = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x2c\xc
 func etcNginxNginxConfBytes() ([]byte, error) {
 	return bindataRead(
 		_etcNginxNginxConf,
-		"etc/nginx/nginx.conf",
+		"opt/ibm/router/nginx/conf/nginx.conf",
 	)
 }
 
@@ -85,7 +85,7 @@ func etcNginxNginxConf() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "etc/nginx/nginx.conf", size: 119, mode: os.FileMode(420), modTime: time.Unix(1508444716, 0)}
+	info := bindataFileInfo{name: "opt/ibm/router/nginx/conf/nginx.conf", size: 119, mode: os.FileMode(420), modTime: time.Unix(1508444716, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -95,7 +95,7 @@ var _etcNginxTemplateNginxTmpl = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xf
 func etcNginxTemplateNginxTmplBytes() ([]byte, error) {
 	return bindataRead(
 		_etcNginxTemplateNginxTmpl,
-		"etc/nginx/template/nginx.tmpl",
+		"opt/ibm/router/nginx/template/nginx.tmpl",
 	)
 }
 
@@ -105,7 +105,7 @@ func etcNginxTemplateNginxTmpl() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "etc/nginx/template/nginx.tmpl", size: 37465, mode: os.FileMode(420), modTime: time.Unix(1511380479, 0)}
+	info := bindataFileInfo{name: "opt/ibm/router/nginx/template/nginx.tmpl", size: 37465, mode: os.FileMode(420), modTime: time.Unix(1511380479, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -115,7 +115,7 @@ var _ingressControllerCleanNginxConfSh = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x0
 func ingressControllerCleanNginxConfShBytes() ([]byte, error) {
 	return bindataRead(
 		_ingressControllerCleanNginxConfSh,
-		"ingress-controller/clean-nginx-conf.sh",
+		"opt/ibm/router/clean-nginx-conf.sh",
 	)
 }
 
@@ -125,7 +125,7 @@ func ingressControllerCleanNginxConfSh() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "ingress-controller/clean-nginx-conf.sh", size: 901, mode: os.FileMode(493), modTime: time.Unix(1509931394, 0)}
+	info := bindataFileInfo{name: "opt/ibm/router/clean-nginx-conf.sh", size: 901, mode: os.FileMode(493), modTime: time.Unix(1509931394, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -182,9 +182,9 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"etc/nginx/nginx.conf": etcNginxNginxConf,
-	"etc/nginx/template/nginx.tmpl": etcNginxTemplateNginxTmpl,
-	"ingress-controller/clean-nginx-conf.sh": ingressControllerCleanNginxConfSh,
+	"opt/ibm/router/nginx/conf/nginx.conf":     etcNginxNginxConf,
+	"opt/ibm/router/nginx/template/nginx.tmpl": etcNginxTemplateNginxTmpl,
+	"opt/ibm/router/clean-nginx-conf.sh":       ingressControllerCleanNginxConfSh,
 }
 
 // AssetDir returns the file names below a certain
@@ -226,17 +226,22 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
-	"etc": &bintree{nil, map[string]*bintree{
-		"nginx": &bintree{nil, map[string]*bintree{
-			"nginx.conf": &bintree{etcNginxNginxConf, map[string]*bintree{}},
-			"template": &bintree{nil, map[string]*bintree{
-				"nginx.tmpl": &bintree{etcNginxTemplateNginxTmpl, map[string]*bintree{}},
+	"opt": &bintree{nil, map[string]*bintree{
+		"ibm": &bintree{nil, map[string]*bintree{
+			"router": &bintree{nil, map[string]*bintree{
+				"nginx": &bintree{nil, map[string]*bintree{
+					"conf": &bintree{nil, map[string]*bintree{
+						"nginx.conf": &bintree{etcNginxNginxConf, map[string]*bintree{}},
+					}},
+					"template": &bintree{nil, map[string]*bintree{
+						"nginx.tmpl": &bintree{etcNginxTemplateNginxTmpl, map[string]*bintree{}},
+					}},
+				}},
+				"clean-nginx-conf.sh": &bintree{ingressControllerCleanNginxConfSh, map[string]*bintree{}},
 			}},
 		}},
-	}},
-	"ingress-controller": &bintree{nil, map[string]*bintree{
-		"clean-nginx-conf.sh": &bintree{ingressControllerCleanNginxConfSh, map[string]*bintree{}},
 	}},
 }}
 
@@ -286,4 +291,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-
