@@ -23,6 +23,7 @@ import (
 
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/rewrite"
+	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/resolver"
 )
 
 var (
@@ -216,5 +217,29 @@ func TestBuildResolvers(t *testing.T) {
 
 	if resolver != validResolver {
 		t.Errorf("Expected '%v' but returned '%v'", validResolver, resolver)
+	}
+}
+
+func TestBuildVerifySSL(t *testing.T) {
+	defaultBackend := "upstream-name"
+
+	validBackend := "proxy_ssl_verify off;"
+
+	loc := &ingress.Location{
+		Path:    "/",
+		Backend: defaultBackend,
+	}
+
+	backends := []*ingress.Backend{
+		{
+			Name:         defaultBackend,
+			Secure:       true,
+			SecureCACert: resolver.AuthSSLCert{},
+		},
+	}
+
+	sslBackend := buildSSLVeify(backends, loc)
+	if sslBackend != validBackend {
+		t.Errorf("Expected '%v' but returned '%v'", validBackend, sslBackend)
 	}
 }

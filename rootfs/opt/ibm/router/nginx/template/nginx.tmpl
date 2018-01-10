@@ -246,6 +246,7 @@ http {
 
             {{ if not (empty $location.Backend) }}
             {{ buildProxyPass $server.Hostname $all.Backends $location }}
+            {{ buildSSLVeify $all.Backends $location }}
             {{ else }}
             # No endpoints available for the request
             return 503;

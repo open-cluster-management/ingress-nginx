@@ -201,6 +201,39 @@ func buildLocation(input interface{}) string {
 	return path
 }
 
+// buildSSLVeify produces the ssl certificate and client certificate for backend
+func buildSSLVeify(b interface{}, loc interface{}) string {
+	ssl_block := ""
+
+	backends, ok := b.([]*ingress.Backend)
+	if !ok {
+		glog.Errorf("expected an '[]*ingress.Backend' type but %T was returned", b)
+		return ""
+	}
+
+	location, ok := loc.(*ingress.Location)
+	if !ok {
+		glog.Errorf("expected a '*ingress.Location' type but %T was returned", loc)
+		return ""
+	}
+
+	for _, backend := range backends {
+		if backend.Name == location.Backend {
+			if backend.Secure {
+				if backend.SecureCACert.Secret == "" {
+					ssl_block = "proxy_ssl_verify off;"
+				} else {
+					ssl_block = fmt.Sprintf("proxy_ssl_trusted_certificate %s", backend.SecureCACert.CAFileName)
+				}
+			}
+
+			break
+		}
+	}
+
+	return ssl_block
+}
+
 // buildProxyPass produces the proxy pass string, if the ingress has redirects
 // (specified through the nginx.ingress.kubernetes.io/rewrite-to annotation)
 // If the annotation nginx.ingress.kubernetes.io/add-base-url:"true" is specified it will
@@ -240,7 +273,7 @@ func buildProxyPass(host string, b interface{}, loc interface{}) string {
 	}
 
 	if location.UpstreamURI != "" {
-		path = fmt.Sprintf("%s%s", defProxyPass, location.UpstreamURI)
+		defProxyPass = fmt.Sprintf("proxy_pass %s://%s%s;", proto, upstreamName, location.UpstreamURI)
 	}
 
 	if !strings.HasSuffix(path, slash) {

@@ -63,6 +63,8 @@ type Backend struct {
 	// SecureCACert has the filename and SHA1 of the certificate authorities used to validate
 	// a secured connection to the backend
 	SecureCACert resolver.AuthSSLCert `json:"secureCACert"`
+	// ClientCACert has the file name and SHA1 of the certificate/key for backend authentication
+	ClientCACert resolver.AuthSSLCert `json:"clientCACert"`
 	// Consistent hashing by NGINX variable
 	UpstreamHashBy string `json:"upstream-hash-by,omitempty"`
 }
