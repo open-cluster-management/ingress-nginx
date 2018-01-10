@@ -117,6 +117,7 @@ var (
 		"buildProxyPass":        buildProxyPass,
 		"buildResolvers":        buildResolvers,
 		"buildUpstreamName":     buildUpstreamName,
+		"buildSSLVeify":         buildSSLVeify,
 		"getenv":                os.Getenv,
 		"contains":              strings.Contains,
 		"hasPrefix":             strings.HasPrefix,
@@ -223,7 +224,7 @@ func buildSSLVeify(b interface{}, loc interface{}) string {
 				if backend.SecureCACert.Secret == "" {
 					ssl_block = "proxy_ssl_verify off;"
 				} else {
-					ssl_block = fmt.Sprintf("proxy_ssl_trusted_certificate %s", backend.SecureCACert.CAFileName)
+					ssl_block = fmt.Sprintf("proxy_ssl_trusted_certificate %s;", backend.SecureCACert.CAFileName)
 				}
 			}
 
