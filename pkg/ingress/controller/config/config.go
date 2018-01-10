@@ -1,6 +1,7 @@
 package config
 
 import (
+	"net"
 	"runtime"
 	"strconv"
 
@@ -412,6 +413,10 @@ type Configuration struct {
 	// Supported codes are 301,302,307 and 308
 	// Default: 308
 	HTTPRedirectCode int `json:"http-redirect-code"`
+
+	// Name server/s used to resolve names of upstream servers into IP addresses.
+	// The file /etc/resolv.conf is used as DNS resolution configuration.
+	Resolver []net.IP
 }
 
 // TemplateConfig contains the nginx configuration to render the file nginx.conf

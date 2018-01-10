@@ -245,10 +245,6 @@ http {
             # No endpoints available for the request
             return 503;
             {{ end }}
-            {{ else }}
-            # Location denied. Reason: {{ $location.Denied }}
-            return 503;
-            {{ end }}
         }
 
         {{ end }}

@@ -41,7 +41,7 @@ import (
 var (
 	tmplPath    = "/opt/ibm/router/nginx/template/nginx.tmpl"
 	cfgPath     = "/opt/ibm/router/nginx/conf/nginx.conf"
-	nginxBinary = "/opt/ibm/router/nginx/sbin"
+	nginxBinary = "/opt/ibm/router/nginx/sbin/nginx"
 )
 
 // NewNGINXController creates a new NGINX Ingress controller.
@@ -326,6 +326,7 @@ func (n *NGINXController) start(cmd *exec.Cmd) {
 // if an error is returned means requeue the update
 func (n *NGINXController) OnUpdate(ingressCfg ingress.Configuration) error {
 	cfg := ngx_config.NewDefault()
+	cfg.Resolver = n.resolver
 
 	// the limit of open files is per worker process
 	// and we leave some room to avoid consuming all the FDs available
