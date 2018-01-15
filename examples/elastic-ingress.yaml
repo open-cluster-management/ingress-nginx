@@ -1,0 +1,32 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: elastic
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+    icp.management.ibm.com/auth-type: "id-token"
+    icp.management.ibm.com/configuration-snippet: |
+      if ($request_uri ~* "/_([0-9A-Za-z]*)\?_timestamp=[0-9]*(.*)") {
+                proxy_pass http://$proxy_upstream_name/_$1?$2;
+            }
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /_cat
+        backend:
+          serviceName: elasticsearch
+          servicePort: 9200
+      - path: /elasticsearch*
+        backend:
+          serviceName: elasticsearch
+          servicePort: 9200
+      - path: /logstash*
+        backend:
+          serviceName: elasticsearch
+          servicePort: 9200
+      - path: /heapster*
+        backend:
+          serviceName: elasticsearch
+          servicePort: 9200

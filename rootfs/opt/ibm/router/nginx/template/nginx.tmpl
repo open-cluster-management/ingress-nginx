@@ -107,10 +107,6 @@ http {
         ''               $host;
     }
 
-
-    server_name_in_redirect off;
-    port_in_redirect        off;
-
     ssl_protocols {{ $cfg.SSLProtocols }};
 
     # turn on session caching to drastically improve performance

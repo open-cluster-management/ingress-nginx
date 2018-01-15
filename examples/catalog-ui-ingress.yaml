@@ -3,19 +3,37 @@
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: platform-ui
+  name: catalog-ui
   namespace: kube-system
   annotations:
     kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/auth-type: "access-token"
-    icp.management.ibm.com/app-root: "/console"
+    icp.management.ibm.com/auth-type: "id-token"
 spec:
   rules:
   - http:
       paths:
-      - path: /console
+      - path: /catalog
         backend:
-          serviceName: platform-ui
+          serviceName: catalog-ui
+          servicePort: 4000
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: helm-api
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+    icp.management.ibm.com/rewrite-target: "/"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /helm-api/
+        backend:
+          serviceName: helm-api
           servicePort: 3000
 
 ---
@@ -23,34 +41,16 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: platform-ui-api
+  name: helm-repo
   namespace: kube-system
   annotations:
     kubernetes.io/ingress.class: "ibm-icp-management"
+    icp.management.ibm.com/rewrite-target: "/"
 spec:
   rules:
   - http:
       paths:
-      - path: /console/api/
+      - path: /helm-repo/
         backend:
-          serviceName: platform-ui
-          servicePort: 3000
-
----
-
-apiVersion: extensions/v1beta1
-kind: Ingress
-metadata:
-  name: platform-ui-callback
-  namespace: kube-system
-  annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/upstream-uri: "/auth/liberty/callback"
-spec:
-  rules:
-  - http:
-      paths:
-      - path: /auth/liberty/callback
-        backend:
-          serviceName: platform-ui
-          servicePort: 3000
+          serviceName: helmrepo
+          servicePort: 3001
