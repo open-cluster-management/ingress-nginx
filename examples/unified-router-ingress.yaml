@@ -1,0 +1,17 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: unified-router
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+    icp.management.ibm.com/auth-type: "id-token"
+    icp.management.ibm.com/rewrite-target: "/"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /unified-router/
+        backend:
+          serviceName: unified-router
+          servicePort: 9090

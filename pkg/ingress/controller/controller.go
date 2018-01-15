@@ -18,6 +18,7 @@ import (
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/class"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/parser"
+	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/rewrite"
 	ngx_config "github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/controller/config"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/resolver"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/task"
@@ -277,6 +278,9 @@ func (n *NGINXController) createServers(data []*extensions.Ingress,
 				Backend:  ku.Name,
 				Service:  ku.Service,
 				AuthType: ingress.IDToken,
+				Rewrite: rewrite.Config{
+					Target: "/",
+				},
 			},
 		}}
 
@@ -477,6 +481,9 @@ func (n *NGINXController) getBackendServers(ingresses []*extensions.Ingress) ([]
 
 	// create the list of upstreams and skip those without endpoints
 	for _, upstream := range upstreams {
+		if upstream.ClusterIP == "" {
+			continue
+		}
 		aUpstreams = append(aUpstreams, upstream)
 	}
 

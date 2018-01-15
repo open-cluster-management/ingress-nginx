@@ -1,0 +1,52 @@
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: iam-token
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /iam-token/
+        backend:
+          serviceName: iam-token-service
+          servicePort: 10443
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: iam-pap
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /iam-pap/
+        backend:
+          serviceName: iam-pap
+          servicePort: 39001
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: iam-pdp
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /iam-pdp/
+        backend:
+          serviceName: iam-pdp
+          servicePort: 7998

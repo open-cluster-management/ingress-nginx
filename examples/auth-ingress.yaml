@@ -1,0 +1,137 @@
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: platform-login
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+    icp.management.ibm.com/upstream-uri: "/v1/auth/authorize?client_id=$oauth_client_id&redirect_uri=https://$http_host/auth/liberty/callback&response_type=code&scope=openid+email+profile&state=$request_uri"
+    icp.management.ibm.com/configuration-snippet: |
+      set_by_lua $oauth_client_id 'return os.getenv("WLP_CLIENT_ID")';
+      set_by_lua $oauth_auth_redirector 'return os.getenv("OAUTH_AUTH_REDIRECTOR")';
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /login
+        backend:
+          serviceName: platform-identity-provider
+          servicePort: 4300
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: platform-oidc
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+    icp.management.ibm.com/secure-backends: "true"
+    icp.management.ibm.com/configuration-snippet: |
+      add_header 'Access-Control-Allow-Origin' '*' always;
+      add_header 'Access-Control-Allow-Credentials' 'true' always;
+      add_header 'Access-Control-Allow-Methods' 'GET, POST, HEAD' always;
+      add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
+      if ($request_uri !~ .*call_proxy.*) {
+        error_page 401 @401;
+      }
+      proxy_intercept_errors on;
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /oidc/
+        backend:
+          serviceName: platform-auth-service
+          servicePort: 9443
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: platform-auth
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+    icp.management.ibm.com/configuration-snippet: |
+      add_header 'Access-Control-Allow-Origin' '*' always;
+      add_header 'Access-Control-Allow-Credentials' 'true' always;
+      add_header 'Access-Control-Allow-Methods' 'GET, POST, HEAD' always;
+      add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
+      if ($request_uri !~ .*call_proxy.*) {
+        error_page 401 @401;
+      }
+      proxy_intercept_errors on;
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /v1/auth/
+        backend:
+          serviceName: platform-identity-provider
+          servicePort: 4300
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: platform-id-provider
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /idprovider/
+        backend:
+          serviceName: platform-identity-provider
+          servicePort: 4300
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: platform-id-auth
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+    icp.management.ibm.com/secure-backends: "true"
+    icp.management.ibm.com/rewrite-target: "/"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /idauth/
+        backend:
+          serviceName: platform-auth-service
+          servicePort: 9443
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: id-mgmt
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+    icp.management.ibm.com/authz-type: "rbac"
+    icp.management.ibm.com/rewrite-target: "/"
+    icp.management.ibm.com/configuration-snippet: |
+      if ($request_uri ~* "/idmgmt/(.*)/teams/(.*)/resources/rel/(.*)") {
+        proxy_pass http://$proxy_upstream_name/$1/teams/$2/resources/rel/$3;
+      }
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /idmgmt/
+        backend:
+          serviceName: platform-identity-management
+          servicePort: 4500

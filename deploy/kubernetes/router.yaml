@@ -1,0 +1,80 @@
+---
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: icp-management-ingress
+  namespace: kube-system
+spec:
+  minReadySeconds: 0
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        k8s-app: icp-management-ingress
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      terminationGracePeriodSeconds: 60
+      nodeSelector:
+        beta.kubernetes.io/arch: amd64
+        role: 'master'
+      tolerations:
+        - key: "dedicated"
+          operator: "Exists"
+          effect: "NoSchedule"
+        - key: "CriticalAddonsOnly"
+          operator: "Exists"
+      containers:
+        - env:
+            - name: WLP_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: platform-oidc-credentials
+                  key: WLP_CLIENT_ID
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+          image: registry.ng.bluemix.net/mdelder/icp-management-ingress
+          ports:
+            - containerPort: 8080
+              hostPort: 8080
+            - containerPort: 8443
+              hostPort: 8443
+          command: ["/icp-management-ingress"]
+          imagePullPolicy: IfNotPresent
+          name: icp-management-ingress
+          volumeMounts:
+            - mountPath: "/opt/ibm/router/nginx/html/dcos-metadata"
+              name: router-ui-config
+      volumes:
+        - name: router-ui-config
+          configMap:
+            name: router-ui-config
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: router-ui-config
+  namespace: kube-system
+data:
+  ui-config.json: |
+    {
+       "uiConfiguration":{
+          "edition":"Enterprise Edition",
+          "cluster_name":"mycluster.icp",
+          "proxy_ip":"192.168.0.1",
+          "access_ip":"192.168.0.1",
+          "kube_apiserver_secure_port":"8001"
+       }
+    }

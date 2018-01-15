@@ -8,10 +8,6 @@ local common = require "common"
 local SECRET_KEY = nil
 local BODY_AUTH_ERROR_RESPONSE = nil
 
-local master_ip = os.getenv("LEADER_MASTER_IP")
-if master_ip == nil then
-    ngx.log(ngx.WARN, "LEADER_MASTER_IP not set.")
-end
 local errorpages_dir_path = os.getenv("AUTH_ERROR_PAGE_DIR_PATH")
 if errorpages_dir_path == nil then
     ngx.log(ngx.WARN, "AUTH_ERROR_PAGE_DIR_PATH not set.")
