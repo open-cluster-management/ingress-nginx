@@ -120,3 +120,31 @@ func TestSecretOnNonSecure(t *testing.T) {
 		t.Error("Expected CA secret on non secure backend error on ingress")
 	}
 }
+
+func TestClientSecretNotFound(t *testing.T) {
+	ing := buildIngress()
+	data := map[string]string{}
+	data[parser.GetAnnotationWithPrefix("secure-backends")] = "true"
+	data[parser.GetAnnotationWithPrefix("secure-client-ca-secret")] = "secure-client-ca"
+	ing.SetAnnotations(data)
+	_, err := NewParser(mockCfg{}).Parse(ing)
+	if err == nil {
+		t.Error("Expected client secret not found error on ingress")
+	}
+}
+
+func TestClientSecretOnNonSecure(t *testing.T) {
+	ing := buildIngress()
+	data := map[string]string{}
+	data[parser.GetAnnotationWithPrefix("secure-backends")] = "false"
+	data[parser.GetAnnotationWithPrefix("secure-client-ca-secret")] = "secure-client-ca"
+	ing.SetAnnotations(data)
+	_, err := NewParser(mockCfg{
+		certs: map[string]resolver.AuthSSLCert{
+			"default/secure-client-ca": {},
+		},
+	}).Parse(ing)
+	if err == nil {
+		t.Error("Expected Client CA secret on non secure backend error on ingress")
+	}
+}

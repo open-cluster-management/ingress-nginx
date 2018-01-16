@@ -1,0 +1,107 @@
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: grafana
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+    icp.management.ibm.com/auth-type: "access-token"
+    icp.management.ibm.com/secure-backends: "true"
+    icp.management.ibm.com/secure-client-ca-secret: "monitoring-client-certs"
+    icp.management.ibm.com/rewrite-target: "/"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /grafana
+        backend:
+          serviceName: monitoring-grafana
+          servicePort: 3001
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: alertmanager
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+    icp.management.ibm.com/auth-type: "access-token"
+    icp.management.ibm.com/secure-backends: "true"
+    icp.management.ibm.com/secure-client-ca-secret: "monitoring-client-certs"
+    icp.management.ibm.com/rewrite-target: "/"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /alertmanager
+        backend:
+          serviceName: monitoring-prometheus-alertmanager
+          servicePort: 9093
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: prometheus
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+    icp.management.ibm.com/auth-type: "access-token"
+    icp.management.ibm.com/secure-backends: "true"
+    icp.management.ibm.com/secure-client-ca-secret: "monitoring-client-certs"
+    icp.management.ibm.com/configuration-snippet: |
+            header_filter_by_lua_block { ngx.header.content_length = nil }
+            body_filter_by_lua_block {
+              local data = ngx.arg[1]
+              if string.startswith(ngx.header.content_type, 'text/html') then
+                data = ngx.re.gsub(data, '="/','="/prometheus/')
+                data = ngx.re.gsub(data, 'var PATH_PREFIX = "";','var PATH_PREFIX = "/prometheus";')
+              end
+              ngx.arg[1] = data
+            }
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /prometheus/
+        backend:
+          serviceName: monitoring-prometheus
+          servicePort: 9090
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: prometheus-graph
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: "ibm-icp-management"
+    icp.management.ibm.com/auth-type: "access-token"
+    icp.management.ibm.com/secure-backends: "true"
+    icp.management.ibm.com/secure-client-ca-secret: "monitoring-client-certs"
+    icp.management.ibm.com/location-modifier: "="
+    icp.management.ibm.com/upstream-uri: "/graph"
+    icp.management.ibm.com/configuration-snippet: |
+            header_filter_by_lua_block { ngx.header.content_length = nil }
+            body_filter_by_lua_block {
+              local data = ngx.arg[1]
+              if string.startswith(ngx.header.content_type, 'text/html') then
+                data = ngx.re.gsub(data, '="/','="/prometheus/')
+                data = ngx.re.gsub(data, 'var PATH_PREFIX = "";','var PATH_PREFIX = "/prometheus";')
+              end
+              ngx.arg[1] = data
+            }
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /prometheus
+        backend:
+          serviceName: monitoring-prometheus
+          servicePort: 9090

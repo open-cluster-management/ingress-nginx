@@ -198,6 +198,9 @@ func (n *NGINXController) createUpstreams(data []*extensions.Ingress, ku *ingres
 			if upstreams[defBackend].UpstreamHashBy == "" {
 				upstreams[defBackend].UpstreamHashBy = anns.UpstreamHashBy
 			}
+			if upstreams[defBackend].ClientCACert.Secret == "" {
+				upstreams[defBackend].ClientCACert = anns.SecureUpstream.ClientCACert
+			}
 		}
 
 		for _, rule := range ing.Spec.Rules {
@@ -229,6 +232,10 @@ func (n *NGINXController) createUpstreams(data []*extensions.Ingress, ku *ingres
 
 				if upstreams[name].UpstreamHashBy == "" {
 					upstreams[name].UpstreamHashBy = anns.UpstreamHashBy
+				}
+
+				if upstreams[name].ClientCACert.Secret == "" {
+					upstreams[name].ClientCACert = anns.SecureUpstream.ClientCACert
 				}
 
 				svcKey := fmt.Sprintf("%v/%v", ing.GetNamespace(), path.Backend.ServiceName)
@@ -519,9 +526,10 @@ func (n NGINXController) GetAuthCertificate(name string) (*resolver.AuthSSLCert,
 	}
 	cert := bc.(*ingress.SSLCert)
 	return &resolver.AuthSSLCert{
-		Secret:     name,
-		CAFileName: cert.CAFileName,
-		PemSHA:     cert.PemSHA,
+		Secret:      name,
+		CAFileName:  cert.CAFileName,
+		PemFileName: cert.PemFileName,
+		PemSHA:      cert.PemSHA,
 	}, nil
 }
 

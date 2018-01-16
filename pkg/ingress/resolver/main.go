@@ -41,6 +41,8 @@ type AuthSSLCert struct {
 	Secret string `json:"secret"`
 	// CAFileName contains the path to the secrets 'ca.crt'
 	CAFileName string `json:"caFilename"`
+	// PemFileName contains the path to the file with the certificate and key concatenated
+	PemFileName string `json:"pemFileName"`
 	// PemSHA contains the SHA1 hash of the 'ca.crt' or combinations of (tls.crt, tls.key, tls.crt) depending on certs in secret
 	PemSHA string `json:"pemSha"`
 }
@@ -51,6 +53,9 @@ func (asslc1 *AuthSSLCert) Equal(assl2 *AuthSSLCert) bool {
 		return false
 	}
 	if asslc1.CAFileName != assl2.CAFileName {
+		return false
+	}
+	if asslc1.PemFileName != assl2.PemFileName {
 		return false
 	}
 	if asslc1.PemSHA != assl2.PemSHA {

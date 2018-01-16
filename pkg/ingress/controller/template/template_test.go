@@ -243,3 +243,33 @@ func TestBuildVerifySSL(t *testing.T) {
 		t.Errorf("Expected '%v' but returned '%v'", validBackend, sslBackend)
 	}
 }
+
+func TestBuildClientCAAuth(t *testing.T) {
+	defaultBackend := "upstream-name"
+
+	validBackend := `
+	    proxy_ssl_certificate /test/test.crt;
+	    proxy_ssl_certificate_key /test/test.crt;
+	    `
+
+	loc := &ingress.Location{
+		Path:    "/",
+		Backend: defaultBackend,
+	}
+
+	backends := []*ingress.Backend{
+		{
+			Name:   defaultBackend,
+			Secure: true,
+			ClientCACert: resolver.AuthSSLCert{
+				Secret:      "test",
+				PemFileName: "/test/test.crt",
+			},
+		},
+	}
+
+	sslBackend := buildClientCAAuth(backends, loc)
+	if sslBackend != validBackend {
+		t.Errorf("Expected '%v' but returned '%v'", validBackend, sslBackend)
+	}
+}

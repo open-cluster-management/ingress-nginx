@@ -118,6 +118,7 @@ var (
 		"buildResolvers":        buildResolvers,
 		"buildUpstreamName":     buildUpstreamName,
 		"buildSSLVeify":         buildSSLVeify,
+		"buildClientCAAuth":     buildClientCAAuth,
 		"getenv":                os.Getenv,
 		"contains":              strings.Contains,
 		"hasPrefix":             strings.HasPrefix,
@@ -204,7 +205,7 @@ func buildLocation(input interface{}) string {
 
 // buildSSLVeify produces the ssl certificate and client certificate for backend
 func buildSSLVeify(b interface{}, loc interface{}) string {
-	ssl_block := ""
+	sslBlock := ""
 
 	backends, ok := b.([]*ingress.Backend)
 	if !ok {
@@ -222,9 +223,9 @@ func buildSSLVeify(b interface{}, loc interface{}) string {
 		if backend.Name == location.Backend {
 			if backend.Secure {
 				if backend.SecureCACert.Secret == "" {
-					ssl_block = "proxy_ssl_verify off;"
+					sslBlock = "proxy_ssl_verify off;"
 				} else {
-					ssl_block = fmt.Sprintf("proxy_ssl_trusted_certificate %s;", backend.SecureCACert.CAFileName)
+					sslBlock = fmt.Sprintf("proxy_ssl_trusted_certificate %s;", backend.SecureCACert.CAFileName)
 				}
 			}
 
@@ -232,7 +233,41 @@ func buildSSLVeify(b interface{}, loc interface{}) string {
 		}
 	}
 
-	return ssl_block
+	return sslBlock
+}
+
+// buildClientCAAuth produce ssl certificate/key for backend client ca authentication
+func buildClientCAAuth(b interface{}, loc interface{}) string {
+	sslProxyBlock := ""
+
+	backends, ok := b.([]*ingress.Backend)
+	if !ok {
+		glog.Errorf("expected an '[]*ingress.Backend' type but %T was returned", b)
+		return ""
+	}
+
+	location, ok := loc.(*ingress.Location)
+	if !ok {
+		glog.Errorf("expected a '*ingress.Location' type but %T was returned", loc)
+		return ""
+	}
+
+	for _, backend := range backends {
+		if backend.Name == location.Backend {
+			if backend.Secure {
+				if backend.ClientCACert.Secret != "" {
+					sslProxyBlock = fmt.Sprintf(`
+	    proxy_ssl_certificate %s;
+	    proxy_ssl_certificate_key %s;
+	    `, backend.ClientCACert.PemFileName, backend.ClientCACert.PemFileName)
+				}
+			}
+
+			break
+		}
+	}
+
+	return sslProxyBlock
 }
 
 // buildProxyPass produces the proxy pass string, if the ingress has redirects
