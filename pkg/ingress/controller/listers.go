@@ -156,9 +156,9 @@ func (n *NGINXController) createListers(stopCh chan struct{}) (*ingress.StoreLis
 			n.syncQueue.Enqueue(obj)
 		},
 		UpdateFunc: func(old, cur interface{}) {
-			oep := old.(*apiv1.Endpoints)
-			ocur := cur.(*apiv1.Endpoints)
-			if !reflect.DeepEqual(ocur.Subsets, oep.Subsets) {
+			oep := old.(*apiv1.Service)
+			ocur := cur.(*apiv1.Service)
+			if oep.Spec.ClusterIP != ocur.Spec.ClusterIP {
 				n.syncQueue.Enqueue(cur)
 			}
 		},
@@ -180,7 +180,7 @@ func (n *NGINXController) createListers(stopCh chan struct{}) (*ingress.StoreLis
 
 	lister.Endpoint.Store, controller.Endpoint = cache.NewInformer(
 		cache.NewListWatchFromClient(n.cfg.Client.CoreV1().RESTClient(), "endpoints", n.cfg.Namespace, fields.Everything()),
-		&apiv1.Endpoints{}, n.cfg.ResyncPeriod, eventHandler)
+		&apiv1.Endpoints{}, n.cfg.ResyncPeriod, cache.ResourceEventHandlerFuncs{})
 
 	lister.Secret.Store, controller.Secret = cache.NewInformer(
 		cache.NewListWatchFromClient(n.cfg.Client.CoreV1().RESTClient(), "secrets", watchNs, fields.Everything()),
@@ -188,7 +188,7 @@ func (n *NGINXController) createListers(stopCh chan struct{}) (*ingress.StoreLis
 
 	lister.Service.Store, controller.Service = cache.NewInformer(
 		cache.NewListWatchFromClient(n.cfg.Client.CoreV1().RESTClient(), "services", n.cfg.Namespace, fields.Everything()),
-		&apiv1.Service{}, n.cfg.ResyncPeriod, cache.ResourceEventHandlerFuncs{})
+		&apiv1.Service{}, n.cfg.ResyncPeriod, eventHandler)
 
 	return lister, controller
 }

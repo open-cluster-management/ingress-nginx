@@ -227,7 +227,7 @@ func (s *statusSync) runningAddresses() ([]string, error) {
 	}
 
 	for _, pod := range pods.Items {
-		name := k8s.GetNodeIPOrName(s.Client, pod.Spec.NodeName, false)
+		name := k8s.GetNodeIPOrName(s.Client, pod.Spec.NodeName, true)
 		if !sliceutils.StringInSlice(name, addrs) {
 			addrs = append(addrs, name)
 		}

@@ -445,6 +445,10 @@ func (n *NGINXController) getBackendServers(ingresses []*extensions.Ingress) ([]
 					if loc.Path == nginxPath {
 						addLoc = false
 
+						if ups.ClusterIP == "" {
+							break
+						}
+
 						glog.V(3).Infof("replacing ingress rule %v/%v location %v upstream %v (%v)", ing.Namespace, ing.Name, loc.Path, ups.Name, loc.Backend)
 						loc.Backend = ups.Name
 						loc.Port = ups.Port
@@ -463,6 +467,10 @@ func (n *NGINXController) getBackendServers(ingresses []*extensions.Ingress) ([]
 				// is a new location
 				if addLoc {
 					glog.V(3).Infof("adding location %v in ingress rule %v/%v upstream %v", nginxPath, ing.Namespace, ing.Name, ups.Name)
+					if ups.ClusterIP == "" {
+						continue
+					}
+
 					loc := &ingress.Location{
 						Path:                 nginxPath,
 						Backend:              ups.Name,
