@@ -9,12 +9,12 @@ metadata:
     kubernetes.io/ingress.class: "ibm-icp-management"
 spec:
   rules:
-  - http:
-      paths:
-      - path: /image-manager/api/v1/auth/
-        backend:
-          serviceName: image-manager
-          servicePort: 8600
+    - http:
+        paths:
+          - path: /image-manager/api/v1/auth/
+            backend:
+              serviceName: image-manager
+              servicePort: 8600
 
 ---
 
@@ -28,9 +28,9 @@ metadata:
     icp.management.ibm.com/auth-type: "id-token"
 spec:
   rules:
-  - http:
-      paths:
-      - path: /image-manager/api/v1
-        backend:
-          serviceName: image-manager
-          servicePort: 8600
+    - http:
+        paths:
+          - path: /image-manager/api/v1
+            backend:
+              serviceName: image-manager
+              servicePort: 8600

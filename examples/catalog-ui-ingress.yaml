@@ -10,12 +10,12 @@ metadata:
     icp.management.ibm.com/auth-type: "id-token"
 spec:
   rules:
-  - http:
-      paths:
-      - path: /catalog
-        backend:
-          serviceName: catalog-ui
-          servicePort: 4000
+    - http:
+        paths:
+          - path: /catalog
+            backend:
+              serviceName: catalog-ui
+              servicePort: 4000
 
 ---
 
@@ -29,12 +29,12 @@ metadata:
     icp.management.ibm.com/rewrite-target: "/"
 spec:
   rules:
-  - http:
-      paths:
-      - path: /helm-api/
-        backend:
-          serviceName: helm-api
-          servicePort: 3000
+    - http:
+        paths:
+          - path: /helm-api/
+            backend:
+              serviceName: helm-api
+              servicePort: 3000
 
 ---
 
@@ -48,9 +48,9 @@ metadata:
     icp.management.ibm.com/rewrite-target: "/"
 spec:
   rules:
-  - http:
-      paths:
-      - path: /helm-repo/
-        backend:
-          serviceName: helmrepo
-          servicePort: 3001
+    - http:
+        paths:
+          - path: /helm-repo/
+            backend:
+              serviceName: helmrepo
+              servicePort: 3001
