@@ -13,7 +13,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /console
+      - path: /console/
         backend:
           serviceName: platform-ui
           servicePort: 3000
