@@ -107,7 +107,7 @@ local function validate_access_token_or_exit()
     local token = nil
     if auth_header ~= nil then
         ngx.log(ngx.DEBUG, "Authorization header found. Attempt to extract token.")
-        _, _, token = string.find(auth_header, "token=(.+)")
+        _, _, token = string.find(auth_header, "Bearer%s+(.+)")
     else
         ngx.log(ngx.DEBUG, "Authorization header not found.")
         -- Presence of Authorization header overrides cookie method entirely.
