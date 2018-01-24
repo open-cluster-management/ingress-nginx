@@ -26,6 +26,7 @@ import (
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/class"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/parser"
+	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/proxy"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/rewrite"
 	ngx_config "github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/controller/config"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/resolver"
@@ -296,6 +297,7 @@ func (n *NGINXController) createServers(data []*extensions.Ingress,
 				Rewrite: rewrite.Config{
 					Target: "/",
 				},
+				Proxy: proxy.DefaultProxyConfig,
 			},
 		}}
 
@@ -464,6 +466,7 @@ func (n *NGINXController) getBackendServers(ingresses []*extensions.Ingress) ([]
 						loc.Ingress = ing
 						loc.ConfigurationSnippet = anns.ConfigurationSnippet
 						loc.Rewrite = anns.Rewrite
+						loc.Proxy = anns.Proxy
 						loc.XForwardedPrefix = anns.XForwardedPrefix
 						loc.AuthType = anns.AuthType
 						loc.AuthzType = anns.AuthzType
@@ -487,6 +490,7 @@ func (n *NGINXController) getBackendServers(ingresses []*extensions.Ingress) ([]
 						Ingress:              ing,
 						ConfigurationSnippet: anns.ConfigurationSnippet,
 						Rewrite:              anns.Rewrite,
+						Proxy:                anns.Proxy,
 						XForwardedPrefix:     anns.XForwardedPrefix,
 						AuthType:             anns.AuthType,
 						AuthzType:            anns.AuthzType,

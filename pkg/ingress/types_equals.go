@@ -197,6 +197,9 @@ func (l1 *Location) Equal(l2 *Location) bool {
 	if l1.UpstreamURI != l2.UpstreamURI {
 		return false
 	}
+	if !(&l1.Proxy).Equal(&l2.Proxy) {
+		return false
+	}
 
 	return true
 }

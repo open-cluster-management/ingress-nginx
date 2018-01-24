@@ -27,6 +27,7 @@ import (
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/authz"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/locationmodifier"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/parser"
+	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/proxy"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/rewrite"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/secureupstream"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/snippet"
@@ -52,6 +53,7 @@ type Ingress struct {
 	Rewrite              rewrite.Config
 	SecureUpstream       secureupstream.Config
 	XForwardedPrefix     bool
+	Proxy                proxy.Config
 }
 
 // Extractor defines the annotation parsers to be used in the extraction of annotations
@@ -72,6 +74,7 @@ func NewAnnotationExtractor(cfg resolver.Resolver) Extractor {
 			"XForwardedPrefix":     xforwardedprefix.NewParser(cfg),
 			"LocationModifier":     locationmodifier.NewParser(cfg),
 			"UpstreamURI":          upstreamuri.NewParser(cfg),
+			"Proxy":                proxy.NewParser(cfg),
 		},
 	}
 }

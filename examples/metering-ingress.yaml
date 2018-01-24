@@ -6,6 +6,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "ibm-icp-management"
     icp.management.ibm.com/auth-type: "id-token"
+    icp.management.ibm.com/rewrite-target: "/"
 spec:
   rules:
   - http:

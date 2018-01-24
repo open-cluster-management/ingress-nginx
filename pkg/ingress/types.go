@@ -15,6 +15,7 @@ import (
 	extensions "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/proxy"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/rewrite"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/resolver"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/store"
@@ -145,4 +146,8 @@ type Location struct {
 	LocationModifier string `json:"locationModifier,omitempty"`
 	// Upstream uri gives the additional uri to the current path of location
 	UpstreamURI string `json:"upstreamURI,omitempty"`
+	// Proxy contains information about timeouts and buffer sizes
+	// to be used in connections against endpoints
+	// +optional
+	Proxy proxy.Config `json:"proxy,omitempty"`
 }

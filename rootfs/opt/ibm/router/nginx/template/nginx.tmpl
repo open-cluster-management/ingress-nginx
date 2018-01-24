@@ -216,6 +216,8 @@ http {
             set $ingress_name   "{{ $ing.Rule }}";
             set $service_name   "{{ $ing.Service }}";
 
+            client_max_body_size                    "{{ $location.Proxy.BodySize }}";
+
             proxy_set_header Host                   $best_http_host;
 
             # Allow websocket connections
@@ -236,6 +238,14 @@ http {
             # mitigate HTTPoxy Vulnerability
             # https://www.nginx.com/blog/mitigating-the-httpoxy-vulnerability-with-nginx/
             proxy_set_header Proxy                  "";
+
+            proxy_connect_timeout                   {{ $location.Proxy.ConnectTimeout }}s;
+            proxy_send_timeout                      {{ $location.Proxy.SendTimeout }}s;
+            proxy_read_timeout                      {{ $location.Proxy.ReadTimeout }}s;
+
+            proxy_buffering                         off;
+            proxy_buffer_size                       "{{ $location.Proxy.BufferSize }}";
+            proxy_buffers                           4 "{{ $location.Proxy.BufferSize }}";
 
             {{/* Add any additional configuration defined */}}
             {{ $location.ConfigurationSnippet }}
