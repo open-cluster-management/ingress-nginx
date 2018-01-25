@@ -13,6 +13,8 @@ import (
 	"runtime"
 	"strconv"
 
+	"github.com/golang/glog"
+
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
 )
 
@@ -468,6 +470,7 @@ func NewDefault() Configuration {
 		EnableDynamicTLSRecords:    true,
 		EnableUnderscoresInHeaders: false,
 		ErrorLogLevel:              errorLevel,
+		DisableAccessLog:           true,
 		ForwardedForHeader:         "X-Forwarded-For",
 		ComputeFullForwardedFor:    false,
 		HTTP2MaxFieldSize:          "4k",
@@ -518,6 +521,14 @@ func NewDefault() Configuration {
 		BindAddressIpv6:              defBindAddress,
 		ZipkinCollectorPort:          9411,
 		ZipkinServiceName:            "nginx",
+	}
+
+	if glog.V(5) {
+		cfg.ErrorLogLevel = "debug"
+	}
+
+	if glog.V(3) {
+		cfg.DisableAccessLog = false
 	}
 
 	return cfg
