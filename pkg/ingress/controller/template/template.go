@@ -185,6 +185,10 @@ func buildLocation(input interface{}) string {
 
 	path := location.Path
 	if location.LocationModifier != "" {
+		// For regex modifier, add ^ to match with start
+		if strings.Contains(location.LocationModifier, "~") {
+			path = fmt.Sprintf("%s%s", "^", path)
+		}
 		return fmt.Sprintf("%s %s", location.LocationModifier, path)
 	}
 	if len(location.Rewrite.Target) > 0 && location.Rewrite.Target != path {
