@@ -15,6 +15,7 @@ import (
 	extensions "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
+	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/connection"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/proxy"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/rewrite"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/resolver"
@@ -131,6 +132,10 @@ type Location struct {
 	// ConfigurationSnippet contains additional configuration for the backend
 	// to be considered in the configuration of the location
 	ConfigurationSnippet string `json:"configurationSnippet"`
+	// Connection contains connection header to orverride the default Connection header
+	// to the request.
+	// +optional
+	Connection connection.Config `json:"connection"`
 	// Rewrite describes the redirection this location.
 	// +optional
 	Rewrite rewrite.Config `json:"rewrite,omitempty"`

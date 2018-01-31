@@ -22,3 +22,4 @@ The design doc is [here](https://github.ibm.com/IBMPrivateCloud/roadmap/blob/mas
 | icp.management.ibm.com/proxy-read-timeout | proxy read timeout | string |
 | icp.management.ibm.com/proxy-buffer-size | buffer size of response | string |
 | icp.management.ibm.com/proxy-body-size | max response body | string |
+| icp.management.ibm.com/connection | override connection header | string |

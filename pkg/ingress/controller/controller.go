@@ -472,6 +472,7 @@ func (n *NGINXController) getBackendServers(ingresses []*extensions.Ingress) ([]
 						loc.AuthzType = anns.AuthzType
 						loc.UpstreamURI = anns.UpstreamURI
 						loc.LocationModifier = anns.LocationModifier
+						loc.Connection = anns.Connection
 						break
 					}
 				}
@@ -496,6 +497,7 @@ func (n *NGINXController) getBackendServers(ingresses []*extensions.Ingress) ([]
 						AuthzType:            anns.AuthzType,
 						LocationModifier:     anns.LocationModifier,
 						UpstreamURI:          anns.UpstreamURI,
+						Connection:           anns.Connection,
 					}
 
 					server.Locations = append(server.Locations, loc)

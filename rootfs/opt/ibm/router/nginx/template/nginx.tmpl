@@ -57,6 +57,18 @@ http {
 
     {{ buildResolvers $cfg.Resolver }}
 
+    {{/* Whenever nginx proxies a request without a "Connection" header, the "Connection" header is set to "close" */}}
+    {{/* when making the target request.  This means that you cannot simply use */}}
+    {{/* "proxy_set_header Connection $http_connection" for WebSocket support because in this case, the */}}
+    {{/* "Connection" header would be set to "" whenever the original request did not have a "Connection" header, */}}
+    {{/* which would mean no "Connection" header would be in the target request.  Since this would deviate from */}}
+    {{/* normal nginx behavior we have to use this approach. */}}
+    # Retain the default nginx handling of requests without a "Connection" header
+    map $http_upgrade $connection_upgrade {
+        default          upgrade;
+        ''               close;
+    }
+
     map {{ buildForwardedFor $cfg.ForwardedForHeader }} $the_real_ip {
     {{ if $cfg.UseProxyProtocol }}
         # Get IP address from Proxy Protocol
@@ -207,6 +219,14 @@ http {
             client_max_body_size                    "{{ $location.Proxy.BodySize }}";
 
             proxy_set_header Host                   $best_http_host;
+
+            # Allow websocket connections
+            proxy_set_header                        Upgrade           $http_upgrade;
+            {{ if $location.Connection.Enabled}}
+            proxy_set_header                        Connection        {{ $location.Connection.Header }};
+            {{ else }}
+            proxy_set_header                        Connection        $connection_upgrade;
+            {{ end }}
 
             proxy_set_header X-Real-IP              $the_real_ip;
             {{ if $all.Cfg.ComputeFullForwardedFor }}
