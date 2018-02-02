@@ -187,10 +187,12 @@ local function validate_policy_or_exit()
         return pdp_exit_403()
       end
 
-      -- @posriniv: This should  be removed after making the required changes to PDP code
+      uri = method.." "..ngx.var.request_uri
       local list = {}
       for word in string.gmatch(ngx.var.request_uri,'([^/]+)') do table.insert(list,word) end
-      uri = method.." /"..list[1].."/"
+      if list[1] == "idmgmt" then
+        uri = method.." /"..list[1].."/"
+      end
       ngx.log(ngx.NOTICE, "Full URI = ", uri)
 
       ngx.log(ngx.NOTICE, "New Token =", auth_token)
