@@ -2,10 +2,10 @@
 if [ "$TRAVIS_BRANCH" = "master" ]; then
     RELEASE_TAG=latest
 else
-    RELEASE_TAG="${TRAVIS_BRANCH}-latest"
+    RELEASE_TAG="${TRAVIS_BRANCH#release-}-latest"
 fi
 if [ "$TRAVIS_TAG" != "" ]; then
-    RELEASE_TAG="$TRAVIS_TAG"
+    RELEASE_TAG="${TRAVIS_TAG#v}"
 fi
 export RELEASE_TAG="$RELEASE_TAG"
 
