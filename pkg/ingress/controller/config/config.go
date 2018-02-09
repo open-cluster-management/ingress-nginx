@@ -457,6 +457,12 @@ func NewDefault() Configuration {
 	defIPCIDR := make([]string, 0)
 	defIPCIDR = append(defIPCIDR, "0.0.0.0/0")
 	defBindAddress := make([]string, 0)
+	workerProcesses := runtime.NumCPU()
+	// put worker process to no more than 16
+	if workerProcesses > 16 {
+		workerProcesses = 16
+	}
+
 	cfg := Configuration{
 		AllowBackendServerHeader:   false,
 		AccessLogPath:              "/var/log/nginx/access.log",
@@ -488,7 +494,7 @@ func NewDefault() Configuration {
 		LogFormatEscapeJSON:          false,
 		LogFormatStream:              logFormatStream,
 		LogFormatUpstream:            logFormatUpstream,
-		MaxWorkerConnections:         16384,
+		MaxWorkerConnections:         512,
 		MapHashBucketSize:            64,
 		ProxyRealIPCIDR:              defIPCIDR,
 		ServerNameHashMaxSize:        1024,
@@ -506,7 +512,7 @@ func NewDefault() Configuration {
 		SSLSessionTimeout:            sslSessionTimeout,
 		EnableBrotli:                 true,
 		UseGzip:                      true,
-		WorkerProcesses:              strconv.Itoa(runtime.NumCPU()),
+		WorkerProcesses:              strconv.Itoa(workerProcesses),
 		WorkerShutdownTimeout:        "10s",
 		LoadBalanceAlgorithm:         defaultLoadBalancerAlgorithm,
 		VtsStatusZoneSize:            "10m",
