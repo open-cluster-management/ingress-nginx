@@ -133,7 +133,7 @@ local function validate_access_token_or_exit()
 
     ngx.log(ngx.NOTICE, "Received OIDC token =",token)
     local httpc = http.new()
-    local res, err = httpc:request_uri("http://platform-identity-provider.kube-system.svc.cluster.local:4300/v1/auth/userInfo", {
+    local res, err = httpc:request_uri("http://platform-identity-provider.kube-system:4300/v1/auth/userInfo", {
         method = "POST",
         body = "access_token=" .. token,
         headers = {
@@ -158,7 +158,7 @@ end
 
 local function validate_policy_or_exit()
       local httpc = http.new()
-      ngx.log(ngx.NOTICE, "URL=http://iam-pdp.kube-system.svc.cluster.local:7998/v1/authz")
+      ngx.log(ngx.NOTICE, "URL=http://iam-pdp.kube-system:7998/v1/authz")
 
       local method = ngx.req.get_method()
       ngx.log(ngx.NOTICE, "Method = ", method)
@@ -188,11 +188,6 @@ local function validate_policy_or_exit()
       end
 
       uri = method.." "..ngx.var.request_uri
-      local list = {}
-      for word in string.gmatch(ngx.var.request_uri,'([^/]+)') do table.insert(list,word) end
-      if list[1] == "idmgmt" then
-        uri = method.." /"..list[1].."/"
-      end
       ngx.log(ngx.NOTICE, "Full URI = ", uri)
 
       ngx.log(ngx.NOTICE, "New Token =", auth_token)
@@ -210,7 +205,7 @@ local function validate_policy_or_exit()
                    }
            }
       }
-      local res, err = httpc:request_uri("http://iam-pdp.kube-system.svc.cluster.local:7998/v1/authz", {
+      local res, err = httpc:request_uri("http://iam-pdp.kube-system:7998/v1/authz", {
         method = "POST",
         body = cjson.encode(data),
         headers = {
