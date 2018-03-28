@@ -165,6 +165,17 @@ local function validate_policy_or_exit()
       local method = ngx.req.get_method()
       ngx.log(ngx.NOTICE, "Method = ", method)
 
+      ngx.log(ngx.NOTICE, "URI=", ngx.var.request_uri)
+      local list = {}
+      for word in string.gmatch(ngx.var.request_uri,'([^/]+)') do table.insert(list,word) end
+      if list[1] == "idprovider" and ngx.var.request_uri ~= "/idprovider/v1/auth/getClientCredentials/" and ngx.var.request_uri ~= "/idprovider/v1/auth/getClientCredentials"  then
+        if string.find(ngx.var.request_uri, "getClientCredentials//") then
+           return pdp_exit_403()
+        else
+           return 0
+        end
+      end
+
       local auth_token = ngx.req.get_headers()["Authorization"]
       ngx.log(ngx.NOTICE, "Auth Token=", auth_token)
 
