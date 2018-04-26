@@ -8,3 +8,12 @@ IMAGE_REPO ?= registry.ng.bluemix.net/mdelder
 RELEASE_TAG ?= latest
 ARCH = $(shell uname -m)
 DOCKER_FLAG =
+
+ifeq ($(ARCH), x86_64)
+	IMAGE_NAME_ARCH = $(IMAGE_NAME)-amd64
+else
+	IMAGE_NAME_ARCH = $(IMAGE_NAME)-$(ARCH)
+endif
+MANIFEST_VERSION ?= v0.7.0
+DEFAULT_S390X_IMAGE ?= ibmcom/pause-s390x:3.0
+IMAGE_NAME_S390X ?= ${IMAGE_REPO}/${IMAGE_NAME}-s390x:${RELEASE_TAG}

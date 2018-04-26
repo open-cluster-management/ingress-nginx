@@ -35,7 +35,7 @@ app-version:
 	$(eval VCS_REF := $(if $(WORKING_CHANGES),$(GIT_COMMIT)-$(BUILD_DATE),$(GIT_COMMIT)))
 	$(eval APP_VERSION ?= $(if $(shell cat VERSION 2> /dev/null),$(shell cat VERSION 2> /dev/null),0.0.1))
 	$(eval IMAGE_VERSION ?= $(APP_VERSION)-$(GIT_COMMIT))
-	@echo "App: $(IMAGE_NAME) $(IMAGE_VERSION)"
+	@echo "App: $(IMAGE_NAME_ARCH) $(IMAGE_VERSION)"
 
 .PHONY: check-env
 check-env:
@@ -47,8 +47,6 @@ ifndef IMAGE_NAME
 endif
 
 ifneq ($(ARCH), x86_64)
-	$(eval IMAGE_NAME = $(IMAGE_NAME)-$(ARCH))
-	@echo "IMAGE_NAME: $(IMAGE_NAME)"
 	$(eval DOCKER_FLAG = -f Dockerfile.$(ARCH))
 	@echo "DOCKER_FLAG: $(DOCKER_FLAG)"
 endif
@@ -56,24 +54,46 @@ endif
 
 .PHONY: image
 image:: check-env app-version
-	docker build -t $(IMAGE_REPO)/$(IMAGE_NAME):$(IMAGE_VERSION) \
+	docker build -t $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) \
            --build-arg "VCS_REF=$(VCS_REF)" \
            --build-arg "VCS_URL=$(GIT_REMOTE_URL)" \
-           --build-arg "IMAGE_NAME=$(IMAGE_NAME)" \
+           --build-arg "IMAGE_NAME=$(IMAGE_NAME_ARCH)" \
            --build-arg "IMAGE_DESCRIPTION=$(IMAGE_DESCRIPTION)" $(DOCKER_FLAG) .
 
 .PHONY: push
 push: check-env app-version
-	docker push $(IMAGE_REPO)/$(IMAGE_NAME):$(IMAGE_VERSION)
+	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)
 
 .PHONY: release
 release: push
-	docker tag $(IMAGE_REPO)/$(IMAGE_NAME):$(IMAGE_VERSION) $(IMAGE_REPO)/$(IMAGE_NAME):$(RELEASE_TAG)
-	docker push $(IMAGE_REPO)/$(IMAGE_NAME):$(RELEASE_TAG)
+	docker tag $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)
+	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)
 
 .PHONY: show-labels
 show-labels: app-version
-	@docker inspect $(IMAGE_REPO)/$(IMAGE_NAME):$(IMAGE_VERSION) --format='{{json .Config.Labels}}' | tr , '\n' | tr -d '{' | tr -d '}'
+	@docker inspect $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) --format='{{json .Config.Labels}}' | tr , '\n' | tr -d '{' | tr -d '}'
+
+.PHONY: manifest-tool
+manifest-tool::
+ifeq ($(ARCH), x86_64)
+	$(eval MANIFEST_TOOL_NAME = manifest-tool-linux-amd64)
+else
+	$(eval MANIFEST_TOOL_NAME = manifest-tool-linux-$(ARCH))
+endif
+	sudo curl -sSL -o /usr/local/bin/manifest-tool https://github.com/estesp/manifest-tool/releases/download/$(MANIFEST_VERSION)/$(MANIFEST_TOOL_NAME)
+	sudo chmod +x /usr/local/bin/manifest-tool
+
+.PHONY: s390x-fix
+s390x-fix::
+	manifest-tool inspect $(IMAGE_NAME_S390X) \
+		|| (docker pull $(DEFAULT_S390X_IMAGE) \
+		&& docker tag $(DEFAULT_S390X_IMAGE) $(IMAGE_NAME_S390X) \
+		&& docker push $(IMAGE_NAME_S390X))
+
+multi-arch:: s390x-fix
+	cp manifest.yaml /tmp/manifest.yaml
+	sed -i -e "s|__RELEASE_TAG__|$(RELEASE_TAG)|g" -e "s|__IMAGE_NAME__|$(IMAGE_NAME)|g" -e "s|__IMAGE_REPO__|$(IMAGE_REPO)|g" /tmp/manifest.yaml
+	manifest-tool push from-spec /tmp/manifest.yaml
 
 .PHONY: clean
 clean::
