@@ -86,22 +86,37 @@ local function validate_id_token_or_exit()
     else
         ngx.log(ngx.DEBUG, "Authorization header not found.")
         local cookie, err = cookiejar:new()
-        token = cookie:get("cfc-acs-info-cookie")
+        token = cookie:get("cfc-access-token-cookie")
         if token == nil then
-            ngx.log(ngx.DEBUG, "cfc-acs-info-cookie not found.")
+            ngx.log(ngx.DEBUG, "cfc-access-token-cookie not found.")
+            return exit_401()
         else
+            local httpc = http.new()
+            local res, err = httpc:request_uri("http://platform-identity-provider.kube-system.svc."..cluster_domain..":4300/v1/auth/exchangetoken", {
+              method = "POST",
+              body = "access_token=" .. token,
+              headers = {["Content-Type"] = "application/x-www-form-urlencoded"}
+            })
+            if not res then
+              ngx.log(ngx.NOTICE, "Failed to request exchangetoken=",err)
+              return exit_401()
+            end
+            ngx.log(ngx.NOTICE, "Response status =",res.status)
+            if (res.body == "" or res.body == nil) then
+              ngx.log(ngx.NOTICE, "Empty response body=",err)
+              return exit_401()
+            end
+            local x = tostring(res.body)
+            local data = cjson.decode(x).id_token
+            ngx.log(ngx.DEBUG, "id token:",data)
             ngx.log(
-                ngx.DEBUG, "Use token from cfc-acs-info-cookie, " ..
+                ngx.DEBUG, "Use token from cfc-access-token-cookie, " ..
                 "set corresponding Authorization header for upstream."
                 )
-            ngx.req.set_header('Authorization', 'Bearer '.. token)
+            ngx.req.set_header('Authorization', 'Bearer '.. data)
         end
     end
-
-    if token == nil then
-        ngx.log(ngx.NOTICE, "No auth token in request.")
-        return exit_401()
-    end
+  return data
 end
 
 local function validate_access_token_or_exit()
@@ -116,12 +131,12 @@ local function validate_access_token_or_exit()
         -- Read cookie. Note: ngx.var.cookie_* cannot access a cookie with a
         -- dash in its name.
         local cookie, err = cookiejar:new()
-        token = cookie:get("cfc-acs-auth-cookie")
+        token = cookie:get("cfc-access-token-cookie")
         if token == nil then
-            ngx.log(ngx.DEBUG, "cfc-acs-auth-cookie not found.")
+            ngx.log(ngx.DEBUG, "cfc-access-token-cookie not found.")
         else
             ngx.log(
-                ngx.DEBUG, "Use token from cfc-acs-auth-cookie, " ..
+                ngx.DEBUG, "Use token from cfc-access-token-cookie, " ..
                 "set corresponding Authorization header for upstream."
                 )
             ngx.req.set_header('Authorization', 'Bearer '.. token)
