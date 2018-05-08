@@ -169,7 +169,7 @@ local function validate_access_token_or_exit()
     end
       local x = tostring(res.body)
       local data = cjson.decode(x).sub
-      ngx.log(ngx.NOTICE, "UID:",data)
+      ngx.log(ngx.DEBUG, "UID:",data)
   return data
 end
 
@@ -192,7 +192,7 @@ local function validate_policy_or_exit()
       end
 
       local auth_token = ngx.req.get_headers()["Authorization"]
-      ngx.log(ngx.NOTICE, "Auth Token=", auth_token)
+      ngx.log(ngx.DEBUG, "Auth Token=", auth_token)
 
       local cookie, err = cookiejar:new()
       local token = cookie:get("cfc-access-token-cookie")
@@ -218,7 +218,7 @@ local function validate_policy_or_exit()
       uri = method.." "..ngx.var.request_uri
       ngx.log(ngx.NOTICE, "Full URI = ", uri)
 
-      ngx.log(ngx.NOTICE, "New Token =", auth_token)
+      ngx.log(ngx.DEBUG, "New Token =", auth_token)
       local data = {
            ["action"] = uri,
            ["subject"] = {
