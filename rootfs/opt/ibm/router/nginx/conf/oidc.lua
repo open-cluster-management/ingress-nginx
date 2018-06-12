@@ -173,6 +173,22 @@ local function validate_access_token_or_exit()
   return data
 end
 
+local function validateauthuri()
+  if ngx.var.request_uri == "/idprovider/v1/auth/getClientCredentials/" then
+    return true
+  end
+  if ngx.var.request_uri == "/idprovider/v1/auth/getClientCredentials" then
+    return true
+  end
+  if ngx.var.request_uri == "/idprovider/v1/auth/admintoken/" then
+    return true
+  end
+  if ngx.var.request_uri == "/idprovider/v1/auth/admintoken" then
+    return true
+  end
+  return false
+end
+
 local function validate_policy_or_exit()
       local httpc = http.new()
       ngx.log(ngx.NOTICE, "URL=http://iam-pdp.kube-system.svc."..cluster_domain..":7998/v1/authz")
@@ -183,8 +199,8 @@ local function validate_policy_or_exit()
       ngx.log(ngx.NOTICE, "URI=", ngx.var.request_uri)
       local list = {}
       for word in string.gmatch(ngx.var.request_uri,'([^/]+)') do table.insert(list,word) end
-      if list[1] == "idprovider" and ngx.var.request_uri ~= "/idprovider/v1/auth/getClientCredentials/" and ngx.var.request_uri ~= "/idprovider/v1/auth/getClientCredentials"  then
-        if string.find(ngx.var.request_uri, "getClientCredentials//") then
+      if list[1] == "idprovider" and not validateauthuri()  then
+        if string.find(ngx.var.request_uri, "getClientCredentials//") or string.find(ngx.var.request_uri, "admintoken//") then
            return pdp_exit_403()
         else
            return 0
