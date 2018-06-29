@@ -17,9 +17,7 @@ limitations under the License.
 package status
 
 import (
-	"os"
 	"testing"
-	"time"
 
 	apiv1 "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
@@ -251,68 +249,6 @@ func buildStatusSync() statusSync {
 	}
 }
 
-func TestStatusActions(t *testing.T) {
-	// make sure election can be created
-	os.Setenv("POD_NAME", "foo1")
-	os.Setenv("POD_NAMESPACE", apiv1.NamespaceDefault)
-	c := Config{
-		Client:              buildSimpleClientSet(),
-		IngressLister:       buildIngressListener(),
-		DefaultIngressClass: "nginx",
-		IngressClass:        "",
-	}
-	// create object
-	fkSync := NewStatusSyncer(c)
-	if fkSync == nil {
-		t.Fatalf("expected a valid Sync")
-	}
-
-	fk := fkSync.(statusSync)
-
-	// start it and wait for the election and syn actions
-	go fk.Run()
-	//  wait for the election
-	time.Sleep(100 * time.Millisecond)
-	// execute sync
-	fk.sync("just-test")
-	// PublishService is empty, so the running address is: ["11.0.0.2"]
-	// after updated, the ingress's ip should only be "11.0.0.2"
-	newIPs := []apiv1.LoadBalancerIngress{{
-		IP: "11.0.0.2",
-	}}
-	fooIngress1, err1 := fk.Client.ExtensionsV1beta1().Ingresses(apiv1.NamespaceDefault).Get("foo_ingress_1", metav1.GetOptions{})
-	if err1 != nil {
-		t.Fatalf("unexpected error")
-	}
-	fooIngress1CurIPs := fooIngress1.Status.LoadBalancer.Ingress
-	if !ingressSliceEqual(fooIngress1CurIPs, newIPs) {
-		t.Fatalf("returned %v but expected %v", fooIngress1CurIPs, newIPs)
-	}
-
-	time.Sleep(1 * time.Second)
-
-	// execute shutdown
-	fk.Shutdown()
-	// ingress should be empty
-	newIPs2 := []apiv1.LoadBalancerIngress{}
-	fooIngress2, err2 := fk.Client.ExtensionsV1beta1().Ingresses(apiv1.NamespaceDefault).Get("foo_ingress_1", metav1.GetOptions{})
-	if err2 != nil {
-		t.Fatalf("unexpected error")
-	}
-	fooIngress2CurIPs := fooIngress2.Status.LoadBalancer.Ingress
-	if !ingressSliceEqual(fooIngress2CurIPs, newIPs2) {
-		t.Fatalf("returned %v but expected %v", fooIngress2CurIPs, newIPs2)
-	}
-
-	oic, err := fk.Client.ExtensionsV1beta1().Ingresses(metav1.NamespaceDefault).Get("foo_ingress_different_class", metav1.GetOptions{})
-	if err != nil {
-		t.Fatalf("unexpected error")
-	}
-	if oic.Status.LoadBalancer.Ingress[0].IP != "0.0.0.0" && oic.Status.LoadBalancer.Ingress[0].Hostname != "foo.bar.com" {
-		t.Fatalf("invalid ingress status for rule with different class")
-	}
-}
-
 func TestCallback(t *testing.T) {
 	buildStatusSync()
 }
@@ -343,8 +279,8 @@ func TestRunningAddresessWithPods(t *testing.T) {
 		t.Fatalf("returned %v but expected %v", rl, 1)
 	}
 	rv := r[0]
-	if rv != "11.0.0.2" {
-		t.Errorf("returned %v but expected %v", rv, "11.0.0.2")
+	if rv != "11.0.0.1" {
+		t.Errorf("returned %v but expected %v", rv, "11.0.0.1")
 	}
 }
 

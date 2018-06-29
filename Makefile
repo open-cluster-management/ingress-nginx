@@ -4,8 +4,16 @@ include Configfile
 
 default: build
 
+deps:
+	go get github.com/golang/lint/golint
+	go get -u github.com/apg/patter
+	go get -u github.com/wadey/gocovmerge
+	go get -u github.com/alecthomas/gometalinter
+	gometalinter --install
+
 lint:
-	@git diff-tree --check $(shell git hash-object -t tree /dev/null) HEAD $(shell ls -d * | grep -v vendor)
+	golint -set_exit_status=true pkg/
+	golint -set_exit_status=true cmd/
 
 build:
 	go build -v -i -o bin/icp-management-ingress github.ibm.com/IBMPrivateCloud/icp-management-ingress/cmd/nginx
@@ -17,6 +25,16 @@ docker-binary:
 image:: docker-binary
 
 test:
-	go test -v -race $(shell go list github.ibm.com/IBMPrivateCloud/icp-management-ingress/... | grep -v vendor | grep -v '/test/e2e')
+	@./build/test.sh
+
+coverage:
+	go tool cover -html=cover.out -o=cover.html
+	@./build/calculate-coverage.sh
+
+fmt:
+	gofmt -l ${GOFILES}
+
+vet:
+	gometalinter  --deadline=1000s --disable-all --enable=vet --enable=vetshadow --enable=ineffassign --enable=goconst --tests  --vendor ./...
 
 include Makefile.docker

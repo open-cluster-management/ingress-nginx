@@ -3,7 +3,7 @@ language: go
 go_import_path: github.ibm.com/IBMPrivateCloud/icp-management-ingress
 
 go:
-  - 1.8
+  - "1.10"
 
 os:
   - linux
@@ -26,11 +26,11 @@ install:
   - docker info
 
 before_script:
-  - make lint
+  - make deps lint
   - make docker-login
 
 script:
-  - make image
+  - make fmt test coverage image
 
 after_success:
   - test "$TRAVIS_EVENT_TYPE" != "pull_request" && make release || echo "success"
