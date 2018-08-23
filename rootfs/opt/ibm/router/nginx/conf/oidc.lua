@@ -150,7 +150,7 @@ local function validate_access_token_or_exit()
 
     ngx.log(ngx.NOTICE, "Received OIDC token =",token)
     local httpc = http.new()
-    local res, err = httpc:request_uri("https://platform-identity-provider.kube-system.svc."..cluster_domain..":4300/v1/auth/userInfo", {
+    local res, err = httpc:request_uri("http://platform-identity-provider.kube-system.svc."..cluster_domain..":4300/v1/auth/userInfo", {
         method = "POST",
         ssl_verify = false,
         body = "access_token=" .. token,
