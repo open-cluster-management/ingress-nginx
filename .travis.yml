@@ -30,7 +30,7 @@ before_script:
   - make docker-login
 
 script:
-  - make fmt test coverage image
+  - make fmt test coverage openresty image
 
 after_success:
   - test "$TRAVIS_EVENT_TYPE" != "pull_request" && make release || echo "success"

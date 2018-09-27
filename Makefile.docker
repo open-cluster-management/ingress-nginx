@@ -20,6 +20,9 @@
 
 .DEFAULT_GOAL=image
 
+BASE_IMAGE?=local/openresty:$(OPENRESTY_VERSION)
+BASE_IMAGE_RHEL?=hyc-cloud-private-integration-docker-local.artifactory.swg-devops.com/ibmcom/openresty:$(OPENRESTY_VERSION)-rhel
+
 .PHONY: docker-login
 docker-login:
 ifndef $(and DOCKER_USERNAME, DOCKER_PASSWORD)
@@ -47,27 +50,50 @@ ifndef IMAGE_NAME
 endif
 
 ifneq ($(ARCH), x86_64)
-	$(eval DOCKER_FLAG = -f Dockerfile.$(ARCH))
-	@echo "DOCKER_FLAG: $(DOCKER_FLAG)"
+	$(eval DOCKER_FILE_SUFFIX = .$(ARCH))
+	@echo "DOCKER_FILE_SUFFIX: $(DOCKER_FILE_SUFFIX)"
 endif
 
+.PHONY: openresty
+openresty: check-env
+	docker build -t $(BASE_IMAGE) \
+		$(DOCKER_FLAG) -f docker/openresty/$(OPENRESTY_VERSION)/alpine/Dockerfile$(DOCKER_FILE_SUFFIX) .
+# travis doesn't have rhel build machine, build it in local rhel.
+#	docker build -t $(BASE_IMAGE_RHEL) \
+#		$(DOCKER_FLAG) -f docker/openresty/$(OPENRESTY_VERSION)/rhel/Dockerfile$(DOCKER_FILE_SUFFIX) .
 
 .PHONY: image
 image:: check-env app-version
+	sed -i 's|BASE_IMAGE|$(BASE_IMAGE)|g' Dockerfile$(DOCKER_FILE_SUFFIX)
 	docker build -t $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) \
            --build-arg "VCS_REF=$(VCS_REF)" \
            --build-arg "VCS_URL=$(GIT_REMOTE_URL)" \
            --build-arg "IMAGE_NAME=$(IMAGE_NAME_ARCH)" \
-           --build-arg "IMAGE_DESCRIPTION=$(IMAGE_DESCRIPTION)" $(DOCKER_FLAG) .
+           --build-arg "IMAGE_DESCRIPTION=$(IMAGE_DESCRIPTION)" $(DOCKER_FLAG) -f Dockerfile$(DOCKER_FILE_SUFFIX) .
+ifeq ($(ARCH), x86_64)
+	sed -i 's|BASE_IMAGE|$(BASE_IMAGE_RHEL)|g' Dockerfile.rhel
+	docker build -t $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)-rhel \
+           --build-arg "VCS_REF=$(VCS_REF)" \
+           --build-arg "VCS_URL=$(GIT_REMOTE_URL)" \
+           --build-arg "IMAGE_NAME=$(IMAGE_NAME_ARCH)" \
+           --build-arg "IMAGE_DESCRIPTION=$(IMAGE_DESCRIPTION)" $(DOCKER_FLAG) -f Dockerfile.rhel .
+endif
 
 .PHONY: push
 push: check-env app-version
 	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)
+ifeq ($(ARCH), x86_64)
+	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)-rhel
+endif
 
 .PHONY: release
 release: push
 	docker tag $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)
 	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)
+ifeq ($(ARCH), x86_64)
+	docker tag $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)-rhel
+	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)-rhel
+endif
 
 .PHONY: show-labels
 show-labels: app-version

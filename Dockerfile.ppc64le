@@ -1,4 +1,4 @@
-FROM conductor/openresty-ppc64le:1.11.2.4
+FROM BASE_IMAGE
 
 ARG VCS_REF
 ARG VCS_URL

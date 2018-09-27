@@ -8,6 +8,7 @@ IMAGE_REPO ?= hyc-cloud-private-integration-docker-local.artifactory.swg-devops.
 RELEASE_TAG ?= latest
 ARCH = $(shell uname -m)
 DOCKER_FLAG =
+OPENRESTY_VERSION ?= 1.13.6.2
 
 ifeq ($(ARCH), x86_64)
 	IMAGE_NAME_ARCH = $(IMAGE_NAME)-amd64
