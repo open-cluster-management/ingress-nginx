@@ -19,10 +19,18 @@ build:
 	go build -v -i -o bin/icp-management-ingress github.ibm.com/IBMPrivateCloud/icp-management-ingress/cmd/nginx
 
 docker-binary:
+	cp pkg/ingress/controller/config/config.go.no-fips pkg/ingress/controller/config/config.go
 	CGO_ENABLED=0 go build -a -installsuffix cgo -v -i -o rootfs/icp-management-ingress github.ibm.com/IBMPrivateCloud/icp-management-ingress/cmd/nginx
 	strip rootfs/icp-management-ingress
 
 image:: docker-binary
+
+docker-binary-fips:
+	cp pkg/ingress/controller/config/config.go.fips pkg/ingress/controller/config/config.go
+	CGO_ENABLED=0 go build -a -installsuffix cgo -v -i -o rootfs/icp-management-ingress github.ibm.com/IBMPrivateCloud/icp-management-ingress/cmd/nginx
+	strip rootfs/icp-management-ingress
+
+image-fips:: docker-binary-fips
 
 test:
 	@./build/test.sh

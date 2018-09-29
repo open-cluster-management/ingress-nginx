@@ -58,12 +58,16 @@ endif
 openresty: check-env
 	docker build -t $(BASE_IMAGE) \
 		$(DOCKER_FLAG) -f docker/openresty/$(OPENRESTY_VERSION)/alpine/Dockerfile$(DOCKER_FILE_SUFFIX) .
+	docker build -t $(BASE_IMAGE)-fips \
+		$(DOCKER_FLAG) -f docker/openresty/$(OPENRESTY_VERSION)/alpine/Dockerfile.fips$(DOCKER_FILE_SUFFIX) .
 # travis doesn't have rhel build machine, build it in local rhel.
 #	docker build -t $(BASE_IMAGE_RHEL) \
 #		$(DOCKER_FLAG) -f docker/openresty/$(OPENRESTY_VERSION)/rhel/Dockerfile$(DOCKER_FILE_SUFFIX) .
 
 .PHONY: image
 image:: check-env app-version
+	sed -i 's|$(BASE_IMAGE)-fips|BASE_IMAGE|g' Dockerfile$(DOCKER_FILE_SUFFIX)
+	sed -i 's|$(BASE_IMAGE)|BASE_IMAGE|g' Dockerfile$(DOCKER_FILE_SUFFIX)
 	sed -i 's|BASE_IMAGE|$(BASE_IMAGE)|g' Dockerfile$(DOCKER_FILE_SUFFIX)
 	docker build -t $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) \
            --build-arg "VCS_REF=$(VCS_REF)" \
@@ -79,9 +83,21 @@ ifeq ($(ARCH), x86_64)
            --build-arg "IMAGE_DESCRIPTION=$(IMAGE_DESCRIPTION)" $(DOCKER_FLAG) -f Dockerfile.rhel .
 endif
 
+.PHONY: image-fips
+image-fips:: check-env app-version
+	sed -i 's|$(BASE_IMAGE)-fips|BASE_IMAGE|g' Dockerfile$(DOCKER_FILE_SUFFIX)
+	sed -i 's|$(BASE_IMAGE)|BASE_IMAGE|g' Dockerfile$(DOCKER_FILE_SUFFIX)
+	sed -i 's|BASE_IMAGE|$(BASE_IMAGE)-fips|g' Dockerfile$(DOCKER_FILE_SUFFIX)
+	docker build -t $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)-fips \
+           --build-arg "VCS_REF=$(VCS_REF)" \
+           --build-arg "VCS_URL=$(GIT_REMOTE_URL)" \
+           --build-arg "IMAGE_NAME=$(IMAGE_NAME_ARCH)" \
+           --build-arg "IMAGE_DESCRIPTION=$(IMAGE_DESCRIPTION)" $(DOCKER_FLAG) -f Dockerfile$(DOCKER_FILE_SUFFIX) .
+
 .PHONY: push
 push: check-env app-version
 	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)
+	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)-fips
 ifeq ($(ARCH), x86_64)
 	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)-rhel
 endif
@@ -90,8 +106,10 @@ endif
 release: push
 	docker tag $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)
 	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)
+	docker tag $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)-fips $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)-fips
+	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)-fips
 ifeq ($(ARCH), x86_64)
-	docker tag $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)-rhel
+	docker tag $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)-rhel $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)-rhel
 	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)-rhel
 endif
 
