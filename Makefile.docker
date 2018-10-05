@@ -103,7 +103,7 @@ ifeq ($(ARCH), x86_64)
 endif
 
 .PHONY: release
-release: push
+release: check-env app-version
 	docker tag $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)
 	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)
 	docker tag $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)-fips $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)-fips
