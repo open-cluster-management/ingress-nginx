@@ -12,7 +12,6 @@ LABEL maintainer="Evan Wies <evan@neomantra.net>"
 ARG PREFIX_DIR="/opt/ibm/router"
 ARG RESTY_VERSION="1.13.6.2"
 ARG RESTY_OPENSSL_VERSION="1.0.2k"
-ARG RESTY_PCRE_VERSION="8.42"
 ARG RESTY_J="1"
 ARG RESTY_CONFIG_OPTIONS="\
     --with-file-aio \
@@ -51,16 +50,15 @@ ARG RESTY_CONFIG_OPTIONS_MORE="--prefix=${PREFIX_DIR}"
 
 LABEL resty_version="${RESTY_VERSION}"
 LABEL resty_openssl_version="${RESTY_OPENSSL_VERSION}"
-LABEL resty_pcre_version="${RESTY_PCRE_VERSION}"
 LABEL resty_config_options="${RESTY_CONFIG_OPTIONS}"
 LABEL resty_config_options_more="${RESTY_CONFIG_OPTIONS_MORE}"
 
 # These are not intended to be user-specified
-ARG _RESTY_CONFIG_DEPS="--with-luajit --with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION} --with-pcre=/tmp/pcre-${RESTY_PCRE_VERSION}"
+ARG _RESTY_CONFIG_DEPS="--with-luajit --with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION}"
 
 
 # 1) Install apk dependencies
-# 2) Download and untar OpenSSL, PCRE, and OpenResty
+# 2) Download and untar OpenSSL and OpenResty
 # 3) Build OpenResty
 # 4) Cleanup
 
@@ -76,17 +74,19 @@ RUN apk upgrade \
         perl-dev \
         readline-dev \
         zlib-dev \
+        git \
+        file \
     && apk add --no-cache \
         gd \
         geoip \
         libgcc \
         libxslt \
         zlib \
+        pcre \
+        pcre-dev \
     && cd /tmp \
     && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
-    && curl -fSL https://ftp.pcre.org/pub/pcre/pcre-${RESTY_PCRE_VERSION}.tar.gz -o pcre-${RESTY_PCRE_VERSION}.tar.gz \
-    && tar xzf pcre-${RESTY_PCRE_VERSION}.tar.gz \
     && curl -fSL https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
     && cd /tmp/openresty-${RESTY_VERSION} \
@@ -100,7 +100,6 @@ RUN apk upgrade \
         openssl-${RESTY_OPENSSL_VERSION} \
         openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
         openresty-${RESTY_VERSION}.tar.gz openresty-${RESTY_VERSION} \
-        pcre-${RESTY_PCRE_VERSION}.tar.gz pcre-${RESTY_PCRE_VERSION} \
     && apk del .build-deps \
     && ln -sf /dev/stdout ${PREFIX_DIR}/nginx/logs/access.log \
     && ln -sf /dev/stderr ${PREFIX_DIR}/nginx/logs/error.log
