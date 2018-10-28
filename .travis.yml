@@ -8,7 +8,7 @@ go:
 os:
   - linux
   - linux-ppc64le
-  - linux-s390x
+  - linux-s390
 
 services:
   - docker

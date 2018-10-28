@@ -17,7 +17,5 @@ else
 endif
 
 MANIFEST_VERSION ?= v0.7.0
-DEFAULT_S390X_IMAGE ?= ibmcom/pause-s390x:3.0
-IMAGE_NAME_S390X ?= ${IMAGE_REPO}/${IMAGE_NAME}-s390x:${RELEASE_TAG}
 
 GOFILES = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
