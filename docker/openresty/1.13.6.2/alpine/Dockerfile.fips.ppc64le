@@ -11,8 +11,8 @@ LABEL maintainer="Evan Wies <evan@neomantra.net>"
 # Docker Build Arguments
 ARG PREFIX_DIR="/opt/ibm/router"
 ARG RESTY_VERSION="1.13.6.2"
-ARG RESTY_OPENSSL_VERSION="1.0.2k"
-ARG RESTY_OPENSSL_FIPS_VERSION="fips-2.0.16"
+ARG RESTY_OPENSSL_VERSION="1.0.1u"
+ARG RESTY_OPENSSL_FIPS_VERSION="fips-2.0.8"
 ARG RESTY_PCRE_VERSION="8.42"
 ARG RESTY_J="1"
 ARG RESTY_CONFIG_OPTIONS="\
@@ -103,7 +103,7 @@ RUN apk upgrade \
     && git clone git://github.com/PPC64/LuaJIT.git bundle/LuaJIT-2.1-20180420 \
     && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} 
 
-COPY docker/openresty/1.13.6.2/fips-code/Makefile /tmp/openresty-${RESTY_VERSION}/build/nginx-1.13.6/objs/Makefile
+COPY docker/openresty/1.13.6.2/fips-code/Makefile.ppc64le /tmp/openresty-${RESTY_VERSION}/build/nginx-1.13.6/objs/Makefile
 COPY docker/openresty/1.13.6.2/fips-code/ngx_event_openssl.c /tmp/openresty-${RESTY_VERSION}/build/nginx-1.13.6/src/event/ngx_event_openssl.c
 
 RUN cd /tmp/openresty-${RESTY_VERSION} \
