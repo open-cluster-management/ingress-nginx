@@ -27,6 +27,9 @@ env OAUTH_CLIENT_ID;
 env OAUTH_AUTH_REDIRECTOR;
 env WLP_CLIENT_ID;
 env CLUSTER_DOMAIN;
+env HOST_HEADERS_CHECK_ENABLED;
+env HTTPS_PORT;
+env ALLOWED_HOST_HEADERS;
 
 events {
     multi_accept        on;
@@ -155,6 +158,7 @@ http {
     init_by_lua '
         common = require "common"
         auth = require "oidc"
+        protect = require "protection"
         ngx.log(ngx.NOTICE, "Use oidc module.")
     ';
 
@@ -209,9 +213,12 @@ http {
         location {{ $path }} {
             set $proxy_upstream_name "{{ buildUpstreamName $server.Hostname $all.Backends $location }}";
 
-            {{ if eq $location.AuthType "id-token" }} access_by_lua 'auth.validate_id_token_or_exit()';{{end}}
-            {{ if eq $location.AuthType "access-token" }} access_by_lua 'auth.validate_access_token_or_exit()';{{end}}
-            {{ if eq $location.AuthzType "rbac" }} access_by_lua 'auth.validate_policy_or_exit()';{{end}}
+            access_by_lua_block {
+            protect.validate_host_header();
+            {{ if eq $location.AuthType "id-token" }}auth.validate_id_token_or_exit();{{end}}
+            {{ if eq $location.AuthType "access-token" }}auth.validate_access_token_or_exit();{{end}}
+            {{ if eq $location.AuthzType "rbac" }}auth.validate_policy_or_exit();{{end}}
+            }
 
             {{ $ing := (getIngressInformation $location.Ingress $path) }}
             {{/* $ing.Metadata contains the Ingress metadata */}}
