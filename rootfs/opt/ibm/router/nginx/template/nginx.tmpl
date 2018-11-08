@@ -205,8 +205,11 @@ http {
         {{ $path := buildLocation $location }}
 
         {{ if not (empty $location.Rewrite.AppRoot)}}
-        if ($uri = /) {
-            return 302 {{ $location.Rewrite.AppRoot }};
+        location = / {
+            access_by_lua_block {
+            protect.validate_host_header();
+            return ngx.redirect("{{ $location.Rewrite.AppRoot }}", 302);
+            }
         }
         {{ end }}
 
