@@ -165,16 +165,13 @@ local function validate_access_token_or_exit()
         return exit_401()
     end
       ngx.log(ngx.NOTICE, "Response status =",res.status)
-    if (res.body == "" or res.body == nil or res.status >= 400)
-    then
+    if (res.body == "" or res.body == nil) then
         ngx.log(ngx.NOTICE, "Empty response body=",err)
         return exit_401()
-    elseif (res.status == 200)
-    then
+    end
       local x = tostring(res.body)
       local data = cjson.decode(x).sub
       ngx.log(ngx.DEBUG, "UID:",data)
-    end
   return data
 end
 
@@ -223,7 +220,7 @@ local function validate_policy_or_exit()
       end
 
       if auth_token == nil and token == nil then
-         return exit_401()
+         return pdp_exit_403()
       end
 
       if auth_token == nil then
@@ -233,7 +230,7 @@ local function validate_policy_or_exit()
 
       if auth_token == nil then
         ngx.log(ngx.NOTICE, "No auth token in request.")
-        return exit_401()
+        return pdp_exit_403()
       end
 
       uri = method.." "..ngx.var.request_uri
@@ -254,9 +251,8 @@ local function validate_policy_or_exit()
                    }
            }
       }
-      local res, err = httpc:request_uri("https://iam-pdp.kube-system.svc."..cluster_domain..":7998/v1/authz", {
+      local res, err = httpc:request_uri("http://iam-pdp.kube-system.svc."..cluster_domain..":7998/v1/authz", {
         method = "POST",
-        ssl_verify = false,
         body = cjson.encode(data),
         headers = {
           ["Content-Type"] = "application/json",
