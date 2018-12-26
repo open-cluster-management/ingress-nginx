@@ -32,7 +32,7 @@ before_script:
 
 script:
 #  - make fmt test coverage openresty image image-fips
-  - make fmt openresty image image-fips
+  - make fmt openresty image
 
 after_success:
   - test "$TRAVIS_EVENT_TYPE" != "pull_request" && make release || echo "success"

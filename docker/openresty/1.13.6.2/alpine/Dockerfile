@@ -12,6 +12,7 @@ LABEL maintainer="Evan Wies <evan@neomantra.net>"
 ARG PREFIX_DIR="/opt/ibm/router"
 ARG RESTY_VERSION="1.13.6.2"
 ARG RESTY_OPENSSL_VERSION="1.0.2k"
+ARG RESTY_OPENSSL_FIPS_VERSION="fips-2.0.16"
 ARG RESTY_PCRE_VERSION="8.42"
 ARG RESTY_J="1"
 ARG RESTY_CONFIG_OPTIONS="\
@@ -57,13 +58,19 @@ LABEL resty_config_options_more="${RESTY_CONFIG_OPTIONS_MORE}"
 
 # These are not intended to be user-specified
 ARG _RESTY_CONFIG_DEPS="--with-luajit --with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION} --with-pcre=/tmp/pcre-${RESTY_PCRE_VERSION}"
+ARG _RESTY_CONFIG_DEPS_FIPS="--with-luajit --with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION} --with-pcre=/tmp/pcre-${RESTY_PCRE_VERSION} --with-openssl-opt=fips"
 
+COPY docker/openresty/1.13.6.2/fips-code/Makefile /tmp/Makefile
+COPY docker/openresty/1.13.6.2/fips-code/ngx_event_openssl.c /tmp/ngx_event_openssl.c
 
 # 1) Install apk dependencies
 # 2) Download and untar OpenSSL, PCRE, and OpenResty
 # 3) Build OpenResty
-# 4) Cleanup
+# 4) Build OpenResty FIPS mode
+# 5) Cleanup
 
+# 1) Install apk dependencies
+# 2) Download and untar OpenSSL, PCRE, and OpenResty
 RUN apk upgrade \
     && apk add --no-cache --virtual .build-deps \
         build-base \
@@ -86,18 +93,41 @@ RUN apk upgrade \
     && cd /tmp \
     && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
+    && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz \
+    && tar xzf openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz \
     && curl -fSL https://ftp.pcre.org/pub/pcre/pcre-${RESTY_PCRE_VERSION}.tar.gz -o pcre-${RESTY_PCRE_VERSION}.tar.gz \
     && tar xzf pcre-${RESTY_PCRE_VERSION}.tar.gz \
     && curl -fSL https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
+# 3) Build OpenResty
     && cd /tmp/openresty-${RESTY_VERSION} \
     && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
     && make -j${RESTY_J} \
     && make -j${RESTY_J} install \
+    && mv /opt/ibm/router/nginx/sbin/nginx /opt/ibm/router/nginx/sbin/nginx-nofips \
+# 4) Build OpenResty FIPS mode
+    && cd /tmp/openssl-${RESTY_OPENSSL_FIPS_VERSION} \
+    && ./config \
+    && make \
+    && make install \
+    && cd /tmp/openresty-${RESTY_VERSION} \
+    && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS_FIPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
+    && mv /tmp/Makefile /tmp/openresty-${RESTY_VERSION}/build/nginx-1.13.6/objs/Makefile \
+    && mv /tmp/ngx_event_openssl.c /tmp/openresty-${RESTY_VERSION}/build/nginx-1.13.6/src/event/ngx_event_openssl.c \
+    && cd /tmp/openresty-${RESTY_VERSION} \
+    && make -j${RESTY_J} \
+    && make -j${RESTY_J} install \
+    && mv /opt/ibm/router/nginx/sbin/nginx /opt/ibm/router/nginx/sbin/nginx-fips \
+    && ln -sf /opt/ibm/router/nginx/sbin/nginx-fips /opt/ibm/router/bin/openresty-fips \
+    && mv /opt/ibm/router/nginx/sbin/nginx-nofips /opt/ibm/router/nginx/sbin/nginx \
+    && ln -sf /opt/ibm/router/nginx/sbin/nginx /opt/ibm/router/bin/openresty \
+# 5) Cleanup
     && cd /tmp \
     && rm -rf \
         openssl-${RESTY_OPENSSL_VERSION} \
         openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
+        openssl-${RESTY_OPENSSL_FIPS_VERSION} \
+        openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz \
         openresty-${RESTY_VERSION}.tar.gz openresty-${RESTY_VERSION} \
         pcre-${RESTY_PCRE_VERSION}.tar.gz pcre-${RESTY_PCRE_VERSION} \
     && apk del .build-deps \

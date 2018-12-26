@@ -9,6 +9,7 @@ restricted by GSA ADP Schedule Contract with IBM Corp.
 package config
 
 import (
+	"os"
 	"net"
 	"runtime"
 	"strconv"
@@ -51,6 +52,7 @@ const (
 	// Enabled ciphers list to enabled. The ciphers are specified in the format understood by the OpenSSL library
 	// http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_ciphers
 	sslCiphers = "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
+        sslCiphersFIPS = "ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256"
 
 	// SSL enabled protocols to use
 	// http://nginx.org/en/docs/http/ngx_http_ssl_module.html#ssl_protocols
@@ -528,6 +530,11 @@ func NewDefault() Configuration {
 		ZipkinCollectorPort:          9411,
 		ZipkinServiceName:            "nginx",
 	}
+
+	if os.Getenv("FIPS_ENABLED") == "true" {
+                cfg.SSLCiphers = sslCiphersFIPS
+	}
+
 
 	if glog.V(5) {
 		cfg.ErrorLogLevel = "debug"
