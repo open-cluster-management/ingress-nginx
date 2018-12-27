@@ -106,6 +106,11 @@ RUN apk upgrade \
     && make -j${RESTY_J} install \
     && mv /opt/ibm/router/nginx/sbin/nginx /opt/ibm/router/nginx/sbin/nginx-nofips \
 # 4) Build OpenResty FIPS mode
+    && cd /tmp \
+    && rm -rf /tmp/openssl-${RESTY_OPENSSL_VERSION} \
+    && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
+    && rm -rf /tmp/openresty-${RESTY_VERSION} \
+    && tar xzf openresty-${RESTY_VERSION}.tar.gz \
     && cd /tmp/openssl-${RESTY_OPENSSL_FIPS_VERSION} \
     && ./config \
     && make \
