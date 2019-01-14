@@ -196,7 +196,7 @@ end
 
 local function validate_policy_or_exit()
       local httpc = http.new()
-      ngx.log(ngx.NOTICE, "URL=http://iam-pdp.kube-system.svc."..cluster_domain..":7998/v1/authz")
+      ngx.log(ngx.NOTICE, "URL=https://iam-pdp.kube-system.svc."..cluster_domain..":7998/v1/authz")
 
       local method = ngx.req.get_method()
       ngx.log(ngx.NOTICE, "Method = ", method)
