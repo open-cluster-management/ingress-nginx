@@ -26,10 +26,10 @@ local function validate_host_header()
        return exit_403()
     end
     for k,v in pairs(hosts_headers) do
-      if host == v..":"..https_port then
+      if host == v..":"..https_port or host == v..":"..8443 then
         invalid_host = 0
       end
-      if xhost == nil or xhost == v..":"..https_port then
+      if xhost == nil or xhost == v..":"..https_port or xhost == v..":"..8443 then
         invalid_xhost = 0
       end
     end
