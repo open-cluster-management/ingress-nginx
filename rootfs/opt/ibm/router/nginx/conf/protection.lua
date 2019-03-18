@@ -2,7 +2,6 @@ local common = require "common"
 
 local host_headers_check_enabled = os.getenv("HOST_HEADERS_CHECK_ENABLED");
 local allowed_host_headers = os.getenv("ALLOWED_HOST_HEADERS");
-local https_port = os.getenv("HTTPS_PORT");
 
 local function exit_403()
     ngx.status = ngx.HTTP_FORBIDDEN
@@ -18,18 +17,27 @@ local function validate_host_header()
     end
     local host = ngx.req.get_headers()["host"]
     local xhost = ngx.req.get_headers()["x-forwarded-host"]
+    local check_host = nil
+    local check_xhost = nil
     local invalid_host = 1
     local invalid_xhost = 1
     local hosts_headers = allowed_host_headers:split()
     if (host == nil) then
        ngx.log(ngx.NOTICE, "invalid host header : "..host..".")
        return exit_403()
+    else
+       check_host = host:split(":")
     end
+
+    if (xhost ~= nil) then
+       check_xhost = xhost:split(":")
+    end
+
     for k,v in pairs(hosts_headers) do
-      if host == v..":"..https_port or host == v..":"..8443 then
+      if check_host[1] == v then
         invalid_host = 0
       end
-      if xhost == nil or xhost == v..":"..https_port or xhost == v..":"..8443 then
+      if check_xhost == nil or check_xhost[1] == v then
         invalid_xhost = 0
       end
     end
