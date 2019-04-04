@@ -29,6 +29,12 @@ env WLP_CLIENT_ID;
 env CLUSTER_DOMAIN;
 env HOST_HEADERS_CHECK_ENABLED;
 env ALLOWED_HOST_HEADERS;
+env ENABLE_IMPERSONATION;
+env OIDC_ISSUER_URL;
+env IMPERSONATION_SA_NAME;
+env IMPERSONATION_SA_NAMESPACE;
+env IMPERSONATION_SA_CLUSTERROLEBINDING;
+env APISERVER_SECURE_PORT;
 
 events {
     multi_accept        on;
@@ -37,6 +43,7 @@ events {
 }
 
 http {
+    lua_shared_dict tokens 256k;
     sendfile            on;
     keepalive_timeout  {{ $cfg.KeepAlive }}s;
 

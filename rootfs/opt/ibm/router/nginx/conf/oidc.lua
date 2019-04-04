@@ -2,6 +2,7 @@ local cjson = require "cjson"
 local jwt = require "resty.jwt"
 local cookiejar = require "resty.cookie"
 local http = require "lib.resty.http"
+local impersonate = require "impersonation.impersonate"
 
 local common = require "common"
 
@@ -10,6 +11,7 @@ local BODY_AUTH_ERROR_RESPONSE = nil
 
 local errorpages_dir_path = os.getenv("AUTH_ERROR_PAGE_DIR_PATH")
 local cluster_domain = os.getenv("CLUSTER_DOMAIN")
+local impersonation_enabled = os.getenv("ENABLE_IMPERSONATION")
 
 if errorpages_dir_path == nil then
     ngx.log(ngx.WARN, "AUTH_ERROR_PAGE_DIR_PATH not set.")
@@ -117,7 +119,10 @@ local function validate_id_token_or_exit()
             ngx.req.set_header('Authorization', 'Bearer '.. data)
         end
     end
-  return data
+    if impersonation_enabled then
+      impersonate.add_auth_headers()
+    end
+    return data
 end
 
 local function validate_access_token_or_exit()
