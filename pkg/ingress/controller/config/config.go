@@ -503,7 +503,7 @@ func NewDefault() Configuration {
 		ProxyHeadersHashMaxSize:      512,
 		ProxyHeadersHashBucketSize:   64,
 		ProxyStreamResponses:         1,
-		ShowServerTokens:             true,
+		ShowServerTokens:             false,
 		SSLBufferSize:                sslBufferSize,
 		SSLCiphers:                   sslCiphers,
 		SSLECDHCurve:                 "auto",

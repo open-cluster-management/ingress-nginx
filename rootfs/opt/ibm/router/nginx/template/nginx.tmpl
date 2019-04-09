@@ -67,6 +67,11 @@ http {
     {{ end }}
     error_log  {{ $cfg.ErrorLogPath }} {{ $cfg.ErrorLogLevel }};
 
+    server_tokens {{ if $cfg.ShowServerTokens }}on{{ else }}off{{ end }};
+    {{ if not $cfg.ShowServerTokens }}
+    more_set_headers "Server: ";
+    {{ end }}
+
     {{ buildResolvers $cfg.Resolver }}
 
     {{/* Whenever nginx proxies a request without a "Connection" header, the "Connection" header is set to "close" */}}
