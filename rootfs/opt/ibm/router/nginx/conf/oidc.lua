@@ -119,7 +119,7 @@ local function validate_id_token_or_exit()
             ngx.req.set_header('Authorization', 'Bearer '.. data)
         end
     end
-    if impersonation_enabled then
+    if impersonation_enabled == 'true' then
       impersonate.add_auth_headers()
     end
     return data
