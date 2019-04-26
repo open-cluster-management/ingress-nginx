@@ -4,8 +4,8 @@
 ARG RESTY_IMAGE_BASE="alpine"
 ARG RESTY_IMAGE_TAG="latest"
 
-FROM ${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
-
+#FROM ${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
+FROM registry.access.redhat.com/ubi7-dev-preview/ubi:7.6
 LABEL maintainer="Evan Wies <evan@neomantra.net>"
 
 # Docker Build Arguments
@@ -71,25 +71,35 @@ COPY docker/openresty/1.13.6.2/fips-code/ngx_event_openssl.c /tmp/ngx_event_open
 
 # 1) Install apk dependencies
 # 2) Download and untar OpenSSL, PCRE, and OpenResty
-RUN apk upgrade \
-    && apk add --no-cache --virtual .build-deps \
-        build-base \
+RUN yum install --skip-broken -y gd-devel \
+        wget \
         curl \
-        gd-dev \
-        geoip-dev \
-        libxslt-dev \
+        gd-devel \
+        perl \
+        libxslt-devel \
         linux-headers \
         make \
-        perl-dev \
-        readline-dev \
-        zlib-dev \
+        perl-devel \
+        zlib-devel \
         file \
-    && apk add --no-cache \
         gd \
-        geoip \
+        GeoIP \
         libgcc \
         libxslt \
         zlib \
+        gcc \
+        gcc-c++ \
+#        ncurses-devel \
+    && wget http://mirror.centos.org/centos/7/os/x86_64/Packages/readline-devel-6.2-10.el7.x86_64.rpm \
+    && wget http://mirror.centos.org/centos/7/updates/x86_64/Packages/kernel-devel-3.10.0-957.5.1.el7.x86_64.rpm \
+    && wget http://mirror.centos.org/centos/7/os/x86_64/Packages/ncurses-devel-5.9-14.20130511.el7_4.x86_64.rpm \
+#    && yum install ncurses-devel \
+    && wget http://mirror.centos.org/centos/7/os/x86_64/Packages/GeoIP-devel-1.5.0-13.el7.x86_64.rpm \
+    && rpm -ivh GeoIP-devel-1.5.0-13.el7.x86_64.rpm \
+    && rpm -ivh ncurses-devel-5.9-14.20130511.el7_4.x86_64.rpm \
+    && rpm -ivh readline-devel-6.2-10.el7.x86_64.rpm \
+    && rpm -ivh kernel-devel-3.10.0-957.5.1.el7.x86_64.rpm \
+    && rm -rf GeoIP-devel-1.5.0-13.el7.x86_64.rpm ncurses-devel-5.9-14.20130511.el7_4.x86_64.rpm readline-devel-6.2-10.el7.x86_64.rpm kernel-devel-3.10.0-957.5.1.el7.x86_64.rpm \
     && cd /tmp \
     && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
@@ -117,6 +127,7 @@ RUN apk upgrade \
     && make install \
     && cd /tmp/openresty-${RESTY_VERSION} \
     && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS_FIPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
+    && sed -i 's/pthread/& -lcrypt/g' /tmp/Makefile \
     && mv /tmp/Makefile /tmp/openresty-${RESTY_VERSION}/build/nginx-1.13.6/objs/Makefile \
     && mv /tmp/ngx_event_openssl.c /tmp/openresty-${RESTY_VERSION}/build/nginx-1.13.6/src/event/ngx_event_openssl.c \
     && cd /tmp/openresty-${RESTY_VERSION} \
@@ -127,6 +138,7 @@ RUN apk upgrade \
     && mv /opt/ibm/router/nginx/sbin/nginx-nofips /opt/ibm/router/nginx/sbin/nginx \
     && ln -sf /opt/ibm/router/nginx/sbin/nginx /opt/ibm/router/bin/openresty \
 # 5) Cleanup
+    && yum clean all \
     && cd /tmp \
     && rm -rf \
         openssl-${RESTY_OPENSSL_VERSION} \
@@ -135,7 +147,6 @@ RUN apk upgrade \
         openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz \
         openresty-${RESTY_VERSION}.tar.gz openresty-${RESTY_VERSION} \
         pcre-${RESTY_PCRE_VERSION}.tar.gz pcre-${RESTY_PCRE_VERSION} \
-    && apk del .build-deps \
     && ln -sf /dev/stdout ${PREFIX_DIR}/nginx/logs/access.log \
     && ln -sf /dev/stderr ${PREFIX_DIR}/nginx/logs/error.log
 

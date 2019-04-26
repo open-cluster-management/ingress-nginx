@@ -16,12 +16,11 @@ LABEL org.label-schema.vendor="IBM" \
 
 ENV AUTH_ERROR_PAGE_DIR_PATH=/opt/ibm/router/nginx/conf/errorpages SECRET_KEY_FILE_PATH=/etc/cfc/conf/auth-token-secret OIDC_ENABLE=false ADMINROUTER_ACTIVATE_AUTH_MODULE=true PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/ibm/router/nginx/sbin
 
-RUN apk update \
-  && apk upgrade \
-  && apk --no-cache add openssl python python-dev py-pip build-base diffutils \
-  && pip install dumb-init \
-  && apk del python python-dev py-pip build-base \
-  && rm -rf /var/cache/apk/* \
+RUN yum update \
+  && yum install -y  openssl python python-devl \
+  && curl -o /etc/yum.repos.d/alsadi-dumb-init-epel-7.repo -sSL https://copr.fedorainfracloud.org/coprs/alsadi/dumb-init/repo/epel-7/alsadi-dumb-init-epel-7.repo \
+  && yum install -y dumb-init \
+  && yum clean all \
   && mkdir -p /var/log/nginx \
   && ln -sf /dev/stdout /var/log/nginx/access.log \
   && ln -sf /dev/stderr /var/log/nginx/error.log
