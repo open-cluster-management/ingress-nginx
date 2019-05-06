@@ -154,7 +154,7 @@ local function validate_access_token_or_exit()
         return exit_401()
     end
 
-    ngx.log(ngx.DEBUG, "Received OIDC token =",token)
+    ngx.log(ngx.DEBUG, "Received OIDC token.")
     local httpc = http.new()
     local res, err = httpc:request_uri("https://platform-identity-provider.kube-system.svc."..cluster_domain..":4300/v1/auth/userInfo", {
         method = "POST",
@@ -218,7 +218,7 @@ local function validate_policy_or_exit()
       end
 
       local auth_token = ngx.req.get_headers()["Authorization"]
-      ngx.log(ngx.DEBUG, "Auth Token=", auth_token)
+      ngx.log(ngx.DEBUG, "Auth Token received.")
 
       local cookie, err = cookiejar:new()
       local token = cookie:get("cfc-access-token-cookie")
@@ -244,7 +244,7 @@ local function validate_policy_or_exit()
       uri = method.." "..ngx.var.request_uri
       ngx.log(ngx.NOTICE, "Full URI = ", uri)
 
-      ngx.log(ngx.DEBUG, "New Token =", auth_token)
+      ngx.log(ngx.DEBUG, "New Token received")
       local data = {
            ["action"] = uri,
            ["subject"] = {
