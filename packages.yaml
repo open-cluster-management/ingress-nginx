@@ -1,0 +1,13 @@
+base_os: ubi7
+repo1:
+  url: "https://registry.access.redhat.com/ubi7/ubi"
+  packages: [
+    "python-devl"
+    "openssl"
+    "python"
+  ]
+repo2:
+  url: "https://copr.fedorainfracloud.org/coprs/alsadi/dumb-init/repo/epel-7/alsadi-dumb-init-epel-7.repo"  
+  packages: [
+    "dumb-init"
+  ]
