@@ -1,0 +1,42 @@
+Title: Kubernetes Impersonation 
+
+//Requestor -> Mgmt Ingress: kube api request
+Mgmt Ingress -> OIDC Lua: validate_id_token_or_exit()
+group: Impersonation enabled
+OIDC Lua -> Imperson. Lua: add_auth_headers()
+group:Validate ICP ID token
+Imperson. Lua -> Nginx: Get ICP id token from Authorization request header
+Imperson. Lua -> JWT Lua: Verify ICP ID token
+note: Checks: valid signature, not expired, expected issuer, expected client id
+end
+group: Valid ICP ID token
+Imperson. Lua -> Nginx: Get kube token from shared memory
+note I: For performance, the kube id token retreived from the impersonation service account is cached in nginx shared memory.
+group: No kube id token in shared memory
+Imperson. Lua -> Service Acct Lua : set_kube_token()
+Service Acct Lua -> Config Lua: get default SA secret path
+Service Acct Lua -> Common Lua: Read id token from default secret path
+Service Acct Lua -> Config Lua: Get Impersonation SA name, SA namespace, ClusterRoleBinding
+Service Acct Lua -> Kube: Get Impersonation SA 
+Service Acct Lua -> Kube: Get Impersonation SA secret name
+Service Acct Lua -> Kube: Get cluster role binding
+note: Verify Impersonation SA in cluster role binding
+Service Acct Lua -> Kube: Get token from secret
+Service Acct Lua -> Nginx: Store token in shared memory
+Imperson. Lua<-- Service Acct Lua: return
+end
+
+group:Add impersonation headers
+Imperson. Lua -> Nginx: Add kube ID token to authorization header
+note: Get subject and teamRoleMappings from ICP ID token
+Imperson. Lua -> Nginx: Add impersonate-user header for subject
+Imperson. Lua -> Nginx: Add impersonate-group header for each teamRoleMapping
+end
+Mgmt Ingress <-- Imperson. Lua : return
+end
+end
+group:Proxy request to kubernetes with impersonation headers
+Mgmt Ingress -> Kube: request 
+Mgmt Ingress <-- Kube: response
+end
+//Requestor <-- Mgmt Ingress: response
