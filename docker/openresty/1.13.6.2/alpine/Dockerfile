@@ -71,10 +71,8 @@ COPY docker/openresty/1.13.6.2/fips-code/ngx_event_openssl.c /tmp/ngx_event_open
 
 # 1) Install apk dependencies
 # 2) Download and untar OpenSSL, PCRE, and OpenResty
-RUN yum install --skip-broken -y gd-devel \
-        wget \
+RUN yum install --skip-broken -y wget \
         curl \
-        gd-devel \
         perl \
         libxslt-devel \
         linux-headers \
@@ -89,17 +87,22 @@ RUN yum install --skip-broken -y gd-devel \
         zlib \
         gcc \
         gcc-c++ \
-#        ncurses-devel \
+        fontconfig-devel \
+        freetype-devel \
+        libX11-devel \
+        libXpm-devel \
+        libjpeg-devel libpng-devel \
     && wget http://mirror.centos.org/centos/7/os/x86_64/Packages/readline-devel-6.2-10.el7.x86_64.rpm \
     && wget http://mirror.centos.org/centos/7/updates/x86_64/Packages/kernel-devel-3.10.0-957.5.1.el7.x86_64.rpm \
     && wget http://mirror.centos.org/centos/7/os/x86_64/Packages/ncurses-devel-5.9-14.20130511.el7_4.x86_64.rpm \
-#    && yum install ncurses-devel \
+    && wget http://mirror.centos.org/centos/7/os/x86_64/Packages/gd-devel-2.0.35-26.el7.x86_64.rpm \
     && wget http://mirror.centos.org/centos/7/os/x86_64/Packages/GeoIP-devel-1.5.0-13.el7.x86_64.rpm \
     && rpm -ivh GeoIP-devel-1.5.0-13.el7.x86_64.rpm \
     && rpm -ivh ncurses-devel-5.9-14.20130511.el7_4.x86_64.rpm \
     && rpm -ivh readline-devel-6.2-10.el7.x86_64.rpm \
     && rpm -ivh kernel-devel-3.10.0-957.5.1.el7.x86_64.rpm \
-    && rm -rf GeoIP-devel-1.5.0-13.el7.x86_64.rpm ncurses-devel-5.9-14.20130511.el7_4.x86_64.rpm readline-devel-6.2-10.el7.x86_64.rpm kernel-devel-3.10.0-957.5.1.el7.x86_64.rpm \
+    && rpm -ivh gd-devel-2.0.35-26.el7.x86_64.rpm \
+    && rm -rf GeoIP-devel-1.5.0-13.el7.x86_64.rpm ncurses-devel-5.9-14.20130511.el7_4.x86_64.rpm readline-devel-6.2-10.el7.x86_64.rpm kernel-devel-3.10.0-957.5.1.el7.x86_64.rpm gd-devel-2.0.35-26.el7.x86_64.rpm \
     && cd /tmp \
     && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \

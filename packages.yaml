@@ -1,3 +1,7 @@
+RESTY_VERSION="1.13.6.2"
+RESTY_OPENSSL_VERSION="1.0.2k"
+RESTY_OPENSSL_FIPS_VERSION="fips-2.0.16"
+RESTY_PCRE_VERSION="8.42"
 base_os: ubi7
 repo1:
   url: "https://registry.access.redhat.com/ubi7/ubi"
@@ -5,9 +9,66 @@ repo1:
     "python-devl"
     "openssl"
     "python"
+    "wget"
+    "curl"
+    "perl"
+    "libxslt-devel"
+    "linux-headers"
+    "make"
+    "perl-devel"
+    "zlib-devel"
+    "file"
+    "gd"
+    "GeoIP" 
+    "libgcc"
+    "libxslt"
+    "zlib"
+    "gcc"
+    "gcc-c++"
   ]
 repo2:
   url: "https://copr.fedorainfracloud.org/coprs/alsadi/dumb-init/repo/epel-7/alsadi-dumb-init-epel-7.repo"  
   packages: [
     "dumb-init"
   ]
+repo3:
+  url: "http://mirror.centos.org/centos/7/os/x86_64/Packages/readline-devel-6.2-10.el7.x86_64.rpm"
+  packages: [
+    "readline-devel"
+  ]
+repo4:
+  url: "http://mirror.centos.org/centos/7/updates/x86_64/Packages/kernel-devel-3.10.0-957.5.1.el7.x86_64.rpm"
+  packages: [
+    "kernel-devel"
+  ]
+repo5:
+  url: "http://mirror.centos.org/centos/7/os/x86_64/Packages/GeoIP-devel-1.5.0-13.el7.x86_64.rpm"
+  packages: [
+    "GeoIP-devel"
+  ]
+repo6:
+  url: "http://mirror.centos.org/centos/7/os/x86_64/Packages/ncurses-devel-5.9-14.20130511.el7_4.x86_64.rpm"
+  packages: [
+    "ncurses-devel"
+  ]
+repo7:
+  url: "https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz"
+  packages: [
+    "openssl-${RESTY_OPENSSL_VERSION}"
+  ]
+repo8:
+  url: "https://www.openssl.org/source/openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz"
+  packages: [
+    "openssl-${RESTY_OPENSSL_FIPS_VERSION}l"
+  ]
+repo9:
+  url: "https://ftp.pcre.org/pub/pcre/pcre-${RESTY_PCRE_VERSION}.tar.gz"
+  packages: [
+    "pcre-${RESTY_PCRE_VERSION}"
+  ]
+repo10:
+  url: "https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz"
+  packages: [
+    "openresty-${RESTY_VERSION}"
+  ]
+
