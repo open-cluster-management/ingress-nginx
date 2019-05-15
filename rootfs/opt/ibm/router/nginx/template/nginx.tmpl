@@ -302,6 +302,10 @@ http {
             content_by_lua_file conf/metadata.lua;
         }
 
+        location /index.html {
+            return 404;
+        }
+
         {{ end }}
 
 {{ end }}

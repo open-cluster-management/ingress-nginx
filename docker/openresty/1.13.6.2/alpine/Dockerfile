@@ -114,6 +114,7 @@ RUN yum install --skip-broken -y wget \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
 # 3) Build OpenResty
     && cd /tmp/openresty-${RESTY_VERSION} \
+    && sed -ire "s/openresty/server/g" `find ./ -name ngx_http_special_response.c` \
     && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
     && make -j${RESTY_J} \
     && make -j${RESTY_J} install \
@@ -129,6 +130,7 @@ RUN yum install --skip-broken -y wget \
     && make \
     && make install \
     && cd /tmp/openresty-${RESTY_VERSION} \
+    && sed -ire "s/openresty/server/g" `find ./ -name ngx_http_special_response.c` \
     && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS_FIPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
     && sed -i 's/pthread/& -lcrypt/g' /tmp/Makefile \
     && mv /tmp/Makefile /tmp/openresty-${RESTY_VERSION}/build/nginx-1.13.6/objs/Makefile \

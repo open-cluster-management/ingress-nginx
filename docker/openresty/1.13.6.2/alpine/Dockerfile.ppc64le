@@ -105,6 +105,7 @@ RUN apk upgrade \
     && git clone git://github.com/PPC64/LuaJIT.git bundle/LuaJIT-2.1-20180420 \
 # 3) Build OpenResty
     && cd /tmp/openresty-${RESTY_VERSION} \
+    && sed -ire "s/openresty/server/g" `find ./ -name ngx_http_special_response.c` \
     && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
     && make -j${RESTY_J} \
     && make -j${RESTY_J} install \
@@ -123,6 +124,7 @@ RUN apk upgrade \
     && make \
     && make install \
     && cd /tmp/openresty-${RESTY_VERSION} \
+    && sed -ire "s/openresty/server/g" `find ./ -name ngx_http_special_response.c` \
     && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS_FIPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE}  \
     && mv /tmp/Makefile /tmp/openresty-${RESTY_VERSION}/build/nginx-1.13.6/objs/Makefile \
     && mv /tmp/ngx_event_openssl.c /tmp/openresty-${RESTY_VERSION}/build/nginx-1.13.6/src/event/ngx_event_openssl.c \
