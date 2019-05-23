@@ -275,7 +275,7 @@ http {
             proxy_buffer_size                       "{{ $location.Proxy.BufferSize }}";
             proxy_buffers                           4 "{{ $location.Proxy.BufferSize }}";
 
-            proxy_cookie_path                       / "/; HTTPOnly; Secure";
+            proxy_cookie_path                       / "/; Secure";
 
             {{/* Add any additional configuration defined */}}
             {{ $location.ConfigurationSnippet }}
