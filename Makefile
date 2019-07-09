@@ -22,8 +22,6 @@ docker-binary:
 	CGO_ENABLED=0 go build -a -installsuffix cgo -v -i -o rootfs/icp-management-ingress github.ibm.com/IBMPrivateCloud/icp-management-ingress/cmd/nginx
 	strip rootfs/icp-management-ingress
 
-image:: docker-binary
-
 test:
 	@./build/test.sh
 

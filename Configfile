@@ -1,23 +1,11 @@
-GIT_REMOTE_URL = $(shell git config --get remote.origin.url)
-DOCKER_SERVER ?= hyc-cloud-private-integration-docker-local.artifactory.swg-devops.com
-DOCKER_USERNAME ?= 
-DOCKER_PASSWORD ?=
-IMAGE_DESCRIPTION = IBM Cloud Private management-ingrss image
 IMAGE_NAME = icp-management-ingress
-IMAGE_REPO ?= hyc-cloud-private-integration-docker-local.artifactory.swg-devops.com/ibmcom
-RELEASE_TAG ?= latest
-ARCH = $(shell uname -m)
-DOCKER_FLAG =
-OPENRESTY_VERSION ?= 1.13.6.2
+IMAGE_DESCRIPTION = IBM Cloud Private management-ingress image
 IMAGE_VENDOR=IBM
 IMAGE_SUMMARY=$(IMAGE_DESCRIPTION)
-
-ifeq ($(ARCH), x86_64)
-	IMAGE_NAME_ARCH = $(IMAGE_NAME)-amd64
-else
-	IMAGE_NAME_ARCH = $(IMAGE_NAME)-$(ARCH)
-endif
-
-MANIFEST_VERSION ?= v0.7.0
-
+OPENRESTY_VERSION ?= 1.13.6.2
+RELEASE_TAG ?= latest
+DOCKER_REGISTRY ?= hyc-cloud-private-integration-docker-local.artifactory.swg-devops.com
+DOCKER_NAMESPACE ?= ibmcom
+DOCKER_USER ?=
+DOCKER_PASS ?=
 GOFILES = $(shell find . -type f -name '*.go' -not -path "./vendor/*")

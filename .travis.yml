@@ -27,12 +27,12 @@ install:
   - docker info
 
 before_script:
-#  - make deps lint
+  - make init
   - make docker-login
 
 script:
-#  - make fmt test coverage openresty image
-  - make fmt openresty image
+  - make docker-binary
+  - make image:all
 
 after_success:
-  - test "$TRAVIS_EVENT_TYPE" != "pull_request" && make release || echo "success"
+  - test "$TRAVIS_EVENT_TYPE" != "pull_request" && make image:release || echo "success"

@@ -18,109 +18,74 @@
 # created with the command `bx cr token-add --description "" --non-expiring --readwrite`
 ###############################################################################
 
-.DEFAULT_GOAL=image
+.DEFAULT_GOAL=image:all
 
-BASE_IMAGE?=local/openresty:$(OPENRESTY_VERSION)
-BASE_IMAGE_RHEL?=hyc-cloud-private-integration-docker-local.artifactory.swg-devops.com/ibmcom/openresty:$(OPENRESTY_VERSION)-rhel
+GIT_COMMIT = $(shell git rev-parse --short HEAD)
+GIT_REMOTE_URL = $(shell git config --get remote.origin.url)
+GITHUB_USER := $(shell echo $(GITHUB_USER) | sed 's/@/%40/g')
+GITHUB_TOKEN ?=
+
+WORKING_CHANGES := $(shell git status --porcelain)
+BUILD_DATE := $(shell date +%m/%d@%H:%M:%S)
+VCS_REF := $(if $(WORKING_CHANGES),$(GIT_COMMIT)-$(BUILD_DATE),$(GIT_COMMIT))
+APP_VERSION ?= $(if $(shell cat VERSION 2> /dev/null),$(shell cat VERSION 2> /dev/null),0.0.1)
+
+BASE_IMAGE_NAME = openresty
+BASE_IMAGE_TAG = $(OPENRESTY_VERSION)
+BASE_IMAGE_DOCKER_FILE = docker/openresty/$(OPENRESTY_VERSION)/alpine/Dockerfile$(DOCKER_FILE_SUFFIX)
+
+IMAGE_NAME ?= icp-management-ingress
+IMAGE_VERSION ?= $(APP_VERSION)-$(GIT_COMMIT)
+RELEASE_TAG ?= latest
+
+DOCKER_IMAGE = $(IMAGE_NAME)
+DOCKER_IMAGE_ARCH = $(DOCKER_IMAGE)-$(BUILD_HARNESS_ARCH)
+DOCKER_BUILD_TAG = $(IMAGE_VERSION)
+DOCKER_TAG = $(RELEASE_TAG)
+DOCKER_FILE ?= Dockerfile$(DOCKER_FILE_SUFFIX)
+DOCKER_BUILD_OPTS = --build-arg "VCS_REF=$(VCS_REF)" --build-arg "VCS_URL=$(GIT_REMOTE_URL)" --build-arg "IMAGE_NAME=$(IMAGE_NAME)-$(BUILD_HARNESS_ARCH)" --build-arg "IMAGE_DESCRIPTION=$(IMAGE_DESCRIPTION)" --build-arg "ARCH_TYPE=$(BUILD_HARNESS_ARCH)"
+
+.PHONY: init\:
+init::
+	@mkdir -p variables
+ifndef GITHUB_USER
+	$(info GITHUB_USER not defined)
+	exit -1
+endif
+	$(info Using GITHUB_USER=$(GITHUB_USER))
+ifndef GITHUB_TOKEN
+	$(info GITHUB_TOKEN not defined)
+	exit -1
+endif
+
+-include $(shell curl -fso .build-harness -H "Authorization: token ${GITHUB_TOKEN}" -H "Accept: application/vnd.github.v3.raw" "https://raw.github.ibm.com/ICP-DevOps/build-harness/master/templates/Makefile.build-harness"; echo .build-harness)
 
 .PHONY: docker-login
-docker-login:
-ifndef $(and DOCKER_USERNAME, DOCKER_PASSWORD)
-	$(error DOCKER_USERNAME and DOCKER_PASSWORD must be defined, required for goal (docker-login))
-endif
-	@docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD) $(DOCKER_SERVER)
+docker-login::
+	@$(SELF) -s docker:login
 
-.PHONY: app-version
-app-version:
-	$(eval WORKING_CHANGES := $(shell git status --porcelain))
-	$(eval BUILD_DATE := $(shell date +%m/%d@%H:%M:%S))
-	$(eval GIT_COMMIT := $(shell git rev-parse --short HEAD))
-	$(eval VCS_REF := $(if $(WORKING_CHANGES),$(GIT_COMMIT)-$(BUILD_DATE),$(GIT_COMMIT)))
-	$(eval APP_VERSION ?= $(if $(shell cat VERSION 2> /dev/null),$(shell cat VERSION 2> /dev/null),0.0.1))
-	$(eval IMAGE_VERSION ?= $(APP_VERSION)-$(GIT_COMMIT))
-	@echo "App: $(IMAGE_NAME_ARCH) $(IMAGE_VERSION)"
+.PHONY: image\:all
+image\:all: %image\:all: %image\:info %image\:build %image\:tag
 
-.PHONY: check-env
-check-env:
-ifndef IMAGE_REPO
-	$(error IMAGE_REPO is undefined)
-endif
-ifndef IMAGE_NAME
-	$(error IMAGE_NAME is undefined)
-endif
+.PHONY: image\:build
+image\:build: %image\:build:
+	@echo "Building openresty image"
+	@$(SELF) -s docker:build DOCKER_IMAGE=$(BASE_IMAGE_NAME) DOCKER_BUILD_TAG=$(BASE_IMAGE_TAG) DOCKER_FILE=$(BASE_IMAGE_DOCKER_FILE)
+	@echo "Building icp-management-ingress image"
+	sed -i 's|BASE_IMAGE|$(BASE_IMAGE_NAME):$(BASE_IMAGE_TAG)|g' Dockerfile$(DOCKER_FILE_SUFFIX)
+	@$(SELF) -s docker:build 
 
-ifneq ($(ARCH), x86_64)
-	$(eval DOCKER_FILE_SUFFIX = .$(ARCH))
-	@echo "DOCKER_FILE_SUFFIX: $(DOCKER_FILE_SUFFIX)"
-endif
+.PHONY: image\:info
+image\:info: %image\:info:
+	@$(SELF) -s docker:info
 
-.PHONY: openresty
-openresty: check-env
-	docker build -t $(BASE_IMAGE) \
-		$(DOCKER_FLAG) -f docker/openresty/$(OPENRESTY_VERSION)/alpine/Dockerfile$(DOCKER_FILE_SUFFIX) .
-# travis doesn't have rhel build machine, build it in local rhel.
-#	docker build -t $(BASE_IMAGE_RHEL) \
-#		$(DOCKER_FLAG) -f docker/openresty/$(OPENRESTY_VERSION)/rhel/Dockerfile$(DOCKER_FILE_SUFFIX) .
+.PHONY: image\:tag
+image\:tag: %image\:tag:
+	@$(SELF) -s docker:tag-arch
 
-.PHONY: image
-image:: check-env app-version
-	sed -i 's|BASE_IMAGE|$(BASE_IMAGE)|g' Dockerfile$(DOCKER_FILE_SUFFIX)
-	docker build -t $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) \
-           --build-arg "VCS_REF=$(VCS_REF)" \
-           --build-arg "VCS_URL=$(GIT_REMOTE_URL)" \
-           --build-arg "IMAGE_NAME=$(IMAGE_NAME_ARCH)" \
-           --build-arg "IMAGE_DESCRIPTION=$(IMAGE_DESCRIPTION)" $(DOCKER_FLAG) -f Dockerfile$(DOCKER_FILE_SUFFIX) .
-#ifeq ($(ARCH), x86_64)
-#	sed -i 's|BASE_IMAGE|$(BASE_IMAGE_RHEL)|g' Dockerfile.rhel
-#	docker build -t $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)-rhel \
-#           --build-arg "VCS_REF=$(VCS_REF)" \
-#           --build-arg "VCS_URL=$(GIT_REMOTE_URL)" \
-#           --build-arg "IMAGE_NAME=$(IMAGE_NAME_ARCH)" \
-#           --build-arg "IMAGE_DESCRIPTION=$(IMAGE_DESCRIPTION)" $(DOCKER_FLAG) -f Dockerfile.rhel .
-#endif
+.PHONY: image\:push
+image\:push: %image\:push:
+	@$(SELF) -s docker:push-arch
 
-.PHONY: push
-push: check-env app-version
-	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)
-#ifeq ($(ARCH), x86_64)
-#	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION)-rhel
-#endif
-
-.PHONY: release
-release: check-env app-version
-	docker tag $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)
-	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)
-ifeq ($(ARCH), x86_64)
-	docker tag $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)-rhel
-	docker push $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(RELEASE_TAG)-rhel
-endif
-
-.PHONY: show-labels
-show-labels: app-version
-	@docker inspect $(IMAGE_REPO)/$(IMAGE_NAME_ARCH):$(IMAGE_VERSION) --format='{{json .Config.Labels}}' | tr , '\n' | tr -d '{' | tr -d '}'
-
-.PHONY: manifest-tool
-manifest-tool::
-ifeq ($(ARCH), x86_64)
-	$(eval MANIFEST_TOOL_NAME = manifest-tool-linux-amd64)
-else
-	$(eval MANIFEST_TOOL_NAME = manifest-tool-linux-$(ARCH))
-endif
-	sudo curl -sSL -o /usr/local/bin/manifest-tool https://github.com/estesp/manifest-tool/releases/download/$(MANIFEST_VERSION)/$(MANIFEST_TOOL_NAME)
-	sudo chmod +x /usr/local/bin/manifest-tool
-
-.PHONY: s390x-fix
-s390x-fix::
-	manifest-tool inspect $(IMAGE_NAME_S390X) \
-		|| (docker pull $(DEFAULT_S390X_IMAGE) \
-		&& docker tag $(DEFAULT_S390X_IMAGE) $(IMAGE_NAME_S390X) \
-		&& docker push $(IMAGE_NAME_S390X))
-
-multi-arch:: s390x-fix
-	cp manifest.yaml /tmp/manifest.yaml
-	sed -i -e "s|__RELEASE_TAG__|$(RELEASE_TAG)|g" -e "s|__IMAGE_NAME__|$(IMAGE_NAME)|g" -e "s|__IMAGE_REPO__|$(IMAGE_REPO)|g" /tmp/manifest.yaml
-	manifest-tool push from-spec /tmp/manifest.yaml
-
-.PHONY: clean
-clean::
-	@echo "Cleaning up generated files"
+.PHONY: image\:release
+image\:release: %image\:release: %image\:push
