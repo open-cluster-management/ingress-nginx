@@ -183,6 +183,7 @@ http {
     ## end server {{ $server.Hostname }}
 
     {{ end }}
+
 }
 
 
@@ -304,6 +305,12 @@ http {
 
         location /index.html {
             return 404;
+        }
+
+        # For NGINX healthcheck and access to nginx stats
+        location /healthz {
+            access_log off;
+            return 200;
         }
 
         {{ end }}
