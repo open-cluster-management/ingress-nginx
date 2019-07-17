@@ -48,6 +48,7 @@ type Configuration struct {
 	Client         clientset.Interface
 
 	ResyncPeriod time.Duration
+	ConfigMapName  string
 
 	Namespace string
 

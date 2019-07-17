@@ -44,6 +44,7 @@ type StoreLister struct {
 	Service           store.ServiceLister
 	Endpoint          store.EndpointLister
 	Secret            store.SecretLister
+	ConfigMap         store.ConfigMapLister
 	IngressAnnotation store.IngressAnnotationsLister
 }
 

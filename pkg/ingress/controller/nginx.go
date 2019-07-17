@@ -10,6 +10,7 @@ package controller
 
 import (
 	"bytes"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -331,6 +332,27 @@ func (n *NGINXController) start(cmd *exec.Cmd) {
 	}()
 }
 
+// SetConfig sets the configured configmap
+func (n *NGINXController) SetConfig(cmap *apiv1.ConfigMap) {
+	n.configmap = cmap
+
+	m := map[string]string{}
+	if cmap != nil {
+		m = cmap.Data
+	}
+
+	c := ngx_template.ReadConfig(m)
+	if c.SSLSessionTicketKey != "" {
+		d, err := base64.StdEncoding.DecodeString(c.SSLSessionTicketKey)
+		if err != nil {
+			glog.Warningf("unexpected error decoding key ssl-session-ticket-key: %v", err)
+			c.SSLSessionTicketKey = ""
+		}
+		ioutil.WriteFile("/etc/nginx/tickets.key", d, 0644)
+	}
+
+}
+
 // OnUpdate is called periodically by syncQueue to keep the configuration in sync.
 //
 // 1. converts configmap configuration to custom configuration object
@@ -340,7 +362,7 @@ func (n *NGINXController) start(cmd *exec.Cmd) {
 // returning nill implies the backend will be reloaded.
 // if an error is returned means requeue the update
 func (n *NGINXController) OnUpdate(ingressCfg ingress.Configuration) error {
-	cfg := ngx_config.NewDefault()
+	cfg := ngx_template.ReadConfig(n.configmap.Data)
 	cfg.Resolver = n.resolver
 
 	// the limit of open files is per worker process

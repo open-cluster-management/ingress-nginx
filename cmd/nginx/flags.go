@@ -42,6 +42,9 @@ func parseFlags() (bool, *controller.Configuration, error) {
 			"Kubernetes cluster and local discovery is attempted.")
 		kubeConfigFile = flags.String("kubeconfig", "", "Path to kubeconfig file with authorization and master location information.")
 
+		configMap = flags.String("configmap", "",
+			`Name of the ConfigMap that contains the custom configuration to use`)
+
 		httpPort  = flags.Int("http-port", 8080, `Indicates the port to use for HTTP traffic`)
 		httpsPort = flags.Int("https-port", 8443, `Indicates the port to use for HTTPS traffic`)
 
@@ -101,6 +104,7 @@ func parseFlags() (bool, *controller.Configuration, error) {
 		ElectionID:            *electionID,
 		ResyncPeriod:          *resyncPeriod,
 		Namespace:             *watchNamespace,
+		ConfigMapName:         *configMap,
 		SyncRateLimit:         *syncRateLimit,
 		DefaultSSLCertificate: *defSSLCertificate,
 		ListenPorts: &ngx_config.ListenPorts{
