@@ -100,7 +100,7 @@ RUN apk upgrade \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
     && cd /tmp/openresty-${RESTY_VERSION} \
     && rm -rf bundle/LuaJIT-2.1-20180420 \
-    && git clone -b v2.1-agentzh_s390x https://github.com/linux-on-ibm-z/luajit2 bundle/LuaJIT-2.1-20180420 \
+    && git clone -b v2.1-agentzh_s390x https://github.com/linux-on-ibm-z/luajit2.git bundle/LuaJIT-2.1-20180420 \
 # 3) Build OpenResty
     && cd /tmp/openresty-${RESTY_VERSION} \
     && sed -ire "s/openresty/server/g" `find ./ -name ngx_http_special_response.c` \
@@ -116,7 +116,7 @@ RUN apk upgrade \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
     && cd /tmp/openresty-${RESTY_VERSION} \
     && rm -rf bundle/LuaJIT-2.1-20180420 \
-    && git clone -b v2.1 https://github.com/linux-on-ibm-z/LuaJIT.git bundle/LuaJIT-2.1-20180420 \
+    && git clone -b v2.1-agentzh_s390x https://github.com/linux-on-ibm-z/luajit2.git bundle/LuaJIT-2.1-20180420 \
     && cd /tmp/openssl-${RESTY_OPENSSL_FIPS_VERSION} \
     && ./config no-asm \
     && make \
