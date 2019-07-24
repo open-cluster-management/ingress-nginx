@@ -82,14 +82,14 @@ image\:info: %image\:info:
 .PHONY: image\:tag
 image\:tag: %image\:tag:
 	@$(SELF) -s docker:tag-arch
-        ifeq ($(BUILD_HARNESS_ARCH), amd64)
+        ifneq ($(BUILD_HARNESS_ARCH), s390x)
 	@$(SELF) -s docker:tag-arch DOCKER_ARCH_URI=$(DOCKER_ARCH_URI)-rhel
         endif
 
 .PHONY: image\:push
 image\:push: %image\:push:
 	@$(SELF) -s docker:push-arch
-        ifeq ($(BUILD_HARNESS_ARCH), amd64)
+        ifneq ($(BUILD_HARNESS_ARCH), s390x)
 	@$(SELF) -s docker:tag-arch DOCKER_ARCH_URI=$(DOCKER_ARCH_URI)-rhel
         endif
 
