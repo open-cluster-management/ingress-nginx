@@ -90,7 +90,7 @@ image\:tag: %image\:tag:
 image\:push: %image\:push:
 	@$(SELF) -s docker:push-arch
         ifneq ($(BUILD_HARNESS_ARCH), s390x)
-	@$(SELF) -s docker:tag-arch DOCKER_ARCH_URI=$(DOCKER_ARCH_URI)-rhel
+	@$(SELF) -s docker:push-arch DOCKER_ARCH_URI=$(DOCKER_ARCH_URI)-rhel
         endif
 
 .PHONY: image\:release

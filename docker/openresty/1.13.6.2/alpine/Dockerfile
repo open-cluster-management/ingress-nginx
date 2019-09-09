@@ -5,7 +5,7 @@ ARG RESTY_IMAGE_BASE="alpine"
 ARG RESTY_IMAGE_TAG="latest"
 
 #FROM ${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
-FROM registry.access.redhat.com/ubi7/ubi:7.6
+FROM registry.access.redhat.com/ubi7/ubi:7.7
 LABEL maintainer="Evan Wies <evan@neomantra.net>"
 
 # Docker Build Arguments
@@ -81,7 +81,6 @@ RUN yum install --skip-broken -y wget \
         zlib-devel \
         file \
         gd \
-        GeoIP \
         libgcc \
         libxslt \
         zlib \
@@ -92,17 +91,13 @@ RUN yum install --skip-broken -y wget \
         libX11-devel \
         libXpm-devel \
         libjpeg-devel libpng-devel \
-    && wget http://mirror.centos.org/centos/7/os/x86_64/Packages/readline-devel-6.2-10.el7.x86_64.rpm \
-    && wget http://mirror.centos.org/centos/7/updates/x86_64/Packages/kernel-devel-3.10.0-957.5.1.el7.x86_64.rpm \
-    && wget http://mirror.centos.org/centos/7/os/x86_64/Packages/ncurses-devel-5.9-14.20130511.el7_4.x86_64.rpm \
-    && wget http://mirror.centos.org/centos/7/os/x86_64/Packages/gd-devel-2.0.35-26.el7.x86_64.rpm \
-    && wget http://mirror.centos.org/centos/7/os/x86_64/Packages/GeoIP-devel-1.5.0-13.el7.x86_64.rpm \
-    && rpm -ivh GeoIP-devel-1.5.0-13.el7.x86_64.rpm \
-    && rpm -ivh ncurses-devel-5.9-14.20130511.el7_4.x86_64.rpm \
-    && rpm -ivh readline-devel-6.2-10.el7.x86_64.rpm \
-    && rpm -ivh kernel-devel-3.10.0-957.5.1.el7.x86_64.rpm \
-    && rpm -ivh gd-devel-2.0.35-26.el7.x86_64.rpm \
-    && rm -rf GeoIP-devel-1.5.0-13.el7.x86_64.rpm ncurses-devel-5.9-14.20130511.el7_4.x86_64.rpm readline-devel-6.2-10.el7.x86_64.rpm kernel-devel-3.10.0-957.5.1.el7.x86_64.rpm gd-devel-2.0.35-26.el7.x86_64.rpm \
+        && rpm -Uvh --force http://mirror.centos.org/centos-7/7/os/x86_64/Packages/centos-release-7-6.1810.2.el7.centos.x86_64.rpm && sed -i 's/$releasever/7/g' /etc/yum.repos.d/* \
+        && yum -y downgrade readline-6.2-10.el7 \
+    && yum install --skip-broken -y GeoIP-devel \
+        ncurses-devel \
+        readline-devel \
+        kernel-devel \
+        gd-devel \
     && cd /tmp \
     && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
