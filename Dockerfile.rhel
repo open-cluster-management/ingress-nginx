@@ -20,7 +20,8 @@ RUN mkdir -p /var/log/nginx \
   && ln -sf /dev/stdout /var/log/nginx/access.log \
   && ln -sf /dev/stderr /var/log/nginx/error.log \
   && mkdir -p /opt/ibm \
-  && ln -s /usr/local/openresty /opt/ibm/router
+  && ln -s /usr/local/openresty /opt/ibm/router \
+  && rpm -e kernel-devel
 
 COPY rootfs/opt/ibm/router/nginx /opt/ibm/router/nginx
 COPY rootfs/icp-management-ingress /

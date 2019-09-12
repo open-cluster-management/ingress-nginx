@@ -25,10 +25,7 @@ RUN yum update -y --exclude=GeoIP* --exclude=readline* \
   && yum install -y  openssl python python-devl \
   && curl -o /etc/yum.repos.d/alsadi-dumb-init-epel-7.repo -sSL https://copr.fedorainfracloud.org/coprs/alsadi/dumb-init/repo/epel-7/alsadi-dumb-init-epel-7.repo \
   && yum install -y dumb-init \
-  && wget http://mirror.centos.org/centos/7/updates/x86_64/Packages/kernel-devel-3.10.0-957.21.3.el7.x86_64.rpm \
   && rpm -e kernel-devel \
-  && rpm -ivh kernel-devel-3.10.0-957.21.3.el7.x86_64.rpm \
-  && rm -f kernel-devel-3.10.0-957.21.3.el7.x86_64.rpm \
   && yum clean all \
   && mkdir -p /var/log/nginx \
   && ln -sf /dev/stdout /var/log/nginx/access.log \
