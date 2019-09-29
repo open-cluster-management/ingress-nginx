@@ -91,8 +91,7 @@ RUN yum install --skip-broken -y wget \
         libX11-devel \
         libXpm-devel \
         libjpeg-devel libpng-devel \
-        && rpm -Uvh --force http://mirror.centos.org/centos-7/7/os/x86_64/Packages/centos-release-7-6.1810.2.el7.centos.x86_64.rpm && sed -i 's/$releasever/7/g' /etc/yum.repos.d/* \
-        && yum -y downgrade readline-6.2-10.el7 \
+        && rpm -Uvh --force http://mirror.centos.org/centos-7/7/os/x86_64/Packages/centos-release-7-7.1908.0.el7.centos.x86_64.rpm && sed -i 's/$releasever/7/g' /etc/yum.repos.d/* \
     && yum install --skip-broken -y GeoIP-devel \
         ncurses-devel \
         readline-devel \
