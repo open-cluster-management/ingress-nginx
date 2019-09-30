@@ -167,9 +167,24 @@ local function validate_access_token_or_exit()
 
     if not res then
         ngx.log(ngx.NOTICE, "Failed to request userinfo=",err)
-        return exit_401()
+        ngx.log(ngx.NOTICE, "Retrying userinfo..retry attempt 2 ")
+        res, err = httpc:request_uri("https://platform-identity-provider.kube-system.svc."..cluster_domain..":4300/v1/auth/userInfo", {
+        method = "POST",
+        ssl_verify = false,
+        body = "access_token=" .. token,
+        keepalive_pool = 10,
+        headers = {
+            ["Content-Type"] = "application/x-www-form-urlencoded",
+            }
+        })
     end
-      ngx.log(ngx.NOTICE, "Response status =",res.status)
+    
+    if not res then
+        ngx.log(ngx.NOTICE, "Failed to request userinfo=",err)
+        return exit_401()
+    end    
+    
+    ngx.log(ngx.NOTICE, "Response status =",res.status)
     if (res.body == "" or res.body == nil or res.status >= 400)
     then
         ngx.log(ngx.NOTICE, "Empty response body=",err)
