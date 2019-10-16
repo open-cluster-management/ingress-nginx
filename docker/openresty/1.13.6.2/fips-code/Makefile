@@ -15,7 +15,7 @@ ALL_INCS = -I src/core \
 	-I /tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/include/luajit-2.1 \
 	-I ../ngx_stream_lua-0.0.5/src/api \
 	-I /tmp/pcre-8.42 \
-	-I /tmp/openssl-1.0.2k/.openssl/include \
+	-I /tmp/openssl-1.0.2t/.openssl/include \
 	-I /usr/include/libxml2 \
 	-I objs \
 	-I src/http \
@@ -95,7 +95,7 @@ CORE_DEPS = src/core/nginx.h \
 	src/event/ngx_event_openssl.h \
 	src/core/ngx_regex.h \
 	/tmp/pcre-8.42/pcre.h \
-	/tmp/openssl-1.0.2k/.openssl/include/openssl/ssl.h \
+	/tmp/openssl-1.0.2t/.openssl/include/openssl/ssl.h \
 	objs/ngx_auto_config.h
 
 
@@ -109,7 +109,7 @@ CORE_INCS = -I src/core \
 	-I /tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/include/luajit-2.1 \
 	-I ../ngx_stream_lua-0.0.5/src/api \
 	-I /tmp/pcre-8.42 \
-	-I /tmp/openssl-1.0.2k/.openssl/include \
+	-I /tmp/openssl-1.0.2t/.openssl/include \
 	-I /usr/include/libxml2 \
 	-I objs
 
@@ -842,7 +842,7 @@ objs/nginx:	objs/src/core/nginx.o \
 	objs/addon/src/ngx_stream_lua_logby.o \
 	objs/addon/src/ngx_stream_lua_prereadby.o \
 	objs/ngx_modules.o \
-	-L/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/lib -L/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/lib -Wl,-rpath,/opt/ibm/router/luajit/lib -Wl,-E -Wl,-E -lpthread -L/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/lib -Wl,-rpath,/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/lib -Wl,-E -Wl,-E -lpthread -L/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/lib -lluajit-5.1 -lm -ldl -L/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/lib -lluajit-5.1 -lm -ldl /tmp/pcre-8.42/.libs/libpcre.a /tmp/openssl-1.0.2k/.openssl/lib/libssl.a /tmp/openssl-1.0.2k/.openssl/lib/libcrypto.a -lz \
+	-L/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/lib -L/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/lib -Wl,-rpath,/opt/ibm/router/luajit/lib -Wl,-E -Wl,-E -lpthread -L/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/lib -Wl,-rpath,/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/lib -Wl,-E -Wl,-E -lpthread -L/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/lib -lluajit-5.1 -lm -ldl -L/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/lib -lluajit-5.1 -lm -ldl /tmp/pcre-8.42/.libs/libpcre.a /tmp/openssl-1.0.2t/.openssl/lib/libssl.a /tmp/openssl-1.0.2t/.openssl/lib/libcrypto.a -lz \
 	-Wl,-E
 	
 
@@ -3302,10 +3302,10 @@ objs/src/http/modules/ngx_http_geoip_module.o:	$(ADDON_DEPS) \
 	&& $(MAKE) libpcre.la
 
 
-/tmp/openssl-1.0.2k/.openssl/include/openssl/ssl.h:	objs/Makefile
-	cd /tmp/openssl-1.0.2k \
+/tmp/openssl-1.0.2t/.openssl/include/openssl/ssl.h:	objs/Makefile
+	cd /tmp/openssl-1.0.2t \
 	&& if [ -f Makefile ]; then $(MAKE) clean; fi \
-	&& ./config --prefix=/tmp/openssl-1.0.2k/.openssl no-shared fips \
+	&& ./config --prefix=/tmp/openssl-1.0.2t/.openssl no-shared fips \
 	&& $(MAKE) \
 	&& $(MAKE) install_sw LIBDIR=lib
 
