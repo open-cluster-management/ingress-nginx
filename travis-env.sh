@@ -1,6 +1,6 @@
 # Release Tag
 if [ "$TRAVIS_BRANCH" = "master" ]; then
-    RELEASE_TAG=latest
+    RELEASE_TAG=2.5.0
 else
     RELEASE_TAG="${TRAVIS_BRANCH#release-}-latest"
 fi
