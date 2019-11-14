@@ -93,14 +93,16 @@ RUN yum install --skip-broken -y wget \
         libX11-devel \
         libXpm-devel \
         libjpeg-devel libpng-devel \
-        && cp /etc/system-release-cpe /etc/system-release-cpe.bk && cp /etc/os-release /etc/os-release.bk \
+# backup ubi release info
+        && mkdir /tmp/release && mv /etc/*release* /tmp/release \
         && rpm -Uvh --force http://mirror.centos.org/altarch/7/os/ppc64le/Packages/centos-release-7-7.1908.0.el7.centos.ppc64le.rpm && sed -i 's/$releasever/7/g' /etc/yum.repos.d/* \
-        && mv /etc/system-release-cpe.bk /etc/system-release-cpe && mv /etc/os-release.bk /etc/os-release \
     && yum install --skip-broken -y GeoIP-devel \
         ncurses-devel \
         readline-devel \
         kernel-devel \
         gd-devel \
+# recovery ubi release info
+        && rm /etc/*release* && mv /tmp/release/* /etc/ && rm -rf /tmp/release \
     && cd /tmp \
     && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
