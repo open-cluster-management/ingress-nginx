@@ -201,6 +201,9 @@ http {
         {{/* This listener must always have proxy_protocol enabled, because the SNI listener forwards on source IP info in it. */}}
         {{ if not (empty $server.SSLCertificate) }}
         listen {{ $all.ListenPorts.HTTPS }} {{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}} ssl;
+        {{ if $all.IsIPV6Enabled }}
+        listen [::]:{{ $all.ListenPorts.HTTPS }} {{ if eq $server.Hostname "_"}} default_server reuseport backlog={{ $all.BacklogSize }}{{end}} ssl;
+        {{ end }}
         {{ end }}
         {{/* comment PEM sha is required to detect changes in the generated configuration and force a reload */}}
         # PEM sha: {{ $server.SSLPemChecksum }}

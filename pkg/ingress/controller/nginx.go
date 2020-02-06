@@ -45,6 +45,7 @@ import (
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/net/dns"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/task"
 	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/watch"
+	ing_net "github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/net"
 )
 
 var (
@@ -84,6 +85,8 @@ func NewNGINXController(config *Configuration, fs file.Filesystem) *NGINXControl
 		binary: ngx,
 
 		configmap: &apiv1.ConfigMap{},
+
+                isIPV6Enabled: ing_net.IsIPv6Enabled(),
 
 		resolver:        h,
 		cfg:             config,
@@ -201,6 +204,9 @@ type NGINXController struct {
 
 	binary   string
 	resolver []net.IP
+
+	// returns true if IPV6 is enabled in the pod
+	isIPV6Enabled bool
 
 	isShuttingDown bool
 
@@ -385,6 +391,7 @@ func (n *NGINXController) OnUpdate(ingressCfg ingress.Configuration) error {
 		Backends:     ingressCfg.Backends,
 		Servers:      ingressCfg.Servers,
 		Cfg:          cfg,
+                IsIPV6Enabled:  n.isIPV6Enabled && !cfg.DisableIpv6,
 		ListenPorts:  n.cfg.ListenPorts,
 	}
 
