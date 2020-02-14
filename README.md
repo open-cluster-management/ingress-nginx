@@ -1,4 +1,4 @@
-# icp-management-ingress
+# management-ingress
 nginx based ingress controller to server all icp management service
 
 The design doc is [here](https://github.ibm.com/IBMPrivateCloud/roadmap/blob/master/feature-specs/kubernetes/management-ingress-controller-refactor.md)
@@ -31,12 +31,12 @@ of other kubernetes providers such as IKS while still using the ICP user credent
 
 ## Initial setup (done by the ICP installer)
 * Create a namespace, which in turn, creates a default service account and token secret.  By default, the namespace is called `icp-system`.  Note: other 
-service accounts can be used.  This information can be specified as environment variables to the icp-management-ingress pod.  This token is used and the impersonating user and needs to have cluster-admin role.
+service accounts can be used.  This information can be specified as environment variables to the management-ingress pod.  This token is used and the impersonating user and needs to have cluster-admin role.
 * Add this default service account to a cluster role binding to give this token cluster admin authority.  By default, the `admin-users` is updated.
-* The environment variable `ENABLE_IMPERSONATION` is set to `true` in the icp-management-ingress deamonset.
+* The environment variable `ENABLE_IMPERSONATION` is set to `true` in the management-ingress deamonset.
 
 ## Processing
-* When a kube api request comes into the icp-management-ingress pod, the oidc.lua validate_id_token_or_exit() method is called which ensures there
+* When a kube api request comes into the management-ingress pod, the oidc.lua validate_id_token_or_exit() method is called which ensures there
 is an ICP id token set on Authorization header of the request.
 * When impersonation is enabled, the oidc.lua module calls the impersonation code to add the impersonation headers:
   * The impersonation lua modules gets the kube token from the service account specified during install, by default this is `icp-system.default`.  Once
@@ -53,7 +53,7 @@ is an ICP id token set on Authorization header of the request.
 ## Swimlane Flow
 ![image](swimlanes/impersonation.png)
 
-Note: For impersonation to work, all kubernetes api requests that use ICP credentials must be sent to the icp-management-ingress pods, including client kubectl commands.  When you login to icp using the cloudctl command, the kubectl context is setup correctly to send those requests to the icp-managment-ingress
+Note: For impersonation to work, all kubernetes api requests that use ICP credentials must be sent to the management-ingress pods, including client kubectl commands.  When you login to icp using the cloudctl command, the kubectl context is setup correctly to send those requests to the icp-managment-ingress
 pod so the impersonation headers can be added to the request.
 
 

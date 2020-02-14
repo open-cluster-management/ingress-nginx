@@ -34,7 +34,7 @@ BASE_IMAGE_NAME = openresty
 BASE_IMAGE_TAG = $(OPENRESTY_VERSION)
 BASE_IMAGE_DOCKER_FILE = docker/openresty/$(OPENRESTY_VERSION)/alpine/Dockerfile$(DOCKER_FILE_SUFFIX)
 
-IMAGE_NAME ?= icp-management-ingress
+IMAGE_NAME ?= management-ingress
 IMAGE_VERSION ?= $(APP_VERSION)-$(GIT_COMMIT)
 RELEASE_TAG ?= latest
 IMAGE_VENDOR ?= IBM
@@ -72,7 +72,7 @@ image\:all: %image\:all: %image\:info %image\:build %image\:tag
 image\:build: %image\:build:
 	@echo "Building openresty image"
 	@$(SELF) -s docker:build DOCKER_IMAGE=$(BASE_IMAGE_NAME) DOCKER_BUILD_TAG=$(BASE_IMAGE_TAG) DOCKER_FILE=$(BASE_IMAGE_DOCKER_FILE)
-	@echo "Building icp-management-ingress image"
+	@echo "Building management-ingress image"
 	sed -i 's|BASE_IMAGE|$(BASE_IMAGE_NAME):$(BASE_IMAGE_TAG)|g' Dockerfile$(DOCKER_FILE_SUFFIX)
 	@$(SELF) -s docker:build 
 

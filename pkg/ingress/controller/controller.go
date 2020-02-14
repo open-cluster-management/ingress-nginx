@@ -22,15 +22,15 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	clientset "k8s.io/client-go/kubernetes"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/class"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/parser"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/proxy"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/rewrite"
-	ngx_config "github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/controller/config"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/resolver"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/task"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/class"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/proxy"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/rewrite"
+	ngx_config "github.com/open-cluster-management/management-ingress/pkg/ingress/controller/config"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
+	"github.com/open-cluster-management/management-ingress/pkg/task"
 )
 
 const (

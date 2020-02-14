@@ -15,11 +15,11 @@ import (
 	extensions "k8s.io/api/extensions/v1beta1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/connection"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/proxy"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/rewrite"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/resolver"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/store"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/connection"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/proxy"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/rewrite"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/store"
 )
 
 var (

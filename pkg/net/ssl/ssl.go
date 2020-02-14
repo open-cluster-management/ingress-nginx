@@ -38,8 +38,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/file"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
+	"github.com/open-cluster-management/management-ingress/pkg/file"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress"
 )
 
 var (

@@ -22,7 +22,7 @@ import (
 
 	extensions "k8s.io/api/extensions/v1beta1"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/errors"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/errors"
 )
 
 var (

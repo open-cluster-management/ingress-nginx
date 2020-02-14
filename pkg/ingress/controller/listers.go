@@ -29,8 +29,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 	cache_client "k8s.io/client-go/tools/cache"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/class"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/class"
 )
 
 type cacheController struct {

@@ -1,0 +1,38 @@
+language: go
+
+go_import_path: github.com/open-cluster-management/management-ingress
+
+go:
+  - "1.10"
+
+os:
+  - linux
+  - linux-ppc64le
+  - linux-s390
+
+services:
+  - docker
+
+branches:
+  only:
+    - master
+    - /^[0-9]+\..*$/
+    - /^v[0-9]+\..*$/
+    - /^release-[0-9]+\..*$/
+
+before_install:
+  - source travis-env.sh
+
+install:
+  - docker info
+
+before_script:
+  - make init
+  - make docker-login
+
+script:
+  - make docker-binary
+  - make image:all
+
+after_success:
+  - test "$TRAVIS_EVENT_TYPE" != "pull_request" && make image:release || echo "success"

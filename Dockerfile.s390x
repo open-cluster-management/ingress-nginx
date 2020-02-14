@@ -30,4 +30,4 @@ COPY rootfs /
 
 ENTRYPOINT ["/usr/bin/dumb-init"]
 
-CMD ["/icp-management-ingress"]
+CMD ["/management-ingress"]

@@ -21,9 +21,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/rewrite"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/resolver"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/rewrite"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
 )
 
 var (

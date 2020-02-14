@@ -2,7 +2,7 @@
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
-  name: icp-management-ingress
+  name: management-ingress
   namespace: kube-system
 spec:
   minReadySeconds: 0
@@ -13,7 +13,7 @@ spec:
   template:
     metadata:
       labels:
-        k8s-app: icp-management-ingress
+        k8s-app: management-ingress
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
@@ -44,15 +44,15 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: metadata.namespace
-          image: registry.ng.bluemix.net/mdelder/icp-management-ingress
+          image: registry.ng.bluemix.net/mdelder/management-ingress
           ports:
             - containerPort: 8080
               hostPort: 8080
             - containerPort: 8443
               hostPort: 8443
-          command: ["/icp-management-ingress"]
+          command: ["/management-ingress"]
           imagePullPolicy: IfNotPresent
-          name: icp-management-ingress
+          name: management-ingress
           volumeMounts:
             - mountPath: "/opt/ibm/router/nginx/html/dcos-metadata"
               name: router-ui-config

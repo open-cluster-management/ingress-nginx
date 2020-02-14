@@ -21,7 +21,7 @@ import (
 
 	"github.com/kylelemons/godebug/pretty"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/controller/config"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/controller/config"
 )
 
 func TestFilterErrors(t *testing.T) {

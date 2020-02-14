@@ -37,4 +37,4 @@ ADD packages.yaml License.txt /licenses/
 
 ENTRYPOINT ["/usr/bin/dumb-init"]
 
-CMD ["/icp-management-ingress"]
+CMD ["/management-ingress"]

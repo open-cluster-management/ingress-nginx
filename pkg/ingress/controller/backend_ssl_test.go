@@ -28,9 +28,9 @@ import (
 	cache_client "k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/flowcontrol"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/store"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/task"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/store"
+	"github.com/open-cluster-management/management-ingress/pkg/task"
 )
 
 const (

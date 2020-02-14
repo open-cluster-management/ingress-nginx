@@ -27,10 +27,10 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/class"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/parser"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/net/ssl"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/class"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
+	"github.com/open-cluster-management/management-ingress/pkg/net/ssl"
 )
 
 // syncSecret keeps in sync Secrets used by Ingress rules with the files on

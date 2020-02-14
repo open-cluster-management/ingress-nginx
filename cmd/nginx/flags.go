@@ -26,10 +26,10 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/parser"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/controller"
-	ngx_config "github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/controller/config"
-	ing_net "github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/net"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/controller"
+	ngx_config "github.com/open-cluster-management/management-ingress/pkg/ingress/controller/config"
+	ing_net "github.com/open-cluster-management/management-ingress/pkg/net"
 )
 
 func parseFlags() (bool, *controller.Configuration, error) {

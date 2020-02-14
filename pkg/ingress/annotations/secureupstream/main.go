@@ -14,8 +14,8 @@ import (
 	"github.com/pkg/errors"
 	extensions "k8s.io/api/extensions/v1beta1"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/parser"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/resolver"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
 )
 
 // Config describes SSL backend configuration

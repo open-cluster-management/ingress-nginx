@@ -23,9 +23,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/file"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/controller"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/version"
+	"github.com/open-cluster-management/management-ingress/pkg/file"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/controller"
+	"github.com/open-cluster-management/management-ingress/pkg/version"
 )
 
 func main() {

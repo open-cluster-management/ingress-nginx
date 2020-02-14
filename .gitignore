@@ -1,2 +1,5 @@
 .DS_Store
-/rootfs/icp-management-ingress
+/rootfs/management-ingress
+.build-harness-bootstrap
+build-harness
+build-harness-extensions

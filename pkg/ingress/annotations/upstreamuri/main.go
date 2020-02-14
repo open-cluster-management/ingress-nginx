@@ -11,8 +11,8 @@ package upstreamuri
 import (
 	extensions "k8s.io/api/extensions/v1beta1"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/parser"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/resolver"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
 )
 
 type at struct {

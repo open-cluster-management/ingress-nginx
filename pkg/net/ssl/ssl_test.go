@@ -26,7 +26,7 @@ import (
 	certutil "k8s.io/client-go/util/cert"
 	"k8s.io/client-go/util/cert/triple"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress"
 )
 
 // generateRSACerts generates a self signed certificate using a self generated ca

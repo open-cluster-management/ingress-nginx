@@ -1,14 +1,6 @@
 language: go
-
-go_import_path: github.ibm.com/IBMPrivateCloud/icp-management-ingress
-
 go:
   - "1.10"
-
-os:
-  - linux
-  - linux-ppc64le
-  - linux-s390
 
 services:
   - docker
@@ -16,23 +8,50 @@ services:
 branches:
   only:
     - master
-    - /^[0-9]+\..*$/
-    - /^v[0-9]+\..*$/
     - /^release-[0-9]+\..*$/
 
-before_install:
-  - source travis-env.sh
+env:
+  global:
+    # Required
+    - OS=linux
+    - COMPONENT_TAG_EXTENSION="-${TRAVIS_COMMIT}"
+    # Component Specific
+    - COMPONENT_INIT_COMMAND=${TRAVIS_BUILD_DIR}/build/install-dependencies.sh
+    - COMPONENT_BUILD_COMMAND=${TRAVIS_BUILD_DIR}/build/build.sh
+    - COMPONENT_UNIT_TEST_COMMAND=${TRAVIS_BUILD_DIR}/build/run-unit-tests.sh
+    - COMPONENT_E2E_TEST_COMMAND=${TRAVIS_BUILD_DIR}/build/run-e2e-tests.sh
 
-install:
-  - docker info
+
+stages:
+  - build
+  - unit-test
+  - test-e2e
+  - publish
 
 before_script:
   - make init
-  - make docker-login
 
-script:
-  - make docker-binary
-  - make image:all
-
-after_success:
-  - test "$TRAVIS_EVENT_TYPE" != "pull_request" && make image:release || echo "success"
+jobs:
+  include:
+    - stage: build
+      name: "Build the image and push"
+      script:
+        - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
+        - make component/build
+        - make component/push
+    - stage: unit-test
+      name: "Build and run unit tests"
+      script:
+        - make component/test/unit
+    - stage: test-e2e
+      name: "Run e2e tests"
+      if: type = pull_request
+      script:
+        - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
+        - make component/pull
+        - make component/test/e2e
+    - stage: publish
+      name: "Publish the image to quay with an official version/sha tag and publish entry to integration pipeline stage"
+      if: type = push AND branch =~ /^release-[0-9]+\..*$/
+      script:
+        - make pipeline-manifest/update PIPELINE_MANIFEST_COMPONENT_SHA256=${TRAVIS_COMMIT} PIPELINE_MANIFEST_COMPONENT_REPO=${TRAVIS_REPO_SLUG} PIPELINE_MANIFEST_BRANCH=${TRAVIS_BRANCH}

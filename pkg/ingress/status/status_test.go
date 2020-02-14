@@ -25,10 +25,10 @@ import (
 	testclient "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/tools/cache"
 
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/annotations/class"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/ingress/store"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/k8s"
-	"github.ibm.com/IBMPrivateCloud/icp-management-ingress/pkg/task"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/class"
+	"github.com/open-cluster-management/management-ingress/pkg/ingress/store"
+	"github.com/open-cluster-management/management-ingress/pkg/k8s"
+	"github.com/open-cluster-management/management-ingress/pkg/task"
 )
 
 func buildLoadBalancerIngressByIP() []apiv1.LoadBalancerIngress {
