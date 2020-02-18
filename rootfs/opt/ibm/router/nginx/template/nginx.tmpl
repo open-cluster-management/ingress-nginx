@@ -168,9 +168,9 @@ http {
     # master process instead of 'nobody' (which workers operate under).
     init_by_lua '
         common = require "common"
-        auth = require "oidc"
+        auth = require "oauthproxy"
         protect = require "protection"
-        ngx.log(ngx.NOTICE, "Use oidc module.")
+        ngx.log(ngx.NOTICE, "Use ocpiam module.")
     ';
 
     {{ range $index, $server := $servers }}
