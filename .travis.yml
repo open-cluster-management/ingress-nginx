@@ -10,6 +10,11 @@ branches:
     - master
     - /^release-[0-9]+\..*$/
 
+addons:
+  sonarcloud:
+    organization: "open-cluster-management"
+    token:
+      secure: "ENCRYPTED_TOKEN"
 env:
   global:
     # Required
@@ -39,10 +44,12 @@ jobs:
         - if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then export COMPONENT_TAG_EXTENSION="-PR${TRAVIS_PULL_REQUEST}-${TRAVIS_COMMIT}"; fi;
         - make component/build
         - make component/push
+        - make security/scans
     - stage: unit-test
       name: "Build and run unit tests"
       script:
         - make component/test/unit
+        - make sonar/go
     - stage: test-e2e
       name: "Run e2e tests"
       if: type = pull_request
