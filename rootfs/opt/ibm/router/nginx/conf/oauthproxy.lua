@@ -142,8 +142,14 @@ local function validate_access_token_or_exit()
     return userid
 end
 
+-- provide id token func for legacy
+-- to allow validation to fail and throw 401 rather than error out.
+local function validate_id_token_or_exit()
+  return validate_access_token_or_exit()
+end
+
 -- Expose interface.
 local _M = {}
 _M.validate_access_token_or_exit = validate_access_token_or_exit
-
+_M.validate_id_token_or_exit = validate_id_token_or_exit
 return _M
