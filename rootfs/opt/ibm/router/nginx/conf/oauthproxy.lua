@@ -145,7 +145,6 @@ end
 -- provide id token func for legacy
 -- to allow validation to fail and throw 401 rather than error out.
 local function validate_id_token_or_exit()
-  ngx.log(ngx.NOTICE, "In ID TOKEN Ckandag")
   return validate_access_token_or_exit()
 end
 
