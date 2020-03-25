@@ -74,7 +74,7 @@ image\:build: %image\:build:
 	@$(SELF) -s docker:build DOCKER_IMAGE=$(BASE_IMAGE_NAME) DOCKER_BUILD_TAG=$(BASE_IMAGE_TAG) DOCKER_FILE=$(BASE_IMAGE_DOCKER_FILE)
 	@echo "Building management-ingress image"
 	sed -i 's|BASE_IMAGE|$(BASE_IMAGE_NAME):$(BASE_IMAGE_TAG)|g' Dockerfile$(DOCKER_FILE_SUFFIX)
-	@$(SELF) -s docker:build 
+	@$(SELF) -s docker:build
 
 .PHONY: image\:info
 image\:info: %image\:info:
