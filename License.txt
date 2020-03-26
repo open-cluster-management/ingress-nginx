@@ -20,3 +20,4 @@ For more information, read the notices file and the non-IBM license file:
  2. Expand the Stacked_License_for_ICP_ICP_Foundation_MCMEE_3.2.0.zip file.
  3. The RTF directory within the expanded directory structure contains the notices.rtf and non_ibm_license.rtf files.
 
+Copyright (c) 2020 Red Hat, Inc.

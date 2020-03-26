@@ -170,12 +170,12 @@ ARG IMAGE_DESCRIPTION
 ARG IMAGE_VENDOR
 ARG IMAGE_SUMMARY
 # http://label-schema.org/rc1/
-LABEL org.label-schema.vendor="IBM" \
+LABEL org.label-schema.vendor="Red Hat" \
       org.label-schema.name="$IMAGE_NAME" \
       org.label-schema.description="$IMAGE_DESCRIPTION" \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.vcs-url=$VCS_URL \
-      org.label-schema.license="Licensed Materials - Property of IBM" \
+      org.label-schema.license="Red Hat Advanced Cluster Management for Kubernetes EULA" \
       org.label-schema.schema-version="1.0" \
       name="$IMAGE_NAME" \
       vendor="$IMAGE_VENDOR" \

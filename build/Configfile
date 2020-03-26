@@ -1,11 +1,11 @@
 IMAGE_NAME = management-ingress
-IMAGE_DESCRIPTION = IBM Cloud Private management-ingress image
+IMAGE_DESCRIPTION = management-ingress image
 IMAGE_VENDOR=IBM
 IMAGE_SUMMARY=$(IMAGE_DESCRIPTION)
 OPENRESTY_VERSION ?= 1.13.6.2
 RELEASE_TAG ?= $(SEMVERSION)
-DOCKER_REGISTRY ?= hyc-cloud-private-integration-docker-local.artifactory.swg-devops.com
-DOCKER_NAMESPACE ?= ibmcom
+DOCKER_REGISTRY ?= quay.io
+DOCKER_NAMESPACE ?= open-cluster-management
 DOCKER_USER ?=
 DOCKER_PASS ?=
 GOFILES = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
