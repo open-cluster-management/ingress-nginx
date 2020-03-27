@@ -67,8 +67,9 @@ func (cml *ConfigMapLock) Create(ler LeaderElectionRecord) error {
 	}
 	cml.cm, err = cml.Client.ConfigMaps(cml.ConfigMapMeta.Namespace).Create(&v1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      cml.ConfigMapMeta.Name,
-			Namespace: cml.ConfigMapMeta.Namespace,
+			Name:            cml.ConfigMapMeta.Name,
+			Namespace:       cml.ConfigMapMeta.Namespace,
+			OwnerReferences: cml.ConfigMapMeta.OwnerReferences,
 			Annotations: map[string]string{
 				LeaderElectionRecordAnnotationKey: string(recordBytes),
 			},
