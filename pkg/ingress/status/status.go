@@ -200,8 +200,8 @@ func NewStatusSyncer(config Config) Sync {
 			Name:      electionID,
 			OwnerReferences: []metav1.OwnerReference{
 				{
-					APIVersion:         podObj.APIVersion,
-					Kind:               podObj.Kind,
+					APIVersion:         "v1",
+					Kind:               "Pod",
 					Name:               podObj.Name,
 					UID:                podObj.UID,
 					BlockOwnerDeletion: &blockOwnerDeletion,
