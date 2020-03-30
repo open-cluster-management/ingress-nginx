@@ -54,7 +54,11 @@ func WaitUntilPortIsAvailable(port int) {
 		if err != nil {
 			break
 		}
-		conn.Close()
+
+		if err := conn.Close(); err != nil {
+			glog.Errorf("failed to colse connection: %v", err)
+		}
+
 		// kill nginx worker processes
 		fs, err := proc.NewFS("/proc")
 		if err != nil {
@@ -76,7 +80,11 @@ func WaitUntilPortIsAvailable(port int) {
 					glog.Errorf("unexpected error obtaining process information: %v", err)
 					continue
 				}
-				osp.Signal(syscall.SIGQUIT)
+
+				if err := osp.Signal(syscall.SIGQUIT); err != nil {
+					glog.Errorf("failed to send signal: %v", err)
+				}
+
 			}
 		}
 		time.Sleep(100 * time.Millisecond)

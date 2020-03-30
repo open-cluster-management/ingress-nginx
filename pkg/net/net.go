@@ -20,6 +20,8 @@ import (
 	"fmt"
 	_net "net"
 	"os/exec"
+
+	"github.com/golang/glog"
 )
 
 // IsIPV6 checks if the input contains a valid IPV6 address
@@ -33,7 +35,10 @@ func IsPortAvailable(p int) bool {
 	if err != nil {
 		return false
 	}
-	ln.Close()
+
+	if err := ln.Close(); err != nil {
+		glog.Errorf("failed to colse listener: %v", err)
+	}
 	return true
 }
 
