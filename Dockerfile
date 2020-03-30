@@ -196,8 +196,6 @@ RUN yum update -y --exclude=GeoIP* --exclude=readline* \
 
 COPY rootfs /
 
-ADD packages.yaml License.txt /licenses/
-
 ENTRYPOINT ["/usr/bin/dumb-init"]
 
 CMD ["/management-ingress"]
