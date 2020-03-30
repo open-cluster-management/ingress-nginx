@@ -187,11 +187,31 @@ func NewStatusSyncer(config Config) Sync {
 		Host:      hostname,
 	})
 
+	podObj, _ := config.Client.CoreV1().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
+	if podObj == nil {
+		glog.Fatalf("unable to get POD information")
+	}
+
+	blockOwnerDeletion := true
+	isController := true
 	lock := resourcelock.ConfigMapLock{
-		ConfigMapMeta: metav1.ObjectMeta{Namespace: pod.Namespace, Name: electionID},
-		Client:        config.Client.CoreV1(),
+		ConfigMapMeta: metav1.ObjectMeta{
+			Namespace: podObj.Namespace,
+			Name:      electionID,
+			OwnerReferences: []metav1.OwnerReference{
+				{
+					APIVersion:         "v1",
+					Kind:               "Pod",
+					Name:               podObj.Name,
+					UID:                podObj.UID,
+					BlockOwnerDeletion: &blockOwnerDeletion,
+					Controller:         &isController,
+				},
+			},
+		},
+		Client: config.Client.CoreV1(),
 		LockConfig: resourcelock.ResourceLockConfig{
-			Identity:      pod.Name,
+			Identity:      podObj.Name,
 			EventRecorder: recorder,
 		},
 	}
