@@ -102,7 +102,7 @@ RUN yum install --skip-broken -y wget \
 # recovery ubi release info
         && rm /etc/*release* && mv /tmp/release/* /etc/ && rm -rf /tmp/release \
     && cd /tmp \
-    && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
+    && curl -fSL https://www.openssl.org/source/old/1.0.2/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz \
