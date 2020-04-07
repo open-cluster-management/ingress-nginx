@@ -191,6 +191,7 @@ RUN yum update -y --exclude=GeoIP* --exclude=readline* \
   && rpm -e kernel-devel \
   && yum clean all \
   && mkdir -p /var/log/nginx \
+  && rpm -e kernel-headers glibc-headers --nodeps \
   && ln -sf /dev/stdout /var/log/nginx/access.log \
   && ln -sf /dev/stderr /var/log/nginx/error.log
 
