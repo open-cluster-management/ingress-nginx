@@ -5,7 +5,7 @@ ARG RESTY_IMAGE_BASE="alpine"
 ARG RESTY_IMAGE_TAG="latest"
 
 #FROM ${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
-FROM registry.access.redhat.com/ubi7/ubi:7.7 AS openresty_base
+FROM registry.access.redhat.com/ubi7/ubi:7.8-255 AS openresty_base
 LABEL maintainer="Evan Wies <evan@neomantra.net>"
 
 # Docker Build Arguments
@@ -102,7 +102,7 @@ RUN yum install --skip-broken -y wget \
 # recovery ubi release info
         && rm /etc/*release* && mv /tmp/release/* /etc/ && rm -rf /tmp/release \
     && cd /tmp \
-    && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
+    && curl -fSL https://www.openssl.org/source/old/1.0.2/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz \
@@ -191,6 +191,7 @@ RUN yum update -y --exclude=GeoIP* --exclude=readline* \
   && rpm -e kernel-devel \
   && yum clean all \
   && mkdir -p /var/log/nginx \
+  && rpm -e kernel-headers glibc-headers --nodeps \
   && ln -sf /dev/stdout /var/log/nginx/access.log \
   && ln -sf /dev/stderr /var/log/nginx/error.log
 
