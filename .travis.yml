@@ -50,6 +50,7 @@ jobs:
       script:
         - make component/test/unit
         - make sonar/go
+        - make copyright-check TRAVIS_BRANCH=${TRAVIS_BRANCH} TRAVIS_PULL_REQUEST_BRANCH=${TRAVIS_PULL_REQUEST_BRANCH}
     - stage: test-e2e
       name: "Run e2e tests"
       if: type = pull_request
