@@ -6,9 +6,9 @@ metadata:
   name: platform-ui
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/auth-type: "access-token"
-    icp.management.ibm.com/app-root: "/console"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/auth-type: "access-token"
+    ingress.open-cluster-management.io/app-root: "/console"
 spec:
   rules:
   - http:
@@ -26,7 +26,7 @@ metadata:
   name: platform-ui-api
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
 spec:
   rules:
   - http:
@@ -44,8 +44,8 @@ metadata:
   name: platform-ui-callback
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/upstream-uri: "/auth/liberty/callback"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/upstream-uri: "/auth/liberty/callback"
 spec:
   rules:
   - http:

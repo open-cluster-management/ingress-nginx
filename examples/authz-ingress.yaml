@@ -6,7 +6,7 @@ metadata:
   name: iam-token
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
 spec:
   rules:
   - http:
@@ -23,7 +23,7 @@ metadata:
   name: iam-pap
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
 spec:
   rules:
   - http:
@@ -41,7 +41,7 @@ metadata:
   name: iam-pdp
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
 spec:
   rules:
   - http:

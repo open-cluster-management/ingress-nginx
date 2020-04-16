@@ -4,9 +4,9 @@ metadata:
   name: elastic
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/auth-type: "id-token"
-    icp.management.ibm.com/configuration-snippet: |
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/auth-type: "id-token"
+    ingress.open-cluster-management.io/configuration-snippet: |
       if ($request_uri ~* "/_([0-9A-Za-z]*)\?_timestamp=[0-9]*(.*)") {
                 proxy_pass http://$proxy_upstream_name/_$1?$2;
             }

@@ -30,12 +30,12 @@ const (
 
 var (
 	// DefaultClass defines the default class used in the nginx ingres controller
-	DefaultClass = "ibm-icp-management"
+	DefaultClass = "ingress-open-cluster-management"
 
 	// IngressClass sets the runtime ingress class to use
 	// An empty string means accept all ingresses without
 	// annotation and the ones configured with class nginx
-	IngressClass = "ibm-icp-management"
+	IngressClass = "ingress-open-cluster-management"
 )
 
 // IsValid returns true if the given Ingress either doesn't specify
@@ -47,5 +47,5 @@ func IsValid(ing *extensions.Ingress) bool {
 		glog.V(3).Infof("annotation %v is not present in ingress %v/%v", IngressKey, ing.Namespace, ing.Name)
 	}
 
-	return ingress == IngressClass || ingress == DefaultClass
+	return ingress == IngressClass || ingress == DefaultClass || ingress == "ibm-icp-management"
 }

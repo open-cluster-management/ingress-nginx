@@ -6,11 +6,11 @@ metadata:
   name: grafana
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/auth-type: "access-token"
-    icp.management.ibm.com/secure-backends: "true"
-    icp.management.ibm.com/secure-client-ca-secret: "monitoring-client-certs"
-    icp.management.ibm.com/rewrite-target: "/"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/auth-type: "access-token"
+    ingress.open-cluster-management.io/secure-backends: "true"
+    ingress.open-cluster-management.io/secure-client-ca-secret: "monitoring-client-certs"
+    ingress.open-cluster-management.io/rewrite-target: "/"
 spec:
   rules:
   - http:
@@ -28,11 +28,11 @@ metadata:
   name: alertmanager
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/auth-type: "access-token"
-    icp.management.ibm.com/secure-backends: "true"
-    icp.management.ibm.com/secure-client-ca-secret: "monitoring-client-certs"
-    icp.management.ibm.com/rewrite-target: "/"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/auth-type: "access-token"
+    ingress.open-cluster-management.io/secure-backends: "true"
+    ingress.open-cluster-management.io/secure-client-ca-secret: "monitoring-client-certs"
+    ingress.open-cluster-management.io/rewrite-target: "/"
 spec:
   rules:
   - http:
@@ -50,11 +50,11 @@ metadata:
   name: prometheus
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/auth-type: "access-token"
-    icp.management.ibm.com/secure-backends: "true"
-    icp.management.ibm.com/secure-client-ca-secret: "monitoring-client-certs"
-    icp.management.ibm.com/configuration-snippet: |
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/auth-type: "access-token"
+    ingress.open-cluster-management.io/secure-backends: "true"
+    ingress.open-cluster-management.io/secure-client-ca-secret: "monitoring-client-certs"
+    ingress.open-cluster-management.io/configuration-snippet: |
             header_filter_by_lua_block { ngx.header.content_length = nil }
             body_filter_by_lua_block {
               local data = ngx.arg[1]
@@ -81,13 +81,13 @@ metadata:
   name: prometheus-graph
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/auth-type: "access-token"
-    icp.management.ibm.com/secure-backends: "true"
-    icp.management.ibm.com/secure-client-ca-secret: "monitoring-client-certs"
-    icp.management.ibm.com/location-modifier: "="
-    icp.management.ibm.com/upstream-uri: "/graph"
-    icp.management.ibm.com/configuration-snippet: |
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/auth-type: "access-token"
+    ingress.open-cluster-management.io/secure-backends: "true"
+    ingress.open-cluster-management.io/secure-client-ca-secret: "monitoring-client-certs"
+    ingress.open-cluster-management.io/location-modifier: "="
+    ingress.open-cluster-management.io/upstream-uri: "/graph"
+    ingress.open-cluster-management.io/configuration-snippet: |
             header_filter_by_lua_block { ngx.header.content_length = nil }
             body_filter_by_lua_block {
               local data = ngx.arg[1]

@@ -6,7 +6,7 @@ metadata:
   name: image-manager-auth
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
 spec:
   rules:
     - http:
@@ -24,8 +24,8 @@ metadata:
   name: image-manager
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/auth-type: "id-token"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/auth-type: "id-token"
 spec:
   rules:
     - http:

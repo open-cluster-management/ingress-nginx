@@ -27,7 +27,7 @@ import (
 
 var (
 	// AnnotationsPrefix defines the common prefix used in the nginx ingress controller
-	AnnotationsPrefix = "icp.management.ibm.com"
+	AnnotationsPrefix = "ingress.open-cluster-management.io"
 )
 
 // IngressAnnotation has a method to parse annotations located in Ingress
@@ -85,7 +85,13 @@ func GetBoolAnnotation(name string, ing *extensions.Ingress) (bool, error) {
 	v := GetAnnotationWithPrefix(name)
 	err := checkAnnotation(v, ing)
 	if err != nil {
-		return false, err
+		if err != nil {
+			v = GetAnnotationWithDeprecatedPrefix(name)
+			err = checkAnnotation(v, ing)
+			if err != nil {
+				return false, err
+			}
+		}
 	}
 	return ingAnnotations(ing.GetAnnotations()).parseBool(v)
 }
@@ -95,7 +101,13 @@ func GetStringAnnotation(name string, ing *extensions.Ingress) (string, error) {
 	v := GetAnnotationWithPrefix(name)
 	err := checkAnnotation(v, ing)
 	if err != nil {
-		return "", err
+		if err != nil {
+			v = GetAnnotationWithDeprecatedPrefix(name)
+			err = checkAnnotation(v, ing)
+			if err != nil {
+				return "", err
+			}
+		}
 	}
 	return ingAnnotations(ing.GetAnnotations()).parseString(v)
 }
@@ -105,7 +117,11 @@ func GetIntAnnotation(name string, ing *extensions.Ingress) (int, error) {
 	v := GetAnnotationWithPrefix(name)
 	err := checkAnnotation(v, ing)
 	if err != nil {
-		return 0, err
+		v = GetAnnotationWithDeprecatedPrefix(name)
+		err = checkAnnotation(v, ing)
+		if err != nil {
+			return 0, err
+		}
 	}
 	return ingAnnotations(ing.GetAnnotations()).parseInt(v)
 }
@@ -113,4 +129,9 @@ func GetIntAnnotation(name string, ing *extensions.Ingress) (int, error) {
 // GetAnnotationWithPrefix returns the prefix of ingress annotations
 func GetAnnotationWithPrefix(suffix string) string {
 	return fmt.Sprintf("%v/%v", AnnotationsPrefix, suffix)
+}
+
+// GetAnnotationWithDeprecatedPrefix returns the prefix of ingress annotations
+func GetAnnotationWithDeprecatedPrefix(suffix string) string {
+	return fmt.Sprintf("%v/%v", "icp.management.ibm.com", suffix)
 }
