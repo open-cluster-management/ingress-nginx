@@ -92,15 +92,20 @@ func GetBoolAnnotation(name string, ing *extensions.Ingress) (bool, error) {
 	v := GetAnnotationWithPrefix(name)
 	err := checkAnnotation(v, ing)
 	if err != nil {
-		if err != nil {
-			v = GetAnnotationWithDeprecatedPrefix(name)
-			err = checkAnnotation(v, ing)
-			if err != nil {
-				return false, err
-			}
-		}
+		return false, err
 	}
-	return ingAnnotations(ing.GetAnnotations()).parseBool(v)
+
+	b, err := ingAnnotations(ing.GetAnnotations()).parseBool(v)
+
+	if err != nil {
+		v = GetAnnotationWithDeprecatedPrefix(name)
+		err = checkAnnotation(v, ing)
+		if err != nil {
+			return false, err
+		}
+		return ingAnnotations(ing.GetAnnotations()).parseBool(v)
+	}
+	return b, nil
 }
 
 // GetStringAnnotation extracts a string from an Ingress annotation
@@ -108,15 +113,22 @@ func GetStringAnnotation(name string, ing *extensions.Ingress) (string, error) {
 	v := GetAnnotationWithPrefix(name)
 	err := checkAnnotation(v, ing)
 	if err != nil {
-		if err != nil {
-			v = GetAnnotationWithDeprecatedPrefix(name)
-			err = checkAnnotation(v, ing)
-			if err != nil {
-				return "", err
-			}
-		}
+		return "", err
 	}
-	return ingAnnotations(ing.GetAnnotations()).parseString(v)
+
+	val, err := ingAnnotations(ing.GetAnnotations()).parseString(v)
+
+	if err != nil {
+		v = GetAnnotationWithDeprecatedPrefix(name)
+		err = checkAnnotation(v, ing)
+		if err != nil {
+			return "", err
+		}
+		return ingAnnotations(ing.GetAnnotations()).parseString(v)
+	}
+
+	return val, nil
+	
 }
 
 // GetIntAnnotation extracts an int from an Ingress annotation
@@ -124,13 +136,20 @@ func GetIntAnnotation(name string, ing *extensions.Ingress) (int, error) {
 	v := GetAnnotationWithPrefix(name)
 	err := checkAnnotation(v, ing)
 	if err != nil {
+		return 0, err
+	}
+
+	idx, err := ingAnnotations(ing.GetAnnotations()).parseInt(v)
+	
+	if err != nil {
 		v = GetAnnotationWithDeprecatedPrefix(name)
 		err = checkAnnotation(v, ing)
 		if err != nil {
 			return 0, err
 		}
+		return ingAnnotations(ing.GetAnnotations()).parseInt(v)
 	}
-	return ingAnnotations(ing.GetAnnotations()).parseInt(v)
+	return idx, nil
 }
 
 // GetAnnotationWithPrefix returns the prefix of ingress annotations
