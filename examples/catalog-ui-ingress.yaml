@@ -6,8 +6,8 @@ metadata:
   name: catalog-ui
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/auth-type: "id-token"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/auth-type: "id-token"
 spec:
   rules:
     - http:
@@ -25,8 +25,8 @@ metadata:
   name: helm-api
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/rewrite-target: "/"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/rewrite-target: "/"
 spec:
   rules:
     - http:
@@ -44,8 +44,8 @@ metadata:
   name: helm-repo
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/rewrite-target: "/"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/rewrite-target: "/"
 spec:
   rules:
     - http:

@@ -6,9 +6,9 @@ metadata:
   name: platform-login
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/upstream-uri: "/v1/auth/authorize?client_id=$oauth_client_id&redirect_uri=https://$http_host/auth/liberty/callback&response_type=code&scope=openid+email+profile&state=$request_uri"
-    icp.management.ibm.com/configuration-snippet: |
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/upstream-uri: "/v1/auth/authorize?client_id=$oauth_client_id&redirect_uri=https://$http_host/auth/liberty/callback&response_type=code&scope=openid+email+profile&state=$request_uri"
+    ingress.open-cluster-management.io/configuration-snippet: |
       set_by_lua $oauth_client_id 'return os.getenv("WLP_CLIENT_ID")';
       set_by_lua $oauth_auth_redirector 'return os.getenv("OAUTH_AUTH_REDIRECTOR")';
 spec:
@@ -28,9 +28,9 @@ metadata:
   name: platform-oidc
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/secure-backends: "true"
-    icp.management.ibm.com/configuration-snippet: |
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/secure-backends: "true"
+    ingress.open-cluster-management.io/configuration-snippet: |
       add_header 'Access-Control-Allow-Origin' '*' always;
       add_header 'Access-Control-Allow-Credentials' 'true' always;
       add_header 'Access-Control-Allow-Methods' 'GET, POST, HEAD' always;
@@ -56,8 +56,8 @@ metadata:
   name: platform-auth
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/configuration-snippet: |
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/configuration-snippet: |
       add_header 'Access-Control-Allow-Origin' '*' always;
       add_header 'Access-Control-Allow-Credentials' 'true' always;
       add_header 'Access-Control-Allow-Methods' 'GET, POST, HEAD' always;
@@ -83,8 +83,8 @@ metadata:
   name: platform-id-provider
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/rewrite-target: "/"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/rewrite-target: "/"
 spec:
   rules:
   - http:
@@ -101,9 +101,9 @@ metadata:
   name: platform-id-auth
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/secure-backends: "true"
-    icp.management.ibm.com/rewrite-target: "/"
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/secure-backends: "true"
+    ingress.open-cluster-management.io/rewrite-target: "/"
 spec:
   rules:
   - http:
@@ -121,10 +121,10 @@ metadata:
   name: id-mgmt
   namespace: kube-system
   annotations:
-    kubernetes.io/ingress.class: "ibm-icp-management"
-    icp.management.ibm.com/authz-type: "rbac"
-    icp.management.ibm.com/rewrite-target: "/"
-    icp.management.ibm.com/configuration-snippet: |
+    kubernetes.io/ingress.class: "ingress-open-cluster-management"
+    ingress.open-cluster-management.io/authz-type: "rbac"
+    ingress.open-cluster-management.io/rewrite-target: "/"
+    ingress.open-cluster-management.io/configuration-snippet: |
       if ($request_uri ~* "/idmgmt/(.*)/teams/(.*)/resources/rel/(.*)") {
         proxy_pass http://$proxy_upstream_name/$1/teams/$2/resources/rel/$3;
       }

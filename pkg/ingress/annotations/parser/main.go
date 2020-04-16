@@ -1,4 +1,11 @@
 /*
+ Licensed Materials - Property of IBM
+ (c) Copyright IBM Corporation 2018, 2019. All Rights Reserved.
+ Note to U.S. Government Users Restricted Rights:
+ Use, duplication or disclosure restricted by GSA ADP Schedule
+ Contract with IBM Corp.
+ Copyright (c) 2020 Red Hat, Inc.
+
 Copyright 2015 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,7 +34,7 @@ import (
 
 var (
 	// AnnotationsPrefix defines the common prefix used in the nginx ingress controller
-	AnnotationsPrefix = "icp.management.ibm.com"
+	AnnotationsPrefix = "ingress.open-cluster-management.io"
 )
 
 // IngressAnnotation has a method to parse annotations located in Ingress
@@ -87,7 +94,18 @@ func GetBoolAnnotation(name string, ing *extensions.Ingress) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return ingAnnotations(ing.GetAnnotations()).parseBool(v)
+
+	b, err := ingAnnotations(ing.GetAnnotations()).parseBool(v)
+
+	if err != nil {
+		v = GetAnnotationWithDeprecatedPrefix(name)
+		err = checkAnnotation(v, ing)
+		if err != nil {
+			return false, err
+		}
+		return ingAnnotations(ing.GetAnnotations()).parseBool(v)
+	}
+	return b, nil
 }
 
 // GetStringAnnotation extracts a string from an Ingress annotation
@@ -97,7 +115,20 @@ func GetStringAnnotation(name string, ing *extensions.Ingress) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return ingAnnotations(ing.GetAnnotations()).parseString(v)
+
+	val, err := ingAnnotations(ing.GetAnnotations()).parseString(v)
+
+	if err != nil {
+		v = GetAnnotationWithDeprecatedPrefix(name)
+		err = checkAnnotation(v, ing)
+		if err != nil {
+			return "", err
+		}
+		return ingAnnotations(ing.GetAnnotations()).parseString(v)
+	}
+
+	return val, nil
+	
 }
 
 // GetIntAnnotation extracts an int from an Ingress annotation
@@ -107,10 +138,26 @@ func GetIntAnnotation(name string, ing *extensions.Ingress) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	return ingAnnotations(ing.GetAnnotations()).parseInt(v)
+
+	idx, err := ingAnnotations(ing.GetAnnotations()).parseInt(v)
+	
+	if err != nil {
+		v = GetAnnotationWithDeprecatedPrefix(name)
+		err = checkAnnotation(v, ing)
+		if err != nil {
+			return 0, err
+		}
+		return ingAnnotations(ing.GetAnnotations()).parseInt(v)
+	}
+	return idx, nil
 }
 
 // GetAnnotationWithPrefix returns the prefix of ingress annotations
 func GetAnnotationWithPrefix(suffix string) string {
 	return fmt.Sprintf("%v/%v", AnnotationsPrefix, suffix)
+}
+
+// GetAnnotationWithDeprecatedPrefix returns the prefix of ingress annotations
+func GetAnnotationWithDeprecatedPrefix(suffix string) string {
+	return fmt.Sprintf("%v/%v", "icp.management.ibm.com", suffix)
 }

@@ -1,4 +1,11 @@
 /*
+ Licensed Materials - Property of IBM
+ (c) Copyright IBM Corporation 2018, 2019. All Rights Reserved.
+ Note to U.S. Government Users Restricted Rights:
+ Use, duplication or disclosure restricted by GSA ADP Schedule
+ Contract with IBM Corp.
+ Copyright (c) 2020 Red Hat, Inc.
+
 Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -57,7 +64,7 @@ func parseFlags() (bool, *controller.Configuration, error) {
 		watchNamespace = flags.String("watch-namespace", apiv1.NamespaceAll,
 			`Namespace to watch for Ingress. Default is to watch all namespaces`)
 
-		annotationsPrefix = flags.String("annotations-prefix", "icp.management.ibm.com", `Prefix of the ingress annotations.`)
+		annotationsPrefix = flags.String("annotations-prefix", "ingress.open-cluster-management.io", `Prefix of the ingress annotations.`)
 
 		syncRateLimit = flags.Float32("sync-rate-limit", 0.3,
 			`Define the sync frequency upper limit`)

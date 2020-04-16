@@ -7,22 +7,22 @@ The design doc is [here](https://github.ibm.com/IBMPrivateCloud/roadmap/blob/mas
 
 | Name | Description | Values |
 | --- | --- | --- |
-| icp.management.ibm.com/auth-type | Authentication method for management service | string |
-| icp.management.ibm.com/authz-type | Authorization method for management service | string |
-| icp.management.ibm.com/rewrite-target | Target URI where the traffic must be redirected | string |
-| icp.management.ibm.com/app-root | Base URI fort the server | string |
-| icp.management.ibm.com/configuration-snippet | Additional configuration to the NGINX location | string |
-| icp.management.ibm.com/secure-backends | uses https to reach the services | bool |
-| icp.management.ibm.com/secure-verify-ca-secret | secret name that stores ca cert for upstream service | string |
-| icp.management.ibm.com/secure-client-ca-secret | secret name that stores ca cert/key for client authentication of upstream server | string |
-| icp.management.ibm.com/upstream-uri | URI of upstream | string |
-| icp.management.ibm.com/location-modifier | Location modifier | string |
-| icp.management.ibm.com/proxy-connect-timeout | proxy connect timeout | string |
-| icp.management.ibm.com/proxy-send-timeout | proxy send timeout | string |
-| icp.management.ibm.com/proxy-read-timeout | proxy read timeout | string |
-| icp.management.ibm.com/proxy-buffer-size | buffer size of response | string |
-| icp.management.ibm.com/proxy-body-size | max response body | string |
-| icp.management.ibm.com/connection | override connection header | string |
+| ingress.open-cluster-management.io/auth-type | Authentication method for management service | string |
+| ingress.open-cluster-management.io/authz-type | Authorization method for management service | string |
+| ingress.open-cluster-management.io/rewrite-target | Target URI where the traffic must be redirected | string |
+| ingress.open-cluster-management.io/app-root | Base URI fort the server | string |
+| ingress.open-cluster-management.io/configuration-snippet | Additional configuration to the NGINX location | string |
+| ingress.open-cluster-management.io/secure-backends | uses https to reach the services | bool |
+| ingress.open-cluster-management.io/secure-verify-ca-secret | secret name that stores ca cert for upstream service | string |
+| ingress.open-cluster-management.io/secure-client-ca-secret | secret name that stores ca cert/key for client authentication of upstream server | string |
+| ingress.open-cluster-management.io/upstream-uri | URI of upstream | string |
+| ingress.open-cluster-management.io/location-modifier | Location modifier | string |
+| ingress.open-cluster-management.io/proxy-connect-timeout | proxy connect timeout | string |
+| ingress.open-cluster-management.io/proxy-send-timeout | proxy send timeout | string |
+| ingress.open-cluster-management.io/proxy-read-timeout | proxy read timeout | string |
+| ingress.open-cluster-management.io/proxy-buffer-size | buffer size of response | string |
+| ingress.open-cluster-management.io/proxy-body-size | max response body | string |
+| ingress.open-cluster-management.io/connection | override connection header | string |
 
 # Impersonation support
 ## Overview
