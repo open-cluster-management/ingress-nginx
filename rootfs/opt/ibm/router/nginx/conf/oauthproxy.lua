@@ -95,7 +95,7 @@ local function validate_access_token_or_exit()
                 -- set cookie, max age 12h in seconds
                 local ok, err = cookie:set({
                   key = "acm-access-token-cookie", value = forwarded_token, path = "/",
-                  max_age = 43200, httponly = true, samesite = "Strict", secure = true
+                  max_age = 43200, httponly = true, samesite = "Lax", secure = true
                 })
                 if err ~= nil then
                     ngx.log(ngx.NOTICE, "Error setting the cookie", err)
