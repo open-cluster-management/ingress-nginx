@@ -54,5 +54,5 @@ func IsValid(ing *extensions.Ingress) bool {
 		glog.V(3).Infof("annotation %v is not present in ingress %v/%v", IngressKey, ing.Namespace, ing.Name)
 	}
 
-	return ingress == IngressClass || ingress == DefaultClass || ingress == "ibm-icp-management"
+	return ingress == IngressClass || ingress == DefaultClass
 }
