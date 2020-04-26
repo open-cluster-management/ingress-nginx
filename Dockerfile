@@ -1,3 +1,4 @@
+# Copyright (c) 2020 Red Hat, Inc.
 # Dockerfile - alpine
 # https://github.com/openresty/docker-openresty
 
@@ -71,9 +72,15 @@ COPY docker/openresty/1.13.6.2/fips-code/ngx_event_openssl.c /tmp/ngx_event_open
 
 # 1) Install apk dependencies
 # 2) Download and untar OpenSSL, PCRE, and OpenResty
-RUN yum install --skip-broken -y wget \
-        curl \
-        perl \
+
+COPY vendor/external-deps/openssl-${RESTY_OPENSSL_VERSION}.tar.gz /tmp
+COPY vendor/external-deps/openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz /tmp
+COPY vendor/external-deps/pcre-${RESTY_PCRE_VERSION}.tar.gz /tmp
+COPY vendor/external-deps/openresty-${RESTY_VERSION}.tar.gz /tmp
+COPY vendor/external-deps/centos-release-7-7.1908.0.el7.centos.x86_64.rpm /tmp
+COPY vendor/external-deps/alsadi-dumb-init-epel-7.repo /etc/yum.repos.d/alsadi-dumb-init-epel-7.repo
+
+RUN yum install --skip-broken -y perl \
         libxslt-devel \
         linux-headers \
         make \
@@ -93,7 +100,7 @@ RUN yum install --skip-broken -y wget \
         libjpeg-devel libpng-devel \
 # backup ubi release info
         && mkdir /tmp/release && mv /etc/*release* /tmp/release \
-        && rpm -Uvh --force http://mirror.centos.org/centos-7/7/os/x86_64/Packages/centos-release-7-7.1908.0.el7.centos.x86_64.rpm && sed -i 's/$releasever/7/g' /etc/yum.repos.d/* \
+        && rpm -Uvh --force /tmp/centos-release-7-7.1908.0.el7.centos.x86_64.rpm && sed -i 's/$releasever/7/g' /etc/yum.repos.d/* \
     && yum install --skip-broken -y GeoIP-devel \
         ncurses-devel \
         readline-devel \
@@ -102,13 +109,9 @@ RUN yum install --skip-broken -y wget \
 # recovery ubi release info
         && rm /etc/*release* && mv /tmp/release/* /etc/ && rm -rf /tmp/release \
     && cd /tmp \
-    && curl -fSL https://www.openssl.org/source/old/1.0.2/openssl-${RESTY_OPENSSL_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
-    && curl -fSL https://www.openssl.org/source/openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz -o openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz \
     && tar xzf openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz \
-    && curl -fSL https://ftp.pcre.org/pub/pcre/pcre-${RESTY_PCRE_VERSION}.tar.gz -o pcre-${RESTY_PCRE_VERSION}.tar.gz \
     && tar xzf pcre-${RESTY_PCRE_VERSION}.tar.gz \
-    && curl -fSL https://openresty.org/download/openresty-${RESTY_VERSION}.tar.gz -o openresty-${RESTY_VERSION}.tar.gz \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
 # 3) Build OpenResty
     && cd /tmp/openresty-${RESTY_VERSION} \
@@ -186,7 +189,6 @@ ENV AUTH_ERROR_PAGE_DIR_PATH=/opt/ibm/router/nginx/conf/errorpages SECRET_KEY_FI
 
 RUN yum update -y --exclude=GeoIP* --exclude=readline* \
   && yum install -y  openssl python python-devl \
-  && curl -o /etc/yum.repos.d/alsadi-dumb-init-epel-7.repo -sSL https://copr.fedorainfracloud.org/coprs/alsadi/dumb-init/repo/epel-7/alsadi-dumb-init-epel-7.repo \
   && yum install -y dumb-init \
   && rpm -e kernel-devel \
   && yum clean all \
