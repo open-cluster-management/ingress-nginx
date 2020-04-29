@@ -1,0 +1,11 @@
+[copr:copr.fedorainfracloud.org:alsadi:dumb-init]
+name=Copr repo for dumb-init owned by alsadi
+baseurl=https://download.copr.fedorainfracloud.org/results/alsadi/dumb-init/epel-7-$basearch/
+type=rpm-md
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://download.copr.fedorainfracloud.org/results/alsadi/dumb-init/pubkey.gpg
+repo_gpgcheck=0
+enabled=1
+enabled_metadata=1
+

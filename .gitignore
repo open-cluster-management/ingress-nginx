@@ -3,3 +3,11 @@
 .build-harness-bootstrap
 build-harness
 build-harness-extensions
+
+.build-harness
+OPENSOURCE.check
+
+# override build harness vendoring
+!vbh/.build-harness-vendorized
+!vbh/build-harness
+!vbh/build-harness-extensions
