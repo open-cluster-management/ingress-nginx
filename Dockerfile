@@ -187,7 +187,8 @@ LABEL org.label-schema.vendor="Red Hat" \
 
 ENV AUTH_ERROR_PAGE_DIR_PATH=/opt/ibm/router/nginx/conf/errorpages SECRET_KEY_FILE_PATH=/etc/cfc/conf/auth-token-secret OIDC_ENABLE=false ADMINROUTER_ACTIVATE_AUTH_MODULE=true PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/ibm/router/nginx/sbin
 
-RUN yum update -y --exclude=GeoIP* --exclude=readline* \
+RUN yum remove -y centos-release \
+  && yum update -y --exclude=GeoIP* --exclude=readline* \
   && yum install -y  openssl python python-devl \
   && yum install -y dumb-init \
   && rpm -e kernel-devel \
