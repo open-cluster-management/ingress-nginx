@@ -1,4 +1,6 @@
 /*
+ Copyright (c) 2020 Red Hat, Inc.
+
 Copyright 2016 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -92,5 +94,5 @@ func New(m string) error {
 // Errorf formats according to a format specifier and returns the string
 // as a value that satisfies error.
 func Errorf(format string, args ...interface{}) error {
-	return errors.Errorf(format, args)
+	return errors.Errorf(format, args...)
 }

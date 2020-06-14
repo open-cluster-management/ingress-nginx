@@ -73,12 +73,12 @@ COPY docker/openresty/1.13.6.2/fips-code/ngx_event_openssl.c /tmp/ngx_event_open
 # 1) Install apk dependencies
 # 2) Download and untar OpenSSL, PCRE, and OpenResty
 
-COPY vendor/external-deps/openssl-${RESTY_OPENSSL_VERSION}.tar.gz /tmp
-COPY vendor/external-deps/openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz /tmp
-COPY vendor/external-deps/pcre-${RESTY_PCRE_VERSION}.tar.gz /tmp
-COPY vendor/external-deps/openresty-${RESTY_VERSION}.tar.gz /tmp
-COPY vendor/external-deps/centos-release-7-7.1908.0.el7.centos.x86_64.rpm /tmp
-COPY vendor/external-deps/alsadi-dumb-init-epel-7.repo /etc/yum.repos.d/alsadi-dumb-init-epel-7.repo
+COPY external-deps/openssl-${RESTY_OPENSSL_VERSION}.tar.gz /tmp
+COPY external-deps/openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz /tmp
+COPY external-deps/pcre-${RESTY_PCRE_VERSION}.tar.gz /tmp
+COPY external-deps/openresty-${RESTY_VERSION}.tar.gz /tmp
+COPY external-deps/centos-release-7-7.1908.0.el7.centos.x86_64.rpm /tmp
+COPY external-deps/alsadi-dumb-init-epel-7.repo /etc/yum.repos.d/alsadi-dumb-init-epel-7.repo
 
 RUN yum install --skip-broken -y perl \
         libxslt-devel \

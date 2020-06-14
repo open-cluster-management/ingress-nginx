@@ -1,4 +1,6 @@
 /*
+  Copyright (c) 2020 Red Hat, Inc.
+
 Copyright 2015 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,9 +19,12 @@ limitations under the License.
 package controller
 
 import (
+	"syscall"
+
 	"github.com/golang/glog"
 
 	api "k8s.io/api/core/v1"
+	"k8s.io/klog"
 	"k8s.io/kubernetes/pkg/util/sysctl"
 
 	"github.com/open-cluster-management/management-ingress/pkg/ingress"
@@ -46,17 +51,16 @@ func sysctlSomaxconn() int {
 	return maxConns
 }
 
-// sysctlFSFileMax returns the value of fs.file-max, i.e.
-// maximum number of open file descriptors
-func sysctlFSFileMax() int {
-	fileMax, err := sysctl.New().GetSysctl("fs/file-max")
+// rlimitMaxNumFiles returns hard limit for RLIMIT_NOFILE
+func rlimitMaxNumFiles() int {
+	var rLimit syscall.Rlimit
+	err := syscall.Getrlimit(syscall.RLIMIT_NOFILE, &rLimit)
 	if err != nil {
-		glog.Errorf("unexpected error reading system maximum number of open file descriptors (fs.file-max): %v", err)
-		// returning 0 means don't render the value
+		klog.Errorf("Error reading system maximum number of open file descriptors (RLIMIT_NOFILE): %v", err)
 		return 0
 	}
-	glog.V(3).Infof("system fs.file-max=%v", fileMax)
-	return fileMax
+	klog.V(2).Infof("rlimit.max=%v", rLimit.Max)
+	return int(rLimit.Max)
 }
 
 func intInSlice(i int, list []int) bool {

@@ -1,4 +1,6 @@
 /*
+ Copyright (c) 2020 Red Hat, Inc.
+
 Licensed Materials - Property of IBM
 cfc
 @ Copyright IBM Corp. 2018 All Rights Reserved
@@ -42,16 +44,16 @@ import (
 	ngx_template "github.com/open-cluster-management/management-ingress/pkg/ingress/controller/template"
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/status"
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/store"
+	ing_net "github.com/open-cluster-management/management-ingress/pkg/net"
 	"github.com/open-cluster-management/management-ingress/pkg/net/dns"
 	"github.com/open-cluster-management/management-ingress/pkg/task"
 	"github.com/open-cluster-management/management-ingress/pkg/watch"
-	ing_net "github.com/open-cluster-management/management-ingress/pkg/net"
 )
 
 var (
-	tmplPath    = "/opt/ibm/router/nginx/template/nginx.tmpl"
-	cfgPath     = "/opt/ibm/router/nginx/conf/nginx.conf"
-	nginxBinary = "/opt/ibm/router/nginx/sbin/nginx"
+	tmplPath        = "/opt/ibm/router/nginx/template/nginx.tmpl"
+	cfgPath         = "/opt/ibm/router/nginx/conf/nginx.conf"
+	nginxBinary     = "/opt/ibm/router/nginx/sbin/nginx"
 	nginxBinaryFIPS = "/opt/ibm/router/nginx/sbin/nginx-fips"
 )
 
@@ -60,7 +62,7 @@ var (
 // as source for nginx commands
 func NewNGINXController(config *Configuration, fs file.Filesystem) *NGINXController {
 	ngx := os.Getenv("NGINX_BINARY")
-        fips := os.Getenv("FIPS_ENABLED")
+	fips := os.Getenv("FIPS_ENABLED")
 
 	if ngx == "" {
 		if fips == "true" {
@@ -86,7 +88,7 @@ func NewNGINXController(config *Configuration, fs file.Filesystem) *NGINXControl
 
 		configmap: &apiv1.ConfigMap{},
 
-                isIPV6Enabled: ing_net.IsIPv6Enabled(),
+		isIPV6Enabled: ing_net.IsIPv6Enabled(),
 
 		resolver:        h,
 		cfg:             config,
@@ -378,21 +380,21 @@ func (n *NGINXController) OnUpdate(ingressCfg ingress.Configuration) error {
 	if err != nil {
 		wp = 1
 	}
-	maxOpenFiles := (sysctlFSFileMax() / wp) - 1024
-	glog.V(3).Infof("maximum number of open file descriptors : %v", sysctlFSFileMax())
+	maxOpenFiles := (rlimitMaxNumFiles() / wp) - 1024
+	glog.V(3).Infof("maximum number of open file descriptors : %v", rlimitMaxNumFiles())
 	if maxOpenFiles < 1024 {
 		// this means the value of RLIMIT_NOFILE is too low.
 		maxOpenFiles = 1024
 	}
 
 	tc := ngx_config.TemplateConfig{
-		MaxOpenFiles: maxOpenFiles,
-		BacklogSize:  sysctlSomaxconn(),
-		Backends:     ingressCfg.Backends,
-		Servers:      ingressCfg.Servers,
-		Cfg:          cfg,
-                IsIPV6Enabled:  n.isIPV6Enabled && !cfg.DisableIpv6,
-		ListenPorts:  n.cfg.ListenPorts,
+		MaxOpenFiles:  maxOpenFiles,
+		BacklogSize:   sysctlSomaxconn(),
+		Backends:      ingressCfg.Backends,
+		Servers:       ingressCfg.Servers,
+		Cfg:           cfg,
+		IsIPV6Enabled: n.isIPV6Enabled && !cfg.DisableIpv6,
+		ListenPorts:   n.cfg.ListenPorts,
 	}
 
 	content, err := n.t.Write(tc)
