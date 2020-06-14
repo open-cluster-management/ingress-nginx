@@ -1,4 +1,5 @@
 /*
+  Copyright (c) 2020 Red Hat, Inc.
 Copyright 2015 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,7 +48,7 @@ func TestIntInSlice(t *testing.T) {
 }
 
 func TestSysctlFSFileMax(t *testing.T) {
-	i := sysctlFSFileMax()
+	i := rlimitMaxNumFiles()
 	if i < 1 {
 		t.Errorf("returned %v but expected > 0", i)
 	}
