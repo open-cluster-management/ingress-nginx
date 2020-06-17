@@ -1,3 +1,5 @@
+// Copyright (c) 2020 Red Hat, Inc.
+
 /*
 Copyright 2015 The Kubernetes Authors.
 
@@ -30,6 +32,7 @@ import (
 	"math/big"
 	"net"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -152,13 +155,22 @@ func AddOrUpdateCertAndKey(name string, cert, key, ca []byte) (*ingress.SSLCert,
 			return nil, fmt.Errorf("could not open file %v for writing additional CA chains: %v", pemFileName, err)
 		}
 
+		// #nosec
 		defer caFile.Close()
 		_, err = caFile.Write([]byte("\n"))
 		if err != nil {
+			return nil, fmt.Errorf("could not append new line to cert file %v: %v", pemFileName, err)
+		}
+
+		_, err = caFile.Write(ca)
+		if err != nil {
 			return nil, fmt.Errorf("could not append CA to cert file %v: %v", pemFileName, err)
 		}
-		caFile.Write(ca)
-		caFile.Write([]byte("\n"))
+
+		_, err = caFile.Write([]byte("\n"))
+		if err != nil {
+			return nil, fmt.Errorf("could not append new line to cert file %v: %v", pemFileName, err)
+		}
 
 		return &ingress.SSLCert{
 			Certificate: pemCert,
@@ -268,7 +280,7 @@ func AddCertAuth(name string, ca []byte) (*ingress.SSLCert, error) {
 		return nil, err
 	}
 
-	err = ioutil.WriteFile(caFileName, ca, 0644)
+	err = ioutil.WriteFile(caFileName, ca, 0600)
 	if err != nil {
 		return nil, fmt.Errorf("could not write CA file %v: %v", caFileName, err)
 	}
@@ -383,6 +395,8 @@ func GetFakeSSLCert() ([]byte, []byte) {
 // Returns a new certificate with the intermediate certificates.
 // If the certificate does not contains issues with the chain it return an empty byte array
 func FullChainCert(in string) ([]byte, error) {
+	in = filepath.Clean(in)
+	// #nosec
 	inputFile, err := os.Open(in)
 	if err != nil {
 		return nil, err

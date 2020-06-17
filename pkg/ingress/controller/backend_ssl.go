@@ -1,3 +1,5 @@
+// Copyright (c) 2020 Red Hat, Inc.
+
 /*
 Copyright 2015 The Kubernetes Authors.
 
@@ -141,7 +143,7 @@ func (ic *NGINXController) checkSSLChainIssues() {
 		}
 
 		fullChainPemFileName := fmt.Sprintf("%v/%v-%v-full-chain.pem", ingress.DefaultSSLDirectory, secret.Namespace, secret.Name)
-		err = ioutil.WriteFile(fullChainPemFileName, data, 0655)
+		err = ioutil.WriteFile(fullChainPemFileName, data, 0600)
 		if err != nil {
 			glog.Errorf("unexpected error creating SSL certificate: %v", err)
 			continue
