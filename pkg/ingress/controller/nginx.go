@@ -422,6 +422,7 @@ func (n *NGINXController) OnUpdate(ingressCfg ingress.Configuration) error {
 			if err != nil {
 				return err
 			}
+			// #nosec
 			defer tmpfile.Close()
 			err = ioutil.WriteFile(tmpfile.Name(), content, 0600)
 			if err != nil {
@@ -470,7 +471,7 @@ func (n NGINXController) testTemplate(cfg []byte) error {
 	}
 	// #nosec
 	defer tmpfile.Close()
-	err = ioutil.WriteFile(tmpfile.Name(), cfg, 0644)
+	err = ioutil.WriteFile(tmpfile.Name(), cfg, 0600)
 	if err != nil {
 		return err
 	}
