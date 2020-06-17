@@ -242,6 +242,7 @@ func (n *NGINXController) Start() {
 	go wait.Until(n.checkMissingSecrets, 30*time.Second, n.stopCh)
 
 	done := make(chan error, 1)
+	// #nosec
 	cmd := exec.Command(n.binary, "-c", cfgPath)
 
 	// put nginx in another process group to prevent it
@@ -273,7 +274,10 @@ func (n *NGINXController) Start() {
 			if process.IsRespawnIfRequired(err) {
 				process.WaitUntilPortIsAvailable(n.cfg.ListenPorts.HTTP)
 				// release command resources
-				cmd.Process.Release()
+				if err := cmd.Process.Release(); err != nil {
+					glog.Warningf("unexpected error release command resources: %v", err)
+				}
+				// #nosec
 				cmd = exec.Command(n.binary, "-c", cfgPath)
 				// start a new nginx master process if the controller is not being stopped
 				n.start(cmd)
@@ -305,6 +309,7 @@ func (n *NGINXController) Stop() error {
 
 	// Send stop signal to Nginx
 	glog.Info("stopping NGINX process...")
+	// #nosec
 	cmd := exec.Command(n.binary, "-c", cfgPath, "-s", "quit")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -356,9 +361,11 @@ func (n *NGINXController) SetConfig(cmap *apiv1.ConfigMap) {
 			glog.Warningf("unexpected error decoding key ssl-session-ticket-key: %v", err)
 			c.SSLSessionTicketKey = ""
 		}
-		ioutil.WriteFile("/etc/nginx/tickets.key", d, 0644)
-	}
 
+		if err := ioutil.WriteFile("/etc/nginx/tickets.key", d, 0600); err != nil {
+			glog.Warningf("unexpected error writing /etc/nginx/tickets.key: %v", err)
+		}
+	}
 }
 
 // OnUpdate is called periodically by syncQueue to keep the configuration in sync.
@@ -416,12 +423,13 @@ func (n *NGINXController) OnUpdate(ingressCfg ingress.Configuration) error {
 				return err
 			}
 			defer tmpfile.Close()
-			err = ioutil.WriteFile(tmpfile.Name(), content, 0644)
+			err = ioutil.WriteFile(tmpfile.Name(), content, 0600)
 			if err != nil {
 				return err
 			}
 
 			// executing diff can return exit code != 0
+			// #nosec
 			diffOutput, _ := exec.Command("diff", "-u", cfgPath, tmpfile.Name()).CombinedOutput()
 
 			glog.Infof("NGINX configuration diff\n")
@@ -431,15 +439,17 @@ func (n *NGINXController) OnUpdate(ingressCfg ingress.Configuration) error {
 			// This is helpful when there is an error in the
 			// temporal configuration (we can manually inspect the file).
 			// Only remove the file when no error occurred.
-			os.Remove(tmpfile.Name())
+			if err := os.Remove(tmpfile.Name()); err != nil {
+				return err
+			}
 		}
 	}
 
-	err = ioutil.WriteFile(cfgPath, content, 0644)
+	err = ioutil.WriteFile(cfgPath, content, 0600)
 	if err != nil {
 		return err
 	}
-
+	// #nosec
 	o, err := exec.Command(n.binary, "-s", "reload", "-c", cfgPath).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("%v\n%v", err, string(o))
@@ -458,11 +468,13 @@ func (n NGINXController) testTemplate(cfg []byte) error {
 	if err != nil {
 		return err
 	}
+	// #nosec
 	defer tmpfile.Close()
 	err = ioutil.WriteFile(tmpfile.Name(), cfg, 0644)
 	if err != nil {
 		return err
 	}
+	// #nosec
 	out, err := exec.Command(n.binary, "-t", "-c", tmpfile.Name()).CombinedOutput()
 	if err != nil {
 		// this error is different from the rest because it must be clear why nginx is not working
@@ -475,6 +487,9 @@ Error: %v
 		return errors.New(oe)
 	}
 
-	os.Remove(tmpfile.Name())
+	if err := os.Remove(tmpfile.Name()); err != nil {
+		return err
+	}
+
 	return nil
 }

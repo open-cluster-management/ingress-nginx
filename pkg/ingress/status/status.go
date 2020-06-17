@@ -1,3 +1,5 @@
+// Copyright (c) 2020 Red Hat, Inc.
+
 /*
 Copyright 2015 The Kubernetes Authors.
 
@@ -165,11 +167,14 @@ func NewStatusSyncer(config Config) Sync {
 		OnStartedLeading: func(stop <-chan struct{}) {
 			glog.V(2).Infof("I am the new status update leader")
 			go st.syncQueue.Run(time.Second, stop)
-			wait.PollUntil(updateInterval, func() (bool, error) {
+			err = wait.PollUntil(updateInterval, func() (bool, error) {
 				// send a dummy object to the queue to force a sync
 				st.syncQueue.Enqueue("sync status")
 				return false, nil
 			}, stop)
+			if err != nil {
+				glog.Fatalf("failed to force a sync")
+			}
 		},
 		OnStoppedLeading: func() {
 			glog.V(2).Infof("I am not status update leader anymore")

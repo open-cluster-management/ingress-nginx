@@ -1,3 +1,5 @@
+// Copyright (c) 2020 Red Hat, Inc.
+
 /*
 Copyright 2017 The Kubernetes Authors.
 
@@ -34,10 +36,10 @@ import (
 )
 
 type cacheController struct {
-	Ingress  cache.Controller
-	Endpoint cache.Controller
-	Service  cache.Controller
-	Secret   cache.Controller
+	Ingress   cache.Controller
+	Endpoint  cache.Controller
+	Service   cache.Controller
+	Secret    cache.Controller
 	Configmap cache.Controller
 }
 
@@ -94,7 +96,10 @@ func (n *NGINXController) createListers(stopCh chan struct{}) (*ingress.StoreLis
 				return
 			}
 			n.recorder.Eventf(delIng, apiv1.EventTypeNormal, "DELETE", fmt.Sprintf("Ingress %s/%s", delIng.Namespace, delIng.Name))
-			n.listers.IngressAnnotation.Delete(delIng)
+			if err := n.listers.IngressAnnotation.Delete(delIng); err != nil {
+				glog.Errorf("failed to delete ingress annotation: %#v", err)
+				return
+			}
 			n.syncQueue.Enqueue(obj)
 		},
 		UpdateFunc: func(old, cur interface{}) {

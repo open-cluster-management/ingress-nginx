@@ -79,15 +79,24 @@ func parseFlags() (bool, *controller.Configuration, error) {
 		electionID = flags.String("election-id", "ingress-controller-leader", `Election id to use for status update.`)
 	)
 
-	flag.Set("logtostderr", "true")
+	if err := flag.Set("logtostderr", "true"); err != nil {
+		return false, nil, err
+	}
 
 	flags.AddGoFlagSet(flag.CommandLine)
-	flags.Parse(os.Args)
-	flag.Set("logtostderr", "true")
+	if err := flags.Parse(os.Args); err != nil {
+		return false, nil, err
+	}
+
+	if err := flag.Set("logtostderr", "true"); err != nil {
+		return false, nil, err
+	}
 
 	// Workaround for this issue:
 	// https://github.com/kubernetes/kubernetes/issues/17162
-	flag.CommandLine.Parse([]string{})
+	if err := flag.CommandLine.Parse([]string{}); err != nil {
+		return false, nil, err
+	}
 
 	if *showVersion {
 		return true, nil, nil
