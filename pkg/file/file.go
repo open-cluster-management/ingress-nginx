@@ -1,3 +1,5 @@
+// Copyright (c) 2020 Red Hat, Inc.
+
 /*
 Copyright 2017 The Kubernetes Authors.
 
@@ -17,19 +19,27 @@ limitations under the License.
 package file
 
 import (
-	"crypto/sha1"
+	"crypto/sha1" // #nosec
 	"encoding/hex"
 	"io/ioutil"
+	"path/filepath"
 )
 
 // SHA1 returns the SHA1 of a file.
 func SHA1(filename string) string {
+	// #nosec
 	hasher := sha1.New()
+	filename = filepath.Clean(filename)
+	// #nosec
 	s, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return ""
 	}
 
-	hasher.Write(s)
+	_, err = hasher.Write(s)
+	if err != nil {
+		return ""
+	}
+
 	return hex.EncodeToString(hasher.Sum(nil))
 }
