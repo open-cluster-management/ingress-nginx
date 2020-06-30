@@ -1,3 +1,5 @@
+// Copyright (c) 2020 Red Hat, Inc.
+
 /*
 Copyright 2015 The Kubernetes Authors.
 
@@ -17,6 +19,7 @@ limitations under the License.
 package k8s
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -38,7 +41,7 @@ func ParseNameNS(input string) (string, string, error) {
 
 // GetNodeIPOrName returns the IP address or the name of a node in the cluster
 func GetNodeIPOrName(kubeClient clientset.Interface, name string, useInternalIP bool) string {
-	node, err := kubeClient.CoreV1().Nodes().Get(name, metav1.GetOptions{})
+	node, err := kubeClient.CoreV1().Nodes().Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
 		return ""
 	}
@@ -84,7 +87,7 @@ func GetPodDetails(kubeClient clientset.Interface) (*PodInfo, error) {
 		return nil, fmt.Errorf("unable to get POD information (missing POD_NAME or POD_NAMESPACE environment variable")
 	}
 
-	pod, _ := kubeClient.CoreV1().Pods(podNs).Get(podName, metav1.GetOptions{})
+	pod, _ := kubeClient.CoreV1().Pods(podNs).Get(context.TODO(), podName, metav1.GetOptions{})
 	if pod == nil {
 		return nil, fmt.Errorf("unable to get POD information")
 	}

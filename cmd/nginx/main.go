@@ -1,3 +1,5 @@
+// Copyright (c) 2020 Red Hat, Inc.
+
 /*
 Licensed Materials - Property of IBM
 cfc
@@ -9,6 +11,7 @@ restricted by GSA ADP Schedule Contract with IBM Corp.
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -51,7 +54,7 @@ func main() {
 	}
 
 	if conf.Namespace != "" {
-		_, err = kubeClient.CoreV1().Namespaces().Get(conf.Namespace, metav1.GetOptions{})
+		_, err = kubeClient.CoreV1().Namespaces().Get(context.TODO(), conf.Namespace, metav1.GetOptions{})
 		if err != nil {
 			glog.Fatalf("no namespace with name %v found: %v", conf.Namespace, err)
 		}

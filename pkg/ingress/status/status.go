@@ -19,6 +19,7 @@ limitations under the License.
 package status
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -88,7 +89,7 @@ type statusSync struct {
 
 // Run starts the loop to keep the status in sync
 func (s statusSync) Run() {
-	s.elector.Run()
+	s.elector.Run(context.TODO())
 }
 
 // Shutdown stop the sync. In case the instance is the leader it will remove the current IP
@@ -163,15 +164,17 @@ func NewStatusSyncer(config Config) Sync {
 		electionID = fmt.Sprintf("%v-%v", config.ElectionID, config.IngressClass)
 	}
 
+	var stopCh chan struct{}
 	callbacks := leaderelection.LeaderCallbacks{
-		OnStartedLeading: func(stop <-chan struct{}) {
+		OnStartedLeading: func(ctx context.Context) {
 			glog.V(2).Infof("I am the new status update leader")
-			go st.syncQueue.Run(time.Second, stop)
+			stopCh = make(chan struct{})
+			go st.syncQueue.Run(time.Second, stopCh)
 			err = wait.PollUntil(updateInterval, func() (bool, error) {
 				// send a dummy object to the queue to force a sync
 				st.syncQueue.Enqueue("sync status")
 				return false, nil
-			}, stop)
+			}, stopCh)
 			if err != nil {
 				glog.Fatalf("failed to force a sync")
 			}
@@ -192,7 +195,7 @@ func NewStatusSyncer(config Config) Sync {
 		Host:      hostname,
 	})
 
-	podObj, _ := config.Client.CoreV1().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
+	podObj, _ := config.Client.CoreV1().Pods(pod.Namespace).Get(context.TODO(), pod.Name, metav1.GetOptions{})
 	if podObj == nil {
 		glog.Fatalf("unable to get POD information")
 	}
@@ -244,7 +247,7 @@ func (s *statusSync) runningAddresses() ([]string, error) {
 	addrs := []string{}
 
 	// get information about all the pods running the ingress controller
-	pods, err := s.Client.CoreV1().Pods(s.pod.Namespace).List(metav1.ListOptions{
+	pods, err := s.Client.CoreV1().Pods(s.pod.Namespace).List(context.TODO(), metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(s.pod.Labels).String(),
 	})
 	if err != nil {
@@ -262,7 +265,7 @@ func (s *statusSync) runningAddresses() ([]string, error) {
 }
 
 func (s *statusSync) isRunningMultiplePods() bool {
-	pods, err := s.Client.CoreV1().Pods(s.pod.Namespace).List(metav1.ListOptions{
+	pods, err := s.Client.CoreV1().Pods(s.pod.Namespace).List(context.TODO(), metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(s.pod.Labels).String(),
 	})
 	if err != nil {
@@ -332,14 +335,14 @@ func runUpdate(ing *extensions.Ingress, status []apiv1.LoadBalancerIngress,
 
 		ingClient := client.ExtensionsV1beta1().Ingresses(ing.Namespace)
 
-		currIng, err := ingClient.Get(ing.Name, metav1.GetOptions{})
+		currIng, err := ingClient.Get(context.TODO(), ing.Name, metav1.GetOptions{})
 		if err != nil {
 			return nil, errors.Wrap(err, fmt.Sprintf("unexpected error searching Ingress %v/%v", ing.Namespace, ing.Name))
 		}
 
 		glog.Infof("updating Ingress %v/%v status to %v", currIng.Namespace, currIng.Name, status)
 		currIng.Status.LoadBalancer.Ingress = status
-		_, err = ingClient.UpdateStatus(currIng)
+		_, err = ingClient.UpdateStatus(context.TODO(), currIng, metav1.UpdateOptions{})
 		if err != nil {
 			glog.Warningf("error updating ingress rule: %v", err)
 		}
