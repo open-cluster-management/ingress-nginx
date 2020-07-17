@@ -1,4 +1,6 @@
 /*
+ Copyright (c) 2020 Red Hat, Inc.
+
 Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -27,11 +29,10 @@ const (
 var (
 	directories = []string{
 		"/opt/ibm/router/nginx/template",
-		"/run",
 		DefaultSSLDirectory,
 	}
 
 	files = []string{
-		"/run/nginx.pid",
+		"/tmp/nginx.pid",
 	}
 )
