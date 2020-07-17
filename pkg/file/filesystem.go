@@ -1,4 +1,6 @@
 /*
+ Copyright (c) 2020 Red Hat, Inc.
+
 Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,7 +62,7 @@ func NewFakeFS() (Filesystem, error) {
 // runs as virtual filesystem it copies the local files to it
 func initialize(isVirtual bool, fs Filesystem) error {
 	for _, directory := range directories {
-		err := fs.MkdirAll(directory, 0655)
+		err := fs.MkdirAll(directory, 0700)
 		if err != nil {
 			return err
 		}
