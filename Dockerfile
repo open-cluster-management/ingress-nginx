@@ -200,6 +200,8 @@ RUN yum remove -y centos-release \
 
 COPY rootfs /
 
+RUN chmod -R 777 /opt/ibm/router
+
 ENTRYPOINT ["/usr/bin/dumb-init"]
 
 CMD ["/management-ingress"]
