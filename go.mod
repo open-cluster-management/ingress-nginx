@@ -31,7 +31,7 @@ require (
 	k8s.io/client-go v0.18.5
 	k8s.io/ingress-nginx v0.0.0-20200630043014-0e19740ee2e4
 	k8s.io/klog v1.0.0
-	k8s.io/kubernetes v1.18.5
+	k8s.io/kubernetes v1.18.8
 )
 
 replace (
@@ -56,4 +56,6 @@ replace (
 	k8s.io/legacy-cloud-providers => k8s.io/legacy-cloud-providers v0.18.5
 	k8s.io/metrics => k8s.io/metrics v0.18.5
 	k8s.io/sample-apiserver => k8s.io/sample-apiserver v0.18.5
+	github.com/gorilla/websocket => github.com/gorilla/websocket v1.4.2
+	github.com/coreos/etcd => go.etcd.io/etcd v3.3.22+incompatible
 )
