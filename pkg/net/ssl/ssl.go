@@ -150,7 +150,7 @@ func AddOrUpdateCertAndKey(name string, cert, key, ca []byte) (*ingress.SSLCert,
 			return nil, errors.New(oe)
 		}
 
-		caFile, err := os.OpenFile(pemFileName, os.O_RDWR|os.O_APPEND, 0600)
+		caFile, err := os.OpenFile(filepath.Clean(pemFileName), os.O_RDWR|os.O_APPEND, 0600)
 		if err != nil {
 			return nil, fmt.Errorf("could not open file %v for writing additional CA chains: %v", pemFileName, err)
 		}
