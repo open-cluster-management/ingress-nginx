@@ -202,6 +202,8 @@ COPY rootfs /
 
 RUN chmod -R 777 /opt/ibm/router
 
+USER 1001
+
 ENTRYPOINT ["/usr/bin/dumb-init"]
 
 CMD ["/management-ingress"]
