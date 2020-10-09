@@ -6,7 +6,7 @@ ARG RESTY_IMAGE_BASE="alpine"
 ARG RESTY_IMAGE_TAG="latest"
 
 #FROM ${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
-FROM registry.access.redhat.com/ubi7/ubi:7.8-255 AS openresty_base
+FROM registry.access.redhat.com/ubi7/ubi:7.9-193 AS openresty_base
 LABEL maintainer="Evan Wies <evan@neomantra.net>"
 
 # Docker Build Arguments
