@@ -4,7 +4,6 @@
  Note to U.S. Government Users Restricted Rights:
  Use, duplication or disclosure restricted by GSA ADP Schedule
  Contract with IBM Corp.
- Copyright (c) 2020 Red Hat, Inc.
 
 Copyright 2017 The Kubernetes Authors.
 
@@ -20,6 +19,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+// Copyright (c) 2021 Red Hat, Inc.
+// Copyright Contributors to the Open Cluster Management project
 
 package main
 
