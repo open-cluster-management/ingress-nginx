@@ -1,5 +1,4 @@
-/*
- Copyright (c) 2020 Red Hat, Inc.
+ /*
  Copyright 2017 The Kubernetes Authors.
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,6 +14,9 @@
  limitations under the License.
 
 */
+
+// Copyright (c) 2021 Red Hat, Inc.
+// Copyright Contributors to the Open Cluster Management project
 
 package process
 
