@@ -1,4 +1,5 @@
-# Copyright (c) 2020 Red Hat, Inc.
+# Copyright (c) 2021 Red Hat, Inc.
+# Copyright Contributors to the Open Cluster Management project
 
 CC =	cc
 CFLAGS = -I/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/include/luajit-2.1 -I/tmp/openresty-1.13.6.2/build/luajit-root/opt/ibm/router/luajit/include/luajit-2.1  -pipe  -O -W -Wall -Wpointer-arith -Wno-unused-parameter -g -O2 -DNDK_SET_VAR -DNDK_UPSTREAM_LIST -DNDK_SET_VAR -DNDK_SET_VAR -DNDK_SET_VAR -DLUA_DEFAULT_PATH='"/opt/ibm/router/site/lualib/?.ljbc;/opt/ibm/router/site/lualib/?/init.ljbc;/opt/ibm/router/lualib/?.ljbc;/opt/ibm/router/lualib/?/init.ljbc;/opt/ibm/router/site/lualib/?.lua;/opt/ibm/router/site/lualib/?/init.lua;/opt/ibm/router/lualib/?.lua;/opt/ibm/router/lualib/?/init.lua"' -DLUA_DEFAULT_CPATH='"/opt/ibm/router/site/lualib/?.so;/opt/ibm/router/lualib/?.so"' -DNDK_SET_VAR
