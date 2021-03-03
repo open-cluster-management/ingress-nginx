@@ -111,7 +111,7 @@ type Server struct {
 // In some cases when more than one annotations is defined a particular order in the execution
 // is required.
 // The chain in the execution order of annotations should be:
-// - Whitelist
+// - Allowlist
 // - RateLimit
 // - BasicDigestAuth
 // - ExternalAuth

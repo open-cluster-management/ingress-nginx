@@ -89,7 +89,7 @@ end
 -- the client id, and the issuer is what we expect.
 --
 local function verify_id_token(id_token)
-    jwt:set_alg_whitelist({ RS256 = 1 })
+    jwt:set_alg_allowlist({ RS256 = 1 })
     jwt_obj = jwt:verify(get_public_key(), 
                          id_token,
                         {

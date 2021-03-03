@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Copyright (c) 2021 Red Hat, Inc.
+// Copyright Contributors to the Open Cluster Management project
+
 package template
 
 import (
@@ -33,7 +36,7 @@ import (
 const (
 	customHTTPErrors     = "custom-http-errors"
 	skipAccessLogUrls    = "skip-access-log-urls"
-	whitelistSourceRange = "whitelist-source-range"
+	allowlistSourceRange = "allowlist-source-range"
 	proxyRealIPCIDR      = "proxy-real-ip-cidr"
 	bindAddress          = "bind-address"
 	httpRedirectCode     = "http-redirect-code"
@@ -53,7 +56,7 @@ func ReadConfig(src map[string]string) config.Configuration {
 	}
 
 	errors := make([]int, 0)
-	whitelist := make([]string, 0)
+	allowlist := make([]string, 0)
 	proxylist := make([]string, 0)
 	bindAddressIpv4List := make([]string, 0)
 	bindAddressIpv6List := make([]string, 0)
@@ -70,9 +73,9 @@ func ReadConfig(src map[string]string) config.Configuration {
 			}
 		}
 	}
-	if val, ok := conf[whitelistSourceRange]; ok {
-		delete(conf, whitelistSourceRange)
-		whitelist = append(whitelist, strings.Split(val, ",")...)
+	if val, ok := conf[allowlistSourceRange]; ok {
+		delete(conf, allowlistSourceRange)
+		allowlist = append(allowlist, strings.Split(val, ",")...)
 	}
 	if val, ok := conf[proxyRealIPCIDR]; ok {
 		delete(conf, proxyRealIPCIDR)
