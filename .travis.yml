@@ -66,7 +66,7 @@ jobs:
       name: "Push commits to current release branch"
       if: type = push AND branch =~ /^master$/
       script:
-        - make component/build
+        - make
         - make release-ff
     - stage: publish
       name: "Publish the image to quay with an official version/sha tag and publish entry to integration pipeline stage"
