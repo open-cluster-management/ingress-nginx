@@ -339,17 +339,17 @@ function _M.set_trusted_certs_file(self, filename)
 end
 _M.trusted_certs_file = nil
 
---- Set a whitelist of allowed algorithms
--- E.g., jwt:set_alg_whitelist({RS256=1,HS256=1})
+--- Set a allowlist of allowed algorithms
+-- E.g., jwt:set_alg_allowlist({RS256=1,HS256=1})
 --
 -- @param algorithms - A table with keys for the supported algorithms
 --                     If the table is non-nil, during
 --                     verify, the alg must be in the table
-function _M.set_alg_whitelist(self, algorithms)
-  self.alg_whitelist = algorithms
+function _M.set_alg_allowlist(self, algorithms)
+  self.alg_allowlist = algorithms
 end
 
-_M.alg_whitelist = nil
+_M.alg_allowlist = nil
 
 
 --- Returns the list of default validations that will be
@@ -583,7 +583,7 @@ local function extract_certificate(jwt_obj, x5u_content_retriever)
       return nil
     end
 
-    -- TODO Maybe validate the url against an optional list whitelisted url prefixes?
+    -- TODO Maybe validate the url against an optional list allowlisted url prefixes?
     -- cf. https://news.ycombinator.com/item?id=9302394
 
     local iss = jwt_obj[str_const.payload][str_const.iss]
@@ -738,9 +738,9 @@ function _M.verify_jwt_obj(self, secret, jwt_obj, ...)
 
   local jwt_str = string_format(str_const.regex_jwt_join_str, jwt_obj.raw_header , jwt_obj.raw_payload , jwt_obj.signature)
 
-  if self.alg_whitelist ~= nil then
-    if self.alg_whitelist[alg] == nil then
-      return {verified=false, reason="whitelist unsupported alg: " .. alg}
+  if self.alg_allowlist ~= nil then
+    if self.alg_allowlist[alg] == nil then
+      return {verified=false, reason="allowlist unsupported alg: " .. alg}
     end
   end
 
