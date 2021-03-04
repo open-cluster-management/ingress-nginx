@@ -1,5 +1,8 @@
+# Copyright (c) 2021 Red Hat, Inc.
+# Copyright Contributors to the Open Cluster Management project
+
 # Release Tag
-if [ "$TRAVIS_BRANCH" = "master" ]; then
+if [ "$TRAVIS_BRANCH" = "main" ]; then
     RELEASE_TAG=2.5.0
 else
     RELEASE_TAG="${TRAVIS_BRANCH#release-}-latest"
