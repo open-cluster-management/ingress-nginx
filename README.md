@@ -1,5 +1,5 @@
-# management-ingress
-nginx based ingress controller to serve Open Cluster Management service
+# Management Ingress
+NGINX based ingress controller to serve Open Cluster Management services.
 
 # annotations
 
