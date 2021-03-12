@@ -7,6 +7,11 @@
 ARG RESTY_IMAGE_BASE="alpine"
 ARG RESTY_IMAGE_TAG="latest"
 
+FROM docker.io/openshift/origin-release:golang-1.15 AS builder
+WORKDIR /go/src/github.com/open-cluster-management/management-ingress
+COPY . .
+RUN make docker-binary
+
 #FROM ${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
 FROM registry.access.redhat.com/ubi7/ubi:7.9 AS openresty_base
 LABEL maintainer="Evan Wies <evan@neomantra.net>"
@@ -173,7 +178,7 @@ RUN yum remove -y centos-release \
   && ln -sf /dev/stdout /var/log/nginx/access.log \
   && ln -sf /dev/stderr /var/log/nginx/error.log
 
-COPY rootfs /
+COPY --from=builder /go/src/github.com/open-cluster-management/management-ingress/rootfs /
 
 RUN chmod -R 777 /opt/ibm/router
 
