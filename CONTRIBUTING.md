@@ -46,7 +46,7 @@ Repo maintainers can assign you an issue or pull request by leaving a
 After your PR is ready to commit, please run following commands to check your code.
 
 ```shell
-USE_VENDORIZED_BUILD_HARNESS=true make lint
+make lint
 ```
 
 ## Build bianry
@@ -54,5 +54,5 @@ USE_VENDORIZED_BUILD_HARNESS=true make lint
 Make sure your code build passed.
 
 ```shell
-USE_VENDORIZED_BUILD_HARNESS=true make docker-binary
+make docker-binary
 ```
