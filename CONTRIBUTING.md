@@ -49,10 +49,9 @@ After your PR is ready to commit, please run following commands to check your co
 make lint
 ```
 
-## Build bianry
+## Build images
 
 Make sure your code build passed.
-
 ```shell
-make docker-binary
+make docker-image
 ```
