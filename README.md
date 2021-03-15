@@ -1,7 +1,10 @@
 # Management Ingress
-NGINX based ingress controller to serve Open Cluster Management services.
 
-# annotations
+## Overview
+management-ingress is a NGINX based ingress controller to serve Open Cluster Management service.
+
+## Get started
+You can add below Kubernetes annotations to specific Ingress objects to customize their behavior. See the [examples](examples) to get more details of the usage.
 
 | Name | Description | Values |
 | --- | --- | --- |
@@ -21,3 +24,25 @@ NGINX based ingress controller to serve Open Cluster Management services.
 | ingress.open-cluster-management.io/proxy-buffer-size | buffer size of response | string |
 | ingress.open-cluster-management.io/proxy-body-size | max response body | string |
 | ingress.open-cluster-management.io/connection | override connection header | string |
+
+## Developing
+### Prerequisites
+- Go 1.15+
+- Docker v19.03.0+
+- OpenShift 3.11+
+
+### Build the binary
+```shell
+make docker-binary
+```
+
+### Build the image
+```shell
+make docker-image
+```
+
+### Installation
+Follow [management-ingress-chart](https://github.com/open-cluster-management/management-ingress-chart) documentation to install management ingress in your OpenShift cluster, and replace the deployment `management-ingress` image name with your own.
+
+## Contributing
+* See [CONTRIBUTING.md](CONTRIBUTING.md) for information about the workflow that we expect, and instructions on the developer certificate of origin that we require.
