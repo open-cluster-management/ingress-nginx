@@ -22,7 +22,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.6.1 // indirect
 	github.com/zakjan/cert-chain-resolver v0.0.0-20200409100953-fa92b0b5236f
-	golang.org/x/text v0.3.3 // indirect
+	golang.org/x/text v0.3.5 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/pool.v3 v3.1.1
