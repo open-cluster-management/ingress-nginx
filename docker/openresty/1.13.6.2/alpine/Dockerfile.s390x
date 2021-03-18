@@ -9,8 +9,6 @@ ARG RESTY_IMAGE_TAG="latest"
 
 FROM ${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
 
-LABEL maintainer="Evan Wies <evan@neomantra.net>"
-
 # Docker Build Arguments
 ARG PREFIX_DIR="/opt/ibm/router"
 ARG RESTY_VERSION="1.13.6.2"

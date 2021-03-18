@@ -14,7 +14,6 @@ RUN make docker-binary
 
 #FROM ${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
 FROM registry.access.redhat.com/ubi7/ubi:7.9 AS openresty_base
-LABEL maintainer="Evan Wies <evan@neomantra.net>"
 
 # Docker Build Arguments
 ARG PREFIX_DIR="/opt/ibm/router"
