@@ -3,8 +3,6 @@
 
 FROM registry.access.redhat.com/rhel7/rhel:latest
 
-LABEL maintainer="Evan Wies <evan@neomantra.net>"
-
 ARG RESTY_IMAGE_BASE="rhel"
 ARG RESTY_LUAROCKS_VERSION="2.4.4"
 ARG RESTY_RPM_FLAVOR=""

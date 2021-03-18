@@ -9,7 +9,6 @@ ARG RESTY_IMAGE_TAG="latest"
 
 #FROM ${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
 FROM registry.access.redhat.com/ubi7/ubi:7.7
-LABEL maintainer="Evan Wies <evan@neomantra.net>"
 
 # Docker Build Arguments
 ARG PREFIX_DIR="/opt/ibm/router"

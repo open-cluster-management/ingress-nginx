@@ -3,8 +3,6 @@
 
 FROM ubuntu:xenial
 
-MAINTAINER Evan Wies <evan@neomantra.net>
-
 # Docker Build Arguments
 ARG RESTY_VERSION="1.11.2.4"
 ARG RESTY_LUAROCKS_VERSION="2.3.0"
