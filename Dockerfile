@@ -17,7 +17,7 @@ FROM registry.access.redhat.com/ubi7/ubi:7.9 AS openresty_base
 
 # Docker Build Arguments
 ARG PREFIX_DIR="/opt/ibm/router"
-ARG RESTY_VERSION="1.13.6.2"
+ARG RESTY_VERSION="1.19.3.1"
 ARG RESTY_OPENSSL_VERSION="1.1.1j"
 ARG RESTY_PCRE_VERSION="8.42"
 ARG RESTY_J="1"
@@ -65,8 +65,6 @@ LABEL resty_config_options_more="${RESTY_CONFIG_OPTIONS_MORE}"
 # These are not intended to be user-specified
 ARG _RESTY_CONFIG_DEPS="--with-luajit --with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION} --with-pcre=/tmp/pcre-${RESTY_PCRE_VERSION}"
 
-COPY docker/openresty/1.13.6.2/non-fips-code/Makefile.openssl1.1.1j.patch /tmp/Makefile.openssl1.1.1j.patch
-
 # 1) Install apk dependencies
 # 2) Download and untar OpenSSL, PCRE, and OpenResty
 # 3) Build OpenResty
@@ -99,7 +97,6 @@ RUN yum install --skip-broken -y perl \
         libX11-devel \
         libXpm-devel \
         libjpeg-devel libpng-devel \
-        patch \
 # backup ubi release info
         && mkdir /tmp/release && mv /etc/*release* /tmp/release \
         && rpm -Uvh --force /tmp/centos-release-7-7.1908.0.el7.centos.x86_64.rpm && sed -i 's/$releasever/7/g' /etc/yum.repos.d/* \
@@ -117,13 +114,14 @@ RUN yum install --skip-broken -y perl \
 # 3) Build OpenResty
     && cd /tmp/openresty-${RESTY_VERSION} \
     && sed -ire "s/openresty/server/g" `find ./ -name ngx_http_special_response.c` \
+# next two lines fix two compilation errors with OpenResty 1.19.3.1
+    && sed -ire '1i #include "lualib.h"' `find ./ -name lj_ccallback.c` \
+    && sed -ire "s/for .int /int i; for (/g" `find ./ -name lib_jit.c` \
     && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
-    && patch ./build/nginx-1.13.6/objs/Makefile /tmp/Makefile.openssl1.1.1j.patch \
     && make -j${RESTY_J} \
     && make -j${RESTY_J} install \
     && ln -sf /opt/ibm/router/nginx/sbin/nginx /opt/ibm/router/bin/openresty \
 # 4) Cleanup
-    && yum remove -y patch \
     && yum clean all \
     && cd /tmp \
     && rm -rf \
@@ -131,7 +129,6 @@ RUN yum install --skip-broken -y perl \
         openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
         openresty-${RESTY_VERSION}.tar.gz openresty-${RESTY_VERSION} \
         pcre-${RESTY_PCRE_VERSION}.tar.gz pcre-${RESTY_PCRE_VERSION} \
-        Makefile.openssl1.1.1j.patch \
     && ln -sf /dev/stdout ${PREFIX_DIR}/nginx/logs/access.log \
     && ln -sf /dev/stderr ${PREFIX_DIR}/nginx/logs/error.log
 
