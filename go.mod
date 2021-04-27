@@ -1,6 +1,6 @@
 module github.com/open-cluster-management/management-ingress
 
-go 1.15
+go 1.16
 
 require (
 	github.com/docker/spdystream v0.0.0-20181023171402-6480d4af844c // indirect
