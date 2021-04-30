@@ -7,7 +7,7 @@
 ARG RESTY_IMAGE_BASE="alpine"
 ARG RESTY_IMAGE_TAG="latest"
 
-FROM docker.io/openshift/origin-release:golang-1.16 AS builder
+FROM sys-zaas-india-cloudpak-team-docker-local.artifactory.swg-devops.com/acm-d/origin-release:golang-1.15 AS builder
 WORKDIR /go/src/github.com/open-cluster-management/management-ingress
 COPY . .
 RUN make docker-binary
@@ -16,8 +16,10 @@ RUN make docker-binary
 FROM registry.access.redhat.com/ubi7/ubi:7.9 AS openresty_base
 
 # Docker Build Arguments
+ARG ARCH
 ARG PREFIX_DIR="/opt/ibm/router"
 ARG RESTY_VERSION="1.19.3.1"
+ARG ROLLBACK_RESTY_VERSION="1.17.8.2"
 ARG RESTY_OPENSSL_VERSION="1.1.1j"
 ARG RESTY_PCRE_VERSION="8.42"
 ARG RESTY_J="1"
@@ -61,10 +63,6 @@ LABEL resty_openssl_version="${RESTY_OPENSSL_VERSION}"
 LABEL resty_pcre_version="${RESTY_PCRE_VERSION}"
 LABEL resty_config_options="${RESTY_CONFIG_OPTIONS}"
 LABEL resty_config_options_more="${RESTY_CONFIG_OPTIONS_MORE}"
-
-# These are not intended to be user-specified
-ARG _RESTY_CONFIG_DEPS="--with-luajit --with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION} --with-pcre=/tmp/pcre-${RESTY_PCRE_VERSION}"
-
 # 1) Install apk dependencies
 # 2) Download and untar OpenSSL, PCRE, and OpenResty
 # 3) Build OpenResty
@@ -76,8 +74,10 @@ ARG _RESTY_CONFIG_DEPS="--with-luajit --with-openssl=/tmp/openssl-${RESTY_OPENSS
 COPY external-deps/openssl-${RESTY_OPENSSL_VERSION}.tar.gz /tmp
 COPY external-deps/pcre-${RESTY_PCRE_VERSION}.tar.gz /tmp
 COPY external-deps/openresty-${RESTY_VERSION}.tar.gz /tmp
-COPY external-deps/centos-release-7-7.1908.0.el7.centos.x86_64.rpm /tmp
-COPY external-deps/alsadi-dumb-init-epel-7.repo /etc/yum.repos.d/alsadi-dumb-init-epel-7.repo
+COPY external-deps/openresty-${ROLLBACK_RESTY_VERSION}.tar.gz /tmp
+COPY external-deps/centos-release-7-7.1908.0.el7.centos.${ARCH}.rpm /tmp
+COPY external-deps/dumb-init_1.2.2_${ARCH} /usr/bin/dumb-init
+COPY external-deps/configure.diff /tmp
 
 RUN yum install --skip-broken -y perl \
         libxslt-devel \
@@ -99,7 +99,7 @@ RUN yum install --skip-broken -y perl \
         libjpeg-devel libpng-devel \
 # backup ubi release info
         && mkdir /tmp/release && mv /etc/*release* /tmp/release \
-        && rpm -Uvh --force /tmp/centos-release-7-7.1908.0.el7.centos.x86_64.rpm && sed -i 's/$releasever/7/g' /etc/yum.repos.d/* \
+        && rpm -Uvh --force /tmp/centos-release-7-7.1908.0.el7.centos.${ARCH}.rpm && sed -i 's/$releasever/7/g' /etc/yum.repos.d/* \
     && yum install --skip-broken -y GeoIP-devel \
         ncurses-devel \
         readline-devel \
@@ -111,26 +111,52 @@ RUN yum install --skip-broken -y perl \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf pcre-${RESTY_PCRE_VERSION}.tar.gz \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
+    && tar xzf openresty-${ROLLBACK_RESTY_VERSION}.tar.gz
+
 # 3) Build OpenResty
-    && cd /tmp/openresty-${RESTY_VERSION} \
-    && sed -ire "s/openresty/server/g" `find ./ -name ngx_http_special_response.c` \
-# next two lines fix two compilation errors with OpenResty 1.19.3.1
-    && sed -ire '1i #include "lualib.h"' `find ./ -name lj_ccallback.c` \
-    && sed -ire "s/for .int /int i; for (/g" `find ./ -name lib_jit.c` \
-    && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
-    && make -j${RESTY_J} \
-    && make -j${RESTY_J} install \
-    && ln -sf /opt/ibm/router/nginx/sbin/nginx /opt/ibm/router/bin/openresty \
-# 4) Cleanup
-    && yum clean all \
-    && cd /tmp \
-    && rm -rf \
-        openssl-${RESTY_OPENSSL_VERSION} \
-        openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
-        openresty-${RESTY_VERSION}.tar.gz openresty-${RESTY_VERSION} \
-        pcre-${RESTY_PCRE_VERSION}.tar.gz pcre-${RESTY_PCRE_VERSION} \
-    && ln -sf /dev/stdout ${PREFIX_DIR}/nginx/logs/access.log \
-    && ln -sf /dev/stderr ${PREFIX_DIR}/nginx/logs/error.log
+RUN if [[ "$(uname -m)" != "s390x" ]]; then \
+        export _RESTY_CONFIG_DEPS="--with-luajit --with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION} --with-pcre=/tmp/pcre-${RESTY_PCRE_VERSION}" \
+        && cd /tmp/openresty-${RESTY_VERSION} \
+        && sed -ire "s/openresty/server/g" `find ./ -name ngx_http_special_response.c` \
+    # next two lines fix two compilation errors with OpenResty 1.19.3.1
+        && sed -ire '1i #include "lualib.h"' `find ./ -name lj_ccallback.c` \
+        && sed -ire "s/for .int /int i; for (/g" `find ./ -name lib_jit.c` \
+        && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
+        && make -j${RESTY_J} \
+        && make -j${RESTY_J} install \
+        && ln -sf /opt/ibm/router/nginx/sbin/nginx /opt/ibm/router/bin/openresty; \
+    elif [[ "$(uname -m)" = "s390x" ]]; then \
+        yum install -y pcre-devel patch \
+        && export _RESTY_CONFIG_DEPS="--with-luajit --with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION}" \
+        && cd /tmp \
+        && rm -rf \
+            openresty-${RESTY_VERSION}/bundle/LuaJIT-2.1-* \
+            openresty-${RESTY_VERSION}/bundle/lua-resty-core-* \
+            openresty-${RESTY_VERSION}/bundle/ngx_lua-* \
+            openresty-${RESTY_VERSION}/bundle/ngx_stream_lua-* \
+        && cp -r openresty-${ROLLBACK_RESTY_VERSION}/bundle/LuaJIT-2.1-* openresty-${RESTY_VERSION}/bundle/ \
+        && cp -r openresty-${ROLLBACK_RESTY_VERSION}/bundle/lua-resty-core-* openresty-${RESTY_VERSION}/bundle/ \
+        && cp -r openresty-${ROLLBACK_RESTY_VERSION}/bundle/ngx_lua-* openresty-${RESTY_VERSION}/bundle/ \
+        && cp -r openresty-${ROLLBACK_RESTY_VERSION}/bundle/ngx_stream_lua-* openresty-${RESTY_VERSION}/bundle/ \
+        && cd /tmp/openresty-${RESTY_VERSION} \
+        && patch -l /tmp/openresty-${RESTY_VERSION}/configure /tmp/configure.diff \
+        && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
+        && make -j${RESTY_J} \
+        && make -j${RESTY_J} install \
+        && ln -sf /opt/ibm/router/nginx/sbin/nginx /opt/ibm/router/bin/openresty; \
+     fi
+# 4) Cleanup  
+RUN yum clean all \
+        && cd /tmp \
+        && rm -rf \
+            openssl-${RESTY_OPENSSL_VERSION} \
+            openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
+            openresty-${RESTY_VERSION}.tar.gz openresty-${RESTY_VERSION} \
+            pcre-${RESTY_PCRE_VERSION}.tar.gz pcre-${RESTY_PCRE_VERSION} \
+            openresty-${ROLLBACK_RESTY_VERSION}.tar.gz openresty-${ROLLBACK_RESTY_VERSION} \
+            configure.diff \ 
+        && ln -sf /dev/stdout ${PREFIX_DIR}/nginx/logs/access.log \
+        && ln -sf /dev/stderr ${PREFIX_DIR}/nginx/logs/error.log
 
 # Add additional binaries into PATH for convenience
 ENV PATH=$PATH:${PREFIX_DIR}/luajit/bin:${PREFIX_DIR}/nginx/sbin:${PREFIX_DIR}/bin
@@ -166,7 +192,6 @@ ENV AUTH_ERROR_PAGE_DIR_PATH=/opt/ibm/router/nginx/conf/errorpages SECRET_KEY_FI
 RUN yum remove -y centos-release \
   && yum update -y --exclude=GeoIP* --exclude=readline* \
   && yum install -y  openssl python python-devl \
-  && yum install -y dumb-init \
   && rpm -e kernel-devel \
   && yum clean all \
   && mkdir -p /var/log/nginx \
@@ -176,7 +201,8 @@ RUN yum remove -y centos-release \
 
 COPY --from=builder /go/src/github.com/open-cluster-management/management-ingress/rootfs /
 
-RUN chmod -R 777 /opt/ibm/router
+RUN chmod -R 777 /opt/ibm/router \
+    && chmod -R 777 /usr/bin/dumb-init
 
 USER 1001
 
