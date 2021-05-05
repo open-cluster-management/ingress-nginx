@@ -70,7 +70,7 @@ LABEL resty_config_options_more="${RESTY_CONFIG_OPTIONS_MORE}"
 
 # 1) Install apk dependencies
 # 2) Download and untar OpenSSL, PCRE, and OpenResty
-
+RUN echo "The Value of arch is ${ARCH}" ... 
 COPY external-deps/openssl-${RESTY_OPENSSL_VERSION}.tar.gz /tmp
 COPY external-deps/pcre-${RESTY_PCRE_VERSION}.tar.gz /tmp
 COPY external-deps/openresty-${RESTY_VERSION}.tar.gz /tmp
