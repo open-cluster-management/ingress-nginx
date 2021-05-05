@@ -6,6 +6,7 @@ include build/Configfile
 REGISTRY ?= $(DOCKER_REGISTRY)/$(DOCKER_NAMESPACE)
 COMMIT_SHA ?= git-$(shell git rev-parse --short HEAD)
 IMAGE_TAG ?= $(COMMIT_SHA)
+ARCH_TYPE = $(shell uname -m)
 
 .PHONY: all
 all: deps fmt lint coverage copyright-check vet image
@@ -26,7 +27,7 @@ docker-binary:
 
 .PHONY: docker-image
 docker-image:
-	docker build -t $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG) --build-arg ARCH=$(ARCH_TYPE) .
+	docker build -t $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG) --build-arg "ARCH=$(ARCH_TYPE)" .
 
 .PHONY: fmt
 fmt:
