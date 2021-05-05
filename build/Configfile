@@ -9,7 +9,7 @@ DOCKER_NAMESPACE ?= open-cluster-management
 DOCKER_USER ?=
 DOCKER_PASS ?=
 GOFILES = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
-ARCH_TYPE = $(shell uname -m)
+ARCH_TYPE ?= $(shell uname -m)
 
 WORKING_CHANGES := $(shell git status --porcelain)
 GIT_COMMIT = $(shell git rev-parse --short HEAD)
@@ -20,4 +20,5 @@ DOCKER_BUILD_OPTS=--build-arg "VCS_REF=$(VCS_REF)" \
 	--build-arg "IMAGE_NAME=$(IMAGE_NAME)" \
 	--build-arg "IMAGE_DESCRIPTION=$(IMAGE_DESCRIPTION)" \
 	--build-arg "ARCH_TYPE=$(BUILD_HARNESS_ARCH)" \
-	--build-arg "IMAGE_VENDOR=$(IMAGE_VENDOR)"
+	--build-arg "IMAGE_VENDOR=$(IMAGE_VENDOR)" \
+        --build-arg "ARCH=$(ARCH_TYPE)" 
