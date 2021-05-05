@@ -26,7 +26,7 @@ docker-binary:
 
 .PHONY: docker-image
 docker-image:
-	docker build -t $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG) --build-arg ARCH=$(uname -m) .
+	docker build -t $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG) --build-arg ARCH=$(ARCH_TYPE) .
 
 .PHONY: fmt
 fmt:

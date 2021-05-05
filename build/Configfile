@@ -9,6 +9,7 @@ DOCKER_NAMESPACE ?= open-cluster-management
 DOCKER_USER ?=
 DOCKER_PASS ?=
 GOFILES = $(shell find . -type f -name '*.go' -not -path "./vendor/*")
+ARCH_TYPE = $(shell uname -m)
 
 WORKING_CHANGES := $(shell git status --porcelain)
 GIT_COMMIT = $(shell git rev-parse --short HEAD)
