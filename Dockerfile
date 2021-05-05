@@ -16,7 +16,6 @@ RUN make docker-binary
 FROM registry.access.redhat.com/ubi7/ubi:7.9 AS openresty_base
 
 # Docker Build Arguments
-ARG ARCH
 ARG PREFIX_DIR="/opt/ibm/router"
 ARG RESTY_VERSION="1.19.3.1"
 ARG ROLLBACK_RESTY_VERSION="1.17.8.2"
@@ -70,16 +69,11 @@ LABEL resty_config_options_more="${RESTY_CONFIG_OPTIONS_MORE}"
 
 # 1) Install apk dependencies
 # 2) Download and untar OpenSSL, PCRE, and OpenResty
-RUN echo "The Value of arch is ${ARCH}" ... 
-COPY external-deps/openssl-${RESTY_OPENSSL_VERSION}.tar.gz /tmp
-COPY external-deps/pcre-${RESTY_PCRE_VERSION}.tar.gz /tmp
-COPY external-deps/openresty-${RESTY_VERSION}.tar.gz /tmp
-COPY external-deps/openresty-${ROLLBACK_RESTY_VERSION}.tar.gz /tmp
-COPY external-deps/centos-release-7-7.1908.0.el7.centos.${ARCH}.rpm /tmp
-COPY external-deps/dumb-init_1.2.2_${ARCH} /usr/bin/dumb-init
-COPY external-deps/configure.diff /tmp
+COPY external-deps/* /tmp/
 
-RUN yum install --skip-broken -y perl \
+RUN set -ex \
+    && ARCH=$(uname -m) \
+    && yum install --skip-broken -y perl \
         libxslt-devel \
         linux-headers \
         make \
@@ -108,6 +102,7 @@ RUN yum install --skip-broken -y perl \
 # recovery ubi release info
         && rm /etc/*release* && mv /tmp/release/* /etc/ && rm -rf /tmp/release \
     && cd /tmp \
+    && cp -r /tmp/dumb-init_1.2.2_${ARCH} /usr/bin/dumb-init \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
     && tar xzf pcre-${RESTY_PCRE_VERSION}.tar.gz \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
@@ -148,13 +143,7 @@ RUN if [[ "$(uname -m)" != "s390x" ]]; then \
 # 4) Cleanup  
 RUN yum clean all \
         && cd /tmp \
-        && rm -rf \
-            openssl-${RESTY_OPENSSL_VERSION} \
-            openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
-            openresty-${RESTY_VERSION}.tar.gz openresty-${RESTY_VERSION} \
-            pcre-${RESTY_PCRE_VERSION}.tar.gz pcre-${RESTY_PCRE_VERSION} \
-            openresty-${ROLLBACK_RESTY_VERSION}.tar.gz openresty-${ROLLBACK_RESTY_VERSION} \
-            configure.diff \ 
+        && rm -rf * \
         && ln -sf /dev/stdout ${PREFIX_DIR}/nginx/logs/access.log \
         && ln -sf /dev/stderr ${PREFIX_DIR}/nginx/logs/error.log
 
