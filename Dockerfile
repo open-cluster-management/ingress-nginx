@@ -17,7 +17,7 @@ FROM registry.access.redhat.com/ubi7/ubi:7.9 AS openresty_base
 
 # Docker Build Arguments
 ARG PREFIX_DIR="/opt/ibm/router"
-ARG RESTY_VERSION="1.19.3.1"
+ARG RESTY_VERSION="1.19.3.2"
 ARG ROLLBACK_RESTY_VERSION="1.17.8.2"
 ARG RESTY_OPENSSL_VERSION="1.1.1j"
 ARG RESTY_PCRE_VERSION="8.42"
@@ -113,7 +113,7 @@ RUN if [[ "$(uname -m)" != "s390x" ]]; then \
         export _RESTY_CONFIG_DEPS="--with-luajit --with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION} --with-pcre=/tmp/pcre-${RESTY_PCRE_VERSION}" \
         && cd /tmp/openresty-${RESTY_VERSION} \
         && sed -ire "s/openresty/server/g" `find ./ -name ngx_http_special_response.c` \
-    # next two lines fix two compilation errors with OpenResty 1.19.3.1
+    # next two lines fix two compilation errors with OpenResty 1.19.3.2
         && sed -ire '1i #include "lualib.h"' `find ./ -name lj_ccallback.c` \
         && sed -ire "s/for .int /int i; for (/g" `find ./ -name lib_jit.c` \
         && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
