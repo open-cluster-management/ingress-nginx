@@ -6,14 +6,13 @@ ARG RESTY_IMAGE_BASE="alpine"
 ARG RESTY_IMAGE_TAG="latest"
 
 #FROM ${RESTY_IMAGE_BASE}:${RESTY_IMAGE_TAG}
-FROM registry.access.redhat.com/ubi7/ubi:7.9-193 AS openresty_base
+FROM registry.access.redhat.com/ubi7/ubi:7.9 AS openresty_base
 LABEL maintainer="Evan Wies <evan@neomantra.net>"
 
 # Docker Build Arguments
 ARG PREFIX_DIR="/opt/ibm/router"
-ARG RESTY_VERSION="1.13.6.2"
-ARG RESTY_OPENSSL_VERSION="1.0.2u"
-ARG RESTY_OPENSSL_FIPS_VERSION="fips-2.0.16"
+ARG RESTY_VERSION="1.19.3.2"
+ARG RESTY_OPENSSL_VERSION="1.1.1j"
 ARG RESTY_PCRE_VERSION="8.42"
 ARG RESTY_J="1"
 ARG RESTY_CONFIG_OPTIONS="\
@@ -59,22 +58,16 @@ LABEL resty_config_options_more="${RESTY_CONFIG_OPTIONS_MORE}"
 
 # These are not intended to be user-specified
 ARG _RESTY_CONFIG_DEPS="--with-luajit --with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION} --with-pcre=/tmp/pcre-${RESTY_PCRE_VERSION}"
-ARG _RESTY_CONFIG_DEPS_FIPS="--with-luajit --with-openssl=/tmp/openssl-${RESTY_OPENSSL_VERSION} --with-pcre=/tmp/pcre-${RESTY_PCRE_VERSION} --with-openssl-opt=fips"
-
-COPY docker/openresty/1.13.6.2/fips-code/Makefile /tmp/Makefile
-COPY docker/openresty/1.13.6.2/fips-code/ngx_event_openssl.c /tmp/ngx_event_openssl.c
 
 # 1) Install apk dependencies
 # 2) Download and untar OpenSSL, PCRE, and OpenResty
 # 3) Build OpenResty
-# 4) Build OpenResty FIPS mode
-# 5) Cleanup
+# 4) Cleanup
 
 # 1) Install apk dependencies
 # 2) Download and untar OpenSSL, PCRE, and OpenResty
 
 COPY external-deps/openssl-${RESTY_OPENSSL_VERSION}.tar.gz /tmp
-COPY external-deps/openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz /tmp
 COPY external-deps/pcre-${RESTY_PCRE_VERSION}.tar.gz /tmp
 COPY external-deps/openresty-${RESTY_VERSION}.tar.gz /tmp
 COPY external-deps/centos-release-7-7.1908.0.el7.centos.x86_64.rpm /tmp
@@ -110,47 +103,24 @@ RUN yum install --skip-broken -y perl \
         && rm /etc/*release* && mv /tmp/release/* /etc/ && rm -rf /tmp/release \
     && cd /tmp \
     && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
-    && tar xzf openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz \
     && tar xzf pcre-${RESTY_PCRE_VERSION}.tar.gz \
     && tar xzf openresty-${RESTY_VERSION}.tar.gz \
 # 3) Build OpenResty
     && cd /tmp/openresty-${RESTY_VERSION} \
     && sed -ire "s/openresty/server/g" `find ./ -name ngx_http_special_response.c` \
+    # next two lines fix two compilation errors with OpenResty 1.19.3.2
+    && sed -ire '1i #include "lualib.h"' `find ./ -name lj_ccallback.c` \
+    && sed -ire "s/for .int /int i; for (/g" `find ./ -name lib_jit.c` \
     && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
     && make -j${RESTY_J} \
     && make -j${RESTY_J} install \
-    && mv /opt/ibm/router/nginx/sbin/nginx /opt/ibm/router/nginx/sbin/nginx-nofips \
-# 4) Build OpenResty FIPS mode
-    && cd /tmp \
-    && rm -rf /tmp/openssl-${RESTY_OPENSSL_VERSION} \
-    && tar xzf openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
-    && rm -rf /tmp/openresty-${RESTY_VERSION} \
-    && tar xzf openresty-${RESTY_VERSION}.tar.gz \
-    && cd /tmp/openssl-${RESTY_OPENSSL_FIPS_VERSION} \
-    && ./config \
-    && make \
-    && make install \
-    && cd /tmp/openresty-${RESTY_VERSION} \
-    && sed -ire "s/openresty/server/g" `find ./ -name ngx_http_special_response.c` \
-    && ./configure -j${RESTY_J} ${_RESTY_CONFIG_DEPS_FIPS} ${RESTY_CONFIG_OPTIONS} ${RESTY_CONFIG_OPTIONS_MORE} \
-    && sed -i 's/pthread/& -lcrypt/g' /tmp/Makefile \
-    && mv /tmp/Makefile /tmp/openresty-${RESTY_VERSION}/build/nginx-1.13.6/objs/Makefile \
-    && mv /tmp/ngx_event_openssl.c /tmp/openresty-${RESTY_VERSION}/build/nginx-1.13.6/src/event/ngx_event_openssl.c \
-    && cd /tmp/openresty-${RESTY_VERSION} \
-    && make -j${RESTY_J} \
-    && make -j${RESTY_J} install \
-    && mv /opt/ibm/router/nginx/sbin/nginx /opt/ibm/router/nginx/sbin/nginx-fips \
-    && ln -sf /opt/ibm/router/nginx/sbin/nginx-fips /opt/ibm/router/bin/openresty-fips \
-    && mv /opt/ibm/router/nginx/sbin/nginx-nofips /opt/ibm/router/nginx/sbin/nginx \
     && ln -sf /opt/ibm/router/nginx/sbin/nginx /opt/ibm/router/bin/openresty \
-# 5) Cleanup
+# 4) Cleanup
     && yum clean all \
     && cd /tmp \
     && rm -rf \
         openssl-${RESTY_OPENSSL_VERSION} \
         openssl-${RESTY_OPENSSL_VERSION}.tar.gz \
-        openssl-${RESTY_OPENSSL_FIPS_VERSION} \
-        openssl-${RESTY_OPENSSL_FIPS_VERSION}.tar.gz \
         openresty-${RESTY_VERSION}.tar.gz openresty-${RESTY_VERSION} \
         pcre-${RESTY_PCRE_VERSION}.tar.gz pcre-${RESTY_PCRE_VERSION} \
     && ln -sf /dev/stdout ${PREFIX_DIR}/nginx/logs/access.log \
