@@ -26,7 +26,7 @@ import (
 	"github.com/golang/glog"
 
 	apiv1 "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"
@@ -66,7 +66,7 @@ func (c *cacheController) Run(stopCh chan struct{}) {
 func (n *NGINXController) createListers(stopCh chan struct{}) (*ingress.StoreLister, *cacheController) {
 	ingEventHandler := cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj interface{}) {
-			addIng := obj.(*extensions.Ingress)
+			addIng := obj.(*networking.Ingress)
 			if !class.IsValid(addIng) {
 				a := addIng.GetAnnotations()[class.IngressKey]
 				glog.Infof("ignoring add for ingress %v based on annotation %v with value %v", addIng.Name, class.IngressKey, a)
@@ -78,7 +78,7 @@ func (n *NGINXController) createListers(stopCh chan struct{}) (*ingress.StoreLis
 			n.syncQueue.Enqueue(obj)
 		},
 		DeleteFunc: func(obj interface{}) {
-			delIng, ok := obj.(*extensions.Ingress)
+			delIng, ok := obj.(*networking.Ingress)
 			if !ok {
 				// If we reached here it means the ingress was deleted but its final state is unrecorded.
 				tombstone, ok := obj.(cache.DeletedFinalStateUnknown)
@@ -86,7 +86,7 @@ func (n *NGINXController) createListers(stopCh chan struct{}) (*ingress.StoreLis
 					glog.Errorf("couldn't get object from tombstone %#v", obj)
 					return
 				}
-				delIng, ok = tombstone.Obj.(*extensions.Ingress)
+				delIng, ok = tombstone.Obj.(*networking.Ingress)
 				if !ok {
 					glog.Errorf("Tombstone contained object that is not an Ingress: %#v", obj)
 					return
@@ -104,8 +104,8 @@ func (n *NGINXController) createListers(stopCh chan struct{}) (*ingress.StoreLis
 			n.syncQueue.Enqueue(obj)
 		},
 		UpdateFunc: func(old, cur interface{}) {
-			oldIng := old.(*extensions.Ingress)
-			curIng := cur.(*extensions.Ingress)
+			oldIng := old.(*networking.Ingress)
+			curIng := cur.(*networking.Ingress)
 			validOld := class.IsValid(oldIng)
 			validCur := class.IsValid(curIng)
 
@@ -212,8 +212,8 @@ func (n *NGINXController) createListers(stopCh chan struct{}) (*ingress.StoreLis
 	controller := &cacheController{}
 
 	lister.Ingress.Store, controller.Ingress = cache.NewInformer(
-		cache.NewListWatchFromClient(n.cfg.Client.ExtensionsV1beta1().RESTClient(), "ingresses", n.cfg.Namespace, fields.Everything()),
-		&extensions.Ingress{}, n.cfg.ResyncPeriod, ingEventHandler)
+		cache.NewListWatchFromClient(n.cfg.Client.NetworkingV1().RESTClient(), "ingresses", n.cfg.Namespace, fields.Everything()),
+		&networking.Ingress{}, n.cfg.ResyncPeriod, ingEventHandler)
 
 	lister.Endpoint.Store, controller.Endpoint = cache.NewInformer(
 		cache.NewListWatchFromClient(n.cfg.Client.CoreV1().RESTClient(), "endpoints", n.cfg.Namespace, fields.Everything()),

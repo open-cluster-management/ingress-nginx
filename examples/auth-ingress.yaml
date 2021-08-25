@@ -1,6 +1,6 @@
 ---
 
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: platform-login
@@ -22,7 +22,7 @@ spec:
 
 ---
 
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: platform-oidc
@@ -50,7 +50,7 @@ spec:
 
 ---
 
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: platform-auth
@@ -77,7 +77,7 @@ spec:
 
 ---
 
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: platform-id-provider
@@ -95,7 +95,7 @@ spec:
           servicePort: 4300
 ---
 
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: platform-id-auth
@@ -115,7 +115,7 @@ spec:
 
 ---
 
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: id-mgmt

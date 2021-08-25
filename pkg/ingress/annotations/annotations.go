@@ -20,7 +20,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/imdario/mergo"
 
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/auth"
@@ -83,7 +83,7 @@ func NewAnnotationExtractor(cfg resolver.Resolver) Extractor {
 }
 
 // Extract extracts the annotations from an Ingress
-func (e Extractor) Extract(ing *extensions.Ingress) *Ingress {
+func (e Extractor) Extract(ing *networking.Ingress) *Ingress {
 	pia := &Ingress{
 		ObjectMeta: ing.ObjectMeta,
 	}

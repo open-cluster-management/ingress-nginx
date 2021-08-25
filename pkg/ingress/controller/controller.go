@@ -20,7 +20,7 @@ import (
 	"github.com/golang/glog"
 
 	apiv1 "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/sets"
 	clientset "k8s.io/client-go/kubernetes"
@@ -50,8 +50,8 @@ type Configuration struct {
 	KubeConfigFile string
 	Client         clientset.Interface
 
-	ResyncPeriod time.Duration
-	ConfigMapName  string
+	ResyncPeriod  time.Duration
+	ConfigMapName string
 
 	Namespace string
 
@@ -69,7 +69,7 @@ type Configuration struct {
 func (n *NGINXController) SetForceReload(shouldReload bool) {
 	if shouldReload {
 		atomic.StoreInt32(&n.forceReload, 1)
-		n.syncQueue.Enqueue(&extensions.Ingress{})
+		n.syncQueue.Enqueue(&networking.Ingress{})
 	} else {
 		atomic.StoreInt32(&n.forceReload, 0)
 	}
@@ -88,7 +88,7 @@ func (n *NGINXController) syncIngress(item interface{}) error {
 	if element, ok := item.(task.Element); ok {
 		if name, ok := element.Key.(string); ok {
 			if obj, exists, _ := n.listers.Ingress.GetByKey(name); exists {
-				ing := obj.(*extensions.Ingress)
+				ing := obj.(*networking.Ingress)
 				n.readSecrets(ing)
 			}
 		}
@@ -97,15 +97,15 @@ func (n *NGINXController) syncIngress(item interface{}) error {
 	// Sort ingress rules using the ResourceVersion field
 	ings := n.listers.Ingress.List()
 	sort.SliceStable(ings, func(i, j int) bool {
-		ir := ings[i].(*extensions.Ingress).ResourceVersion
-		jr := ings[j].(*extensions.Ingress).ResourceVersion
+		ir := ings[i].(*networking.Ingress).ResourceVersion
+		jr := ings[j].(*networking.Ingress).ResourceVersion
 		return ir < jr
 	})
 
 	// filter ingress rules
-	var ingresses []*extensions.Ingress
+	var ingresses []*networking.Ingress
 	for _, ingIf := range ings {
-		ing := ingIf.(*extensions.Ingress)
+		ing := ingIf.(*networking.Ingress)
 		if !class.IsValid(ing) {
 			continue
 		}
@@ -142,7 +142,7 @@ func (n *NGINXController) syncIngress(item interface{}) error {
 }
 
 // readSecrets extracts information about secrets from an Ingress rule
-func (n *NGINXController) readSecrets(ing *extensions.Ingress) {
+func (n *NGINXController) readSecrets(ing *networking.Ingress) {
 	for _, tls := range ing.Spec.TLS {
 		if tls.SecretName == "" {
 			continue
@@ -186,7 +186,7 @@ func (n *NGINXController) getKubernetesUpstream() *ingress.Backend {
 
 // createUpstreams creates the NGINX upstreams for each service referenced in
 // Ingress rules. The servers inside the upstream are endpoints.
-func (n *NGINXController) createUpstreams(data []*extensions.Ingress, ku *ingress.Backend) map[string]*ingress.Backend {
+func (n *NGINXController) createUpstreams(data []*networking.Ingress, ku *ingress.Backend) map[string]*ingress.Backend {
 	upstreams := make(map[string]*ingress.Backend)
 	upstreams[kubernetesUpstreamName] = ku
 
@@ -194,11 +194,11 @@ func (n *NGINXController) createUpstreams(data []*extensions.Ingress, ku *ingres
 		anns := n.getIngressAnnotations(ing)
 
 		var defBackend string
-		if ing.Spec.Backend != nil {
+		if ing.Spec.DefaultBackend != nil && ing.Spec.DefaultBackend.Service != nil {
 			defBackend = fmt.Sprintf("%v-%v-%v",
 				ing.GetNamespace(),
-				ing.Spec.Backend.ServiceName,
-				ing.Spec.Backend.ServicePort.String())
+				ing.Spec.DefaultBackend.Service.Name,
+				fmt.Sprintf("%d", ing.Spec.DefaultBackend.Service.Port.Number))
 
 			glog.V(3).Infof("creating upstream %v", defBackend)
 			upstreams[defBackend] = newUpstream(defBackend)
@@ -224,8 +224,8 @@ func (n *NGINXController) createUpstreams(data []*extensions.Ingress, ku *ingres
 			for _, path := range rule.HTTP.Paths {
 				name := fmt.Sprintf("%v-%v-%v",
 					ing.GetNamespace(),
-					path.Backend.ServiceName,
-					path.Backend.ServicePort.String())
+					path.Backend.Service.Name,
+					fmt.Sprintf("%d", path.Backend.Service.Port.Number))
 
 				if _, ok := upstreams[name]; ok {
 					continue
@@ -233,7 +233,14 @@ func (n *NGINXController) createUpstreams(data []*extensions.Ingress, ku *ingres
 
 				glog.V(3).Infof("creating upstream %v", name)
 				upstreams[name] = newUpstream(name)
-				upstreams[name].Port = path.Backend.ServicePort
+				if path.Backend.Service != nil {
+					if path.Backend.Service.Port.Number > 0 {
+						upstreams[name].Port = intstr.FromInt(int(path.Backend.Service.Port.Number))
+					}
+					if path.Backend.Service.Port.Name != "" {
+						upstreams[name].Port = intstr.FromString(path.Backend.Service.Port.Name)
+					}
+				}
 
 				if !upstreams[name].Secure {
 					upstreams[name].Secure = anns.SecureUpstream.Secure
@@ -251,7 +258,7 @@ func (n *NGINXController) createUpstreams(data []*extensions.Ingress, ku *ingres
 					upstreams[name].ClientCACert = anns.SecureUpstream.ClientCACert
 				}
 
-				svcKey := fmt.Sprintf("%v/%v", ing.GetNamespace(), path.Backend.ServiceName)
+				svcKey := fmt.Sprintf("%v/%v", ing.GetNamespace(), path.Backend.Service.Name)
 
 				s, err := n.listers.Service.GetByName(svcKey)
 				if err != nil {
@@ -272,7 +279,7 @@ func (n *NGINXController) createUpstreams(data []*extensions.Ingress, ku *ingres
 // FDQN referenced by ingress rules and the common name field in the referenced
 // SSL certificates. Each server is configured with location / using a default
 // backend specified by the user or the one inside the ingress spec.
-func (n *NGINXController) createServers(data []*extensions.Ingress,
+func (n *NGINXController) createServers(data []*networking.Ingress,
 	upstreams map[string]*ingress.Backend,
 	ku *ingress.Backend) map[string]*ingress.Server {
 
@@ -310,9 +317,9 @@ func (n *NGINXController) createServers(data []*extensions.Ingress,
 		anns := n.getIngressAnnotations(ing)
 		un := ""
 
-		if ing.Spec.Backend != nil {
+		if ing.Spec.DefaultBackend != nil && ing.Spec.DefaultBackend.Service != nil {
 			// replace default backend
-			defUpstream := fmt.Sprintf("%v-%v-%v", ing.GetNamespace(), ing.Spec.Backend.ServiceName, ing.Spec.Backend.ServicePort.String())
+			defUpstream := fmt.Sprintf("%v-%v-%v", ing.GetNamespace(), ing.Spec.DefaultBackend.Service.Name, fmt.Sprintf("%d", ing.Spec.DefaultBackend.Service.Port.Number))
 			if backendUpstream, ok := upstreams[defUpstream]; ok {
 				un = backendUpstream.Name
 
@@ -416,7 +423,7 @@ func (n *NGINXController) createServers(data []*extensions.Ingress,
 
 // getBackendServers returns a list of Upstream and Server to be used by the backend
 // An upstream can be used in multiple servers if the namespace, service name and port are the same
-func (n *NGINXController) getBackendServers(ingresses []*extensions.Ingress) ([]*ingress.Backend, []*ingress.Server) {
+func (n *NGINXController) getBackendServers(ingresses []*networking.Ingress) ([]*ingress.Backend, []*ingress.Server) {
 	ku := n.getKubernetesUpstream()
 	upstreams := n.createUpstreams(ingresses, ku)
 	servers := n.createServers(ingresses, upstreams, ku)
@@ -443,8 +450,8 @@ func (n *NGINXController) getBackendServers(ingresses []*extensions.Ingress) ([]
 			for _, path := range rule.HTTP.Paths {
 				upsName := fmt.Sprintf("%v-%v-%v",
 					ing.GetNamespace(),
-					path.Backend.ServiceName,
-					path.Backend.ServicePort.String())
+					path.Backend.Service.Name,
+					fmt.Sprintf("%d", path.Backend.Service.Port.Number))
 
 				ups := upstreams[upsName]
 
@@ -569,7 +576,7 @@ func (n NGINXController) GetService(name string) (*apiv1.Service, error) {
 	return n.listers.Service.GetByName(name)
 }
 
-func (n *NGINXController) extractAnnotations(ing *extensions.Ingress) {
+func (n *NGINXController) extractAnnotations(ing *networking.Ingress) {
 	glog.V(3).Infof("updating annotations information for ingress %v/%v", ing.Namespace, ing.Name)
 	anns := n.annotations.Extract(ing)
 	err := n.listers.IngressAnnotation.Update(anns)
@@ -579,7 +586,7 @@ func (n *NGINXController) extractAnnotations(ing *extensions.Ingress) {
 }
 
 // getByIngress returns the parsed annotations from an Ingress
-func (n *NGINXController) getIngressAnnotations(ing *extensions.Ingress) *annotations.Ingress {
+func (n *NGINXController) getIngressAnnotations(ing *networking.Ingress) *annotations.Ingress {
 	key := fmt.Sprintf("%v/%v", ing.Namespace, ing.Name)
 	item, exists, err := n.listers.IngressAnnotation.GetByKey(key)
 	if err != nil {

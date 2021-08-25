@@ -16,36 +16,43 @@ import (
 	"testing"
 
 	api "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
-	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func buildIngress() *extensions.Ingress {
-	defaultBackend := extensions.IngressBackend{
-		ServiceName: "default-backend",
-		ServicePort: intstr.FromInt(80),
+func buildIngress() *networking.Ingress {
+	defaultBackend := networking.IngressBackend{
+		Service: &networking.IngressServiceBackend{
+			Name: "default-backend",
+			Port: networking.ServiceBackendPort{
+				Number: 80,
+			},
+		},
 	}
 
-	return &extensions.Ingress{
+	return &networking.Ingress{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Name:      "foo",
 			Namespace: api.NamespaceDefault,
 		},
-		Spec: extensions.IngressSpec{
-			Backend: &extensions.IngressBackend{
-				ServiceName: "default-backend",
-				ServicePort: intstr.FromInt(80),
+		Spec: networking.IngressSpec{
+			DefaultBackend: &networking.IngressBackend{
+				Service: &networking.IngressServiceBackend{
+					Name: "default-backend",
+					Port: networking.ServiceBackendPort{
+						Number: 80,
+					},
+				},
 			},
-			Rules: []extensions.IngressRule{
+			Rules: []networking.IngressRule{
 				{
 					Host: "foo.bar.com",
-					IngressRuleValue: extensions.IngressRuleValue{
-						HTTP: &extensions.HTTPIngressRuleValue{
-							Paths: []extensions.HTTPIngressPath{
+					IngressRuleValue: networking.IngressRuleValue{
+						HTTP: &networking.HTTPIngressRuleValue{
+							Paths: []networking.HTTPIngressPath{
 								{
 									Path:    "/foo",
 									Backend: defaultBackend,

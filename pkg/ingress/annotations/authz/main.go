@@ -13,7 +13,7 @@ package authz
 
 import (
 	"github.com/pkg/errors"
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
@@ -30,7 +30,7 @@ func NewParser(r resolver.Resolver) parser.IngressAnnotation {
 
 // Parse parses the annotations contained in the ingress
 // rule used to indicate if the upstream servers should use SSL
-func (a at) Parse(ing *extensions.Ingress) (interface{}, error) {
+func (a at) Parse(ing *networking.Ingress) (interface{}, error) {
 	ca, _ := parser.GetStringAnnotation("authz-type", ing)
 	if ca != "rbac" {
 		return "", errors.Errorf("Authz type %v is not supported", ca)

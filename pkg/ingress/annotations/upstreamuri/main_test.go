@@ -15,7 +15,7 @@ import (
 	"testing"
 
 	api "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
@@ -39,12 +39,12 @@ func TestParse(t *testing.T) {
 		{nil, ""},
 	}
 
-	ing := &extensions.Ingress{
+	ing := &networking.Ingress{
 		ObjectMeta: meta_v1.ObjectMeta{
 			Name:      "foo",
 			Namespace: api.NamespaceDefault,
 		},
-		Spec: extensions.IngressSpec{},
+		Spec: networking.IngressSpec{},
 	}
 
 	for _, testCase := range testCases {
