@@ -89,12 +89,12 @@ local function validate_access_token_or_exit()
 
             -- attempt to set forwared token in cookie as well, if not already set
             local cookie, err = cookiejar:new()
-            access_token_cookie = cookie:get("acm-access-token-cookie")
+            access_token_cookie = cookie:get("openshift-session-token")
             if access_token_cookie == nil then
-                ngx.log(ngx.NOTICE, "acm-access-token-cookie not found,setting it.")
+                ngx.log(ngx.NOTICE, "openshift-session-token not found,setting it.")
                 -- set cookie, max age 12h in seconds
                 local ok, err = cookie:set({
-                  key = "acm-access-token-cookie", value = forwarded_token, path = "/",
+                  key = "openshift-session-token", value = forwarded_token, path = "/",
                   max_age = 43200, httponly = true, samesite = "Lax", secure = true
                 })
                 if err ~= nil then
@@ -102,7 +102,7 @@ local function validate_access_token_or_exit()
                 end
 
             else
-                ngx.log(ngx.NOTICE, "acm-access-token-cookie already set.")
+                ngx.log(ngx.NOTICE, "openshift-session-token already set.")
             end
 
         else
@@ -113,7 +113,7 @@ local function validate_access_token_or_exit()
             -- dash in its name.
 
             local cookie, err = cookiejar:new()
-            token = cookie:get("acm-access-token-cookie")
+            token = cookie:get("openshift-session-token")
         end
 
         if token ~= nil then
