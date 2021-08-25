@@ -28,13 +28,12 @@ import (
 	"github.com/golang/glog"
 
 	apiv1 "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes/scheme"
 	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/flowcontrol"
-	"k8s.io/kubernetes/pkg/util/filesystem"
 
 	"github.com/open-cluster-management/management-ingress/pkg/file"
 	"github.com/open-cluster-management/management-ingress/pkg/ingress"
@@ -153,7 +152,7 @@ Error loading new template : %v
 	n.t = ngxTpl
 
 	// TODO: refactor
-	if _, ok := fs.(filesystem.DefaultFs); !ok {
+	if _, ok := fs.(*file.DefaultFs); !ok {
 		watch.NewDummyFileWatcher(tmplPath, onChange)
 	} else {
 		_, err = watch.NewFileWatcher(tmplPath, onChange)
@@ -213,7 +212,7 @@ type NGINXController struct {
 
 	isShuttingDown bool
 
-	fileSystem filesystem.Filesystem
+	fileSystem file.Filesystem
 }
 
 // Start start a new NGINX master process running in foreground.
@@ -225,7 +224,7 @@ func (n *NGINXController) Start() {
 	// initial sync of secrets to avoid unnecessary reloads
 	glog.Info("running initial sync of secrets")
 	for _, obj := range n.listers.Ingress.List() {
-		ing := obj.(*extensions.Ingress)
+		ing := obj.(*networking.Ingress)
 
 		if !class.IsValid(ing) {
 			a := ing.GetAnnotations()[class.IngressKey]
@@ -258,7 +257,7 @@ func (n *NGINXController) Start() {
 
 	go n.syncQueue.Run(time.Second, n.stopCh)
 	// force initial sync
-	n.syncQueue.Enqueue(&extensions.Ingress{})
+	n.syncQueue.Enqueue(&networking.Ingress{})
 
 	for {
 		select {

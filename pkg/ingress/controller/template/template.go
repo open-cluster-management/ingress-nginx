@@ -26,7 +26,7 @@ import (
 	"strings"
 	text_template "text/template"
 
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -414,9 +414,9 @@ type ingressInformation struct {
 }
 
 func getIngressInformation(i, p interface{}) *ingressInformation {
-	ing, ok := i.(*extensions.Ingress)
+	ing, ok := i.(*networking.Ingress)
 	if !ok {
-		glog.Errorf("expected an '*extensions.Ingress' type but %T was returned", i)
+		glog.Errorf("expected an '*networking.Ingress' type but %T was returned", i)
 		return &ingressInformation{}
 	}
 
@@ -436,8 +436,8 @@ func getIngressInformation(i, p interface{}) *ingressInformation {
 		Annotations: ing.Annotations,
 	}
 
-	if ing.Spec.Backend != nil {
-		info.Service = ing.Spec.Backend.ServiceName
+	if ing.Spec.DefaultBackend != nil && ing.Spec.DefaultBackend.Service != nil {
+		info.Service = ing.Spec.DefaultBackend.Service.Name
 	}
 
 	for _, rule := range ing.Spec.Rules {
@@ -447,7 +447,7 @@ func getIngressInformation(i, p interface{}) *ingressInformation {
 
 		for _, rPath := range rule.HTTP.Paths {
 			if path == rPath.Path {
-				info.Service = rPath.Backend.ServiceName
+				info.Service = rPath.Backend.Service.Name
 				return info
 			}
 		}

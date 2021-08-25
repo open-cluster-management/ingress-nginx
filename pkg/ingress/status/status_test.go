@@ -20,7 +20,7 @@ import (
 	"testing"
 
 	apiv1 "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	testclient "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/tools/cache"
@@ -151,7 +151,7 @@ func buildSimpleClientSet() *testclient.Clientset {
 					SelfLink:  "/api/v1/namespaces/default/endpoints/ingress-controller-leader",
 				},
 			}}},
-		&extensions.IngressList{Items: buildExtensionsIngresses()},
+		&networking.IngressList{Items: buildIngresses()},
 	)
 }
 
@@ -159,14 +159,14 @@ func fakeSynFn(interface{}) error {
 	return nil
 }
 
-func buildExtensionsIngresses() []extensions.Ingress {
-	return []extensions.Ingress{
+func buildIngresses() []networking.Ingress {
+	return []networking.Ingress{
 		{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "foo_ingress_1",
 				Namespace: apiv1.NamespaceDefault,
 			},
-			Status: extensions.IngressStatus{
+			Status: networking.IngressStatus{
 				LoadBalancer: apiv1.LoadBalancerStatus{
 					Ingress: []apiv1.LoadBalancerIngress{
 						{
@@ -185,7 +185,7 @@ func buildExtensionsIngresses() []extensions.Ingress {
 					class.IngressKey: "no-nginx",
 				},
 			},
-			Status: extensions.IngressStatus{
+			Status: networking.IngressStatus{
 				LoadBalancer: apiv1.LoadBalancerStatus{
 					Ingress: []apiv1.LoadBalancerIngress{
 						{
@@ -201,7 +201,7 @@ func buildExtensionsIngresses() []extensions.Ingress {
 				Name:      "foo_ingress_2",
 				Namespace: apiv1.NamespaceDefault,
 			},
-			Status: extensions.IngressStatus{
+			Status: networking.IngressStatus{
 				LoadBalancer: apiv1.LoadBalancerStatus{
 					Ingress: []apiv1.LoadBalancerIngress{},
 				},
@@ -212,17 +212,17 @@ func buildExtensionsIngresses() []extensions.Ingress {
 
 func buildIngressListener() store.IngressLister {
 	s := cache.NewStore(cache.MetaNamespaceKeyFunc)
-	s.Add(&extensions.Ingress{
+	s.Add(&networking.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo_ingress_non_01",
 			Namespace: apiv1.NamespaceDefault,
 		}})
-	s.Add(&extensions.Ingress{
+	s.Add(&networking.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "foo_ingress_1",
 			Namespace: apiv1.NamespaceDefault,
 		},
-		Status: extensions.IngressStatus{
+		Status: networking.IngressStatus{
 			LoadBalancer: apiv1.LoadBalancerStatus{
 				Ingress: buildLoadBalancerIngressByIP(),
 			},
@@ -284,32 +284,6 @@ func TestRunningAddresessWithPods(t *testing.T) {
 	}
 }
 
-/*
-TODO: this test requires a refactoring
-func TestUpdateStatus(t *testing.T) {
-	fk := buildStatusSync()
-	newIPs := buildLoadBalancerIngressByIP()
-	fk.updateStatus(newIPs)
-
-	fooIngress1, err1 := fk.Client.Extensions().Ingresses(apiv1.NamespaceDefault).Get("foo_ingress_1", metav1.GetOptions{})
-	if err1 != nil {
-		t.Fatalf("unexpected error")
-	}
-	fooIngress1CurIPs := fooIngress1.Status.LoadBalancer.Ingress
-	if !ingressSliceEqual(fooIngress1CurIPs, newIPs) {
-		t.Fatalf("returned %v but expected %v", fooIngress1CurIPs, newIPs)
-	}
-
-	fooIngress2, err2 := fk.Client.Extensions().Ingresses(apiv1.NamespaceDefault).Get("foo_ingress_2", metav1.GetOptions{})
-	if err2 != nil {
-		t.Fatalf("unexpected error")
-	}
-	fooIngress2CurIPs := fooIngress2.Status.LoadBalancer.Ingress
-	if !ingressSliceEqual(fooIngress2CurIPs, []apiv1.LoadBalancerIngress{}) {
-		t.Fatalf("returned %v but expected %v", fooIngress2CurIPs, []apiv1.LoadBalancerIngress{})
-	}
-}
-*/
 func TestSliceToStatus(t *testing.T) {
 	fkEndpoints := []string{
 		"10.0.0.1",
