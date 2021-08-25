@@ -17,7 +17,7 @@ limitations under the License.
 package rewrite
 
 import (
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
@@ -71,7 +71,7 @@ func NewParser(r resolver.Resolver) parser.IngressAnnotation {
 
 // ParseAnnotations parses the annotations contained in the ingress
 // rule used to rewrite the defined paths
-func (a rewrite) Parse(ing *extensions.Ingress) (interface{}, error) {
+func (a rewrite) Parse(ing *networking.Ingress) (interface{}, error) {
 	rt, _ := parser.GetStringAnnotation("rewrite-target", ing)
 	abu, _ := parser.GetBoolAnnotation("add-base-url", ing)
 	bus, _ := parser.GetStringAnnotation("base-url-scheme", ing)

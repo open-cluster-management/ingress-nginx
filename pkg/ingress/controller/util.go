@@ -20,13 +20,15 @@ limitations under the License.
 package controller
 
 import (
+	"io/ioutil"
+	"path"
+	"strconv"
+	"strings"
 	"syscall"
 
 	"github.com/golang/glog"
-
 	api "k8s.io/api/core/v1"
 	"k8s.io/klog"
-	"k8s.io/kubernetes/pkg/util/sysctl"
 
 	"github.com/open-cluster-management/management-ingress/pkg/ingress"
 )
@@ -43,7 +45,7 @@ func newUpstream(name string) *ingress.Backend {
 // maximum number of connections that can be queued for acceptance
 // http://nginx.org/en/docs/http/ngx_http_core_module.html#listen
 func sysctlSomaxconn() int {
-	maxConns, err := sysctl.New().GetSysctl("net/core/somaxconn")
+	maxConns, err := getSysctl("net/core/somaxconn")
 	if err != nil || maxConns < 512 {
 		glog.V(3).Infof("system net.core.somaxconn=%v (using system default)", maxConns)
 		return 511
@@ -71,4 +73,19 @@ func intInSlice(i int, list []int) bool {
 		}
 	}
 	return false
+}
+
+// getSysctl returns the value for the specified sysctl setting
+func getSysctl(sysctl string) (int, error) {
+	data, err := ioutil.ReadFile(path.Join("/proc/sys", sysctl))
+	if err != nil {
+		return -1, err
+	}
+
+	val, err := strconv.Atoi(strings.Trim(string(data), " \n"))
+	if err != nil {
+		return -1, err
+	}
+
+	return val, nil
 }

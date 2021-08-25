@@ -15,7 +15,7 @@ import (
 	"time"
 
 	apiv1 "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/connection"
@@ -126,7 +126,7 @@ type Location struct {
 	// traffic to the backend.
 	Path string `json:"path"`
 	// Ingress returns the ingress from which this location was generated
-	Ingress *extensions.Ingress `json:"ingress"`
+	Ingress *networking.Ingress `json:"ingress"`
 	// Backend describes the name of the backend to use.
 	Backend string `json:"backend"`
 	// Service describes the referenced services from the ingress

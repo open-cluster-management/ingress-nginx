@@ -17,7 +17,7 @@ limitations under the License.
 package xforwardedprefix
 
 import (
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
@@ -34,6 +34,6 @@ func NewParser(r resolver.Resolver) parser.IngressAnnotation {
 
 // Parse parses the annotations contained in the ingress rule
 // used to add an x-forwarded-prefix header to the request
-func (cbbs xforwardedprefix) Parse(ing *extensions.Ingress) (interface{}, error) {
+func (cbbs xforwardedprefix) Parse(ing *networking.Ingress) (interface{}, error) {
 	return parser.GetBoolAnnotation("x-forwarded-prefix", ing)
 }
