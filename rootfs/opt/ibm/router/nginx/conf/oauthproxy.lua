@@ -74,7 +74,8 @@ local function validate_access_token_or_exit()
 
     if auth_header ~= nil then
         ngx.log(ngx.NOTICE, "Authorization header found. Attempt to extract token.")
-        _, _, token = string.find(auth_header, "Bearer%s+(.+)")
+        local _, _, bearer_token = string.find(auth_header, "Bearer%s+(.+)")
+        token = bearer_token
     end
 
     if token == nil then
@@ -89,7 +90,7 @@ local function validate_access_token_or_exit()
 
             -- attempt to set forwared token in cookie as well, if not already set
             local cookie, err = cookiejar:new()
-            access_token_cookie = cookie:get("acm-access-token-cookie")
+            local access_token_cookie = cookie:get("acm-access-token-cookie")
             if access_token_cookie == nil then
                 ngx.log(ngx.NOTICE, "acm-access-token-cookie not found,setting it.")
                 -- set cookie, max age 12h in seconds
