@@ -1,0 +1,14 @@
+--- openresty-1.19.3.2/bundle/LuaJIT-2.1-20201027/src/lj_def.h.org	2021-09-03 14:41:28.000000000 +0800
++++ openresty-1.19.3.2/bundle/LuaJIT-2.1-20201027/src/lj_def.h	2021-09-03 14:38:25.000000000 +0800
+@@ -112,6 +112,11 @@
+ #define checkptr32(x)	((uintptr_t)(x) == (uint32_t)(uintptr_t)(x))
+ #define checkptr47(x)	(((uint64_t)(uintptr_t)(x) >> 47) == 0)
+ #define checkptrGC(x)	(LJ_GC64 ? checkptr47((x)) : LJ_64 ? checkptr31((x)) :1)
++#if defined(__powerpc64__) && _CALL_ELF == 2
++#define checkptrGC(x)   (LJ_GC64 ? checkptr47((x)) : LJ_64 ? checkptr32((x)) :1)
++#else
++#define checkptrGC(x)	(LJ_GC64 ? checkptr47((x)) : LJ_64 ? checkptr31((x)) :1)
++#endif
+ 
+ /* Every half-decent C compiler transforms this into a rotate instruction. */
+ #define lj_rol(x, n)	(((x)<<(n)) | ((x)>>(-(int)(n)&(8*sizeof(x)-1))))
