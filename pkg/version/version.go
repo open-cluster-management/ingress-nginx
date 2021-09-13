@@ -30,7 +30,7 @@ var (
 // String returns information about the release.
 func String() string {
 	return fmt.Sprintf(`-------------------------------------------------------------------------------
-ICP Management Ingress controller
+ACM Management Ingress controller
   Release:    %v
   Build:      %v
   Repository: %v

@@ -72,7 +72,6 @@ data:
     {
        "uiConfiguration":{
           "edition":"Enterprise Edition",
-          "cluster_name":"mycluster.icp",
           "proxy_ip":"192.168.0.1",
           "access_ip":"192.168.0.1",
           "kube_apiserver_secure_port":"8001"

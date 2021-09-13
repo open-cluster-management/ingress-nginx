@@ -18,5 +18,5 @@ then
    openssl x509 -pubkey -noout -in /var/run/secrets/platform-auth/tls.crt > /var/run/secrets/platform-auth-public.pem
    echo "Impersonation support added."
 fi
-echo "Starting ICP Management ingress"
+echo "Starting ACM Management ingress"
 $@

@@ -51,10 +51,9 @@ import (
 )
 
 var (
-	tmplPath        = "/opt/ibm/router/nginx/template/nginx.tmpl"
-	cfgPath         = "/opt/ibm/router/nginx/conf/nginx.conf"
-	nginxBinary     = "/opt/ibm/router/nginx/sbin/nginx"
-	nginxBinaryFIPS = "/opt/ibm/router/nginx/sbin/nginx-fips"
+	tmplPath    = "/opt/ibm/router/nginx/template/nginx.tmpl"
+	cfgPath     = "/opt/ibm/router/nginx/conf/nginx.conf"
+	nginxBinary = "/opt/ibm/router/nginx/sbin/nginx"
 )
 
 // NewNGINXController creates a new NGINX Ingress controller.
@@ -62,14 +61,9 @@ var (
 // as source for nginx commands
 func NewNGINXController(config *Configuration, fs file.Filesystem) *NGINXController {
 	ngx := os.Getenv("NGINX_BINARY")
-	fips := os.Getenv("FIPS_ENABLED")
 
 	if ngx == "" {
-		if fips == "true" {
-			ngx = nginxBinaryFIPS
-		} else {
-			ngx = nginxBinary
-		}
+		ngx = nginxBinary
 	}
 
 	eventBroadcaster := record.NewBroadcaster()
