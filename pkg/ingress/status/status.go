@@ -33,7 +33,7 @@ import (
 
 	pool "gopkg.in/go-playground/pool.v3"
 	apiv1 "k8s.io/api/core/v1"
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -42,7 +42,6 @@ import (
 	"k8s.io/client-go/tools/leaderelection"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/client-go/tools/record"
-	"k8s.io/kubernetes/pkg/kubelet/util/sliceutils"
 
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/class"
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/store"
@@ -257,12 +256,23 @@ func (s *statusSync) runningAddresses() ([]string, error) {
 
 	for _, pod := range pods.Items {
 		name := k8s.GetNodeIPOrName(s.Client, pod.Spec.NodeName, true)
-		if !sliceutils.StringInSlice(name, addrs) {
+		if !stringInSlice(name, addrs) {
 			addrs = append(addrs, name)
 		}
 	}
 
 	return addrs, nil
+}
+
+// stringInSlice returns true if s is in list
+func stringInSlice(s string, list []string) bool {
+	for _, v := range list {
+		if v == s {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (s *statusSync) isRunningMultiplePods() bool {
@@ -304,7 +314,7 @@ func (s *statusSync) updateStatus(newIngressPoint []apiv1.LoadBalancerIngress) {
 	batch := p.Batch()
 
 	for _, cur := range ings {
-		ing := cur.(*extensions.Ingress)
+		ing := cur.(*networking.Ingress)
 
 		if !class.IsValid(ing) {
 			continue
@@ -317,7 +327,7 @@ func (s *statusSync) updateStatus(newIngressPoint []apiv1.LoadBalancerIngress) {
 	batch.WaitAll()
 }
 
-func runUpdate(ing *extensions.Ingress, status []apiv1.LoadBalancerIngress,
+func runUpdate(ing *networking.Ingress, status []apiv1.LoadBalancerIngress,
 	client clientset.Interface) pool.WorkFunc {
 	return func(wu pool.WorkUnit) (interface{}, error) {
 		if wu.IsCancelled() {
@@ -334,7 +344,7 @@ func runUpdate(ing *extensions.Ingress, status []apiv1.LoadBalancerIngress,
 			return true, nil
 		}
 
-		ingClient := client.ExtensionsV1beta1().Ingresses(ing.Namespace)
+		ingClient := client.NetworkingV1().Ingresses(ing.Namespace)
 
 		currIng, err := ingClient.Get(context.TODO(), ing.Name, metav1.GetOptions{})
 		if err != nil {

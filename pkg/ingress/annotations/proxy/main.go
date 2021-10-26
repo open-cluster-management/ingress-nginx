@@ -17,7 +17,7 @@ limitations under the License.
 package proxy
 
 import (
-	extensions "k8s.io/api/extensions/v1beta1"
+	networking "k8s.io/api/networking/v1"
 
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
 	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
@@ -78,7 +78,7 @@ func NewParser(r resolver.Resolver) parser.IngressAnnotation {
 
 // ParseAnnotations parses the annotations contained in the ingress
 // rule used to configure upstream check parameters
-func (a proxy) Parse(ing *extensions.Ingress) (interface{}, error) {
+func (a proxy) Parse(ing *networking.Ingress) (interface{}, error) {
 	ct, err := parser.GetIntAnnotation("proxy-connect-timeout", ing)
 	if err != nil {
 		ct = DefaultProxyConfig.ConnectTimeout
