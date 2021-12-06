@@ -7,7 +7,7 @@
 ARG RESTY_IMAGE_BASE="alpine"
 ARG RESTY_IMAGE_TAG="latest"
 
-FROM docker.io/openshift/origin-release:golang-1.16 AS builder
+FROM registry.ci.openshift.org/open-cluster-management/builder:go1.17-linux AS builder
 WORKDIR /go/src/github.com/open-cluster-management/management-ingress
 COPY . .
 RUN make docker-binary
