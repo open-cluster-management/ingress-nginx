@@ -17,8 +17,8 @@ import (
 	"github.com/pkg/errors"
 	networking "k8s.io/api/networking/v1"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations/parser"
+	"github.com/stolostron/management-ingress/pkg/ingress/resolver"
 )
 
 // Config describes SSL backend configuration

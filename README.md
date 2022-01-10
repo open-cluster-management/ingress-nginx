@@ -42,7 +42,7 @@ make docker-image
 ```
 
 ### Installation
-Follow [management-ingress-chart](https://github.com/open-cluster-management/management-ingress-chart) documentation to install management ingress in your OpenShift cluster, and replace the deployment `management-ingress` image name with your own.
+Follow [management-ingress-chart](https://github.com/stolostron/management-ingress-chart) documentation to install management ingress in your OpenShift cluster, and replace the deployment `management-ingress` image name with your own.
 
 ## Contributing
 * See [CONTRIBUTING.md](CONTRIBUTING.md) for information about the workflow that we expect, and instructions on the developer certificate of origin that we require.

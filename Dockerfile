@@ -7,8 +7,8 @@
 ARG RESTY_IMAGE_BASE="alpine"
 ARG RESTY_IMAGE_TAG="latest"
 
-FROM registry.ci.openshift.org/open-cluster-management/builder:go1.17-linux AS builder
-WORKDIR /go/src/github.com/open-cluster-management/management-ingress
+FROM registry.ci.openshift.org/stolostron/builder:go1.17-linux AS builder
+WORKDIR /go/src/github.com/stolostron/management-ingress
 COPY . .
 RUN make docker-binary
 
@@ -192,7 +192,7 @@ RUN yum remove -y centos-release \
   && ln -sf /dev/stdout /var/log/nginx/access.log \
   && ln -sf /dev/stderr /var/log/nginx/error.log
 
-COPY --from=builder /go/src/github.com/open-cluster-management/management-ingress/rootfs /
+COPY --from=builder /go/src/github.com/stolostron/management-ingress/rootfs /
 
 RUN chmod -R 777 /opt/ibm/router \
     && chmod -R 777 /usr/bin/dumb-init

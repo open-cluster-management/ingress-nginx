@@ -19,8 +19,8 @@ package upstreamhashby
 import (
 	"testing"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations/parser"
+	"github.com/stolostron/management-ingress/pkg/ingress/resolver"
 	api "k8s.io/api/core/v1"
 	networking "k8s.io/api/networking/v1"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"

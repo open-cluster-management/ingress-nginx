@@ -31,7 +31,7 @@ import (
 
 	networking "k8s.io/api/networking/v1"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/errors"
+	"github.com/stolostron/management-ingress/pkg/ingress/errors"
 )
 
 var (

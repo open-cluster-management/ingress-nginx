@@ -1,4 +1,4 @@
-module github.com/open-cluster-management/management-ingress
+module github.com/stolostron/management-ingress
 
 go 1.17
 
