@@ -1,8 +1,8 @@
 # Copyright (c) 2021 Red Hat, Inc.
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.ci.openshift.org/open-cluster-management/builder:go1.17-linux AS builder
-WORKDIR /go/src/github.com/open-cluster-management/management-ingress
+FROM registry.ci.openshift.org/stolostron/builder:go1.17-linux AS builder
+WORKDIR /go/src/github.com/stolostron/management-ingress
 COPY . .
 RUN make docker-binary
 
@@ -144,7 +144,7 @@ LABEL org.label-schema.vendor="Red Hat" \
 
 ENV AUTH_ERROR_PAGE_DIR_PATH=/opt/ibm/router/nginx/conf/errorpages PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/ibm/router/nginx/sbin
 
-COPY --from=builder /go/src/github.com/open-cluster-management/management-ingress/rootfs /
+COPY --from=builder /go/src/github.com/stolostron/management-ingress/rootfs /
 
 RUN chmod -R 777 /opt/ibm/router
 

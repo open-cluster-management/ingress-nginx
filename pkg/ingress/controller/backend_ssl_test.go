@@ -28,9 +28,9 @@ import (
 	cache_client "k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/flowcontrol"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/store"
-	"github.com/open-cluster-management/management-ingress/pkg/task"
+	"github.com/stolostron/management-ingress/pkg/ingress"
+	"github.com/stolostron/management-ingress/pkg/ingress/store"
+	"github.com/stolostron/management-ingress/pkg/task"
 )
 
 const (
