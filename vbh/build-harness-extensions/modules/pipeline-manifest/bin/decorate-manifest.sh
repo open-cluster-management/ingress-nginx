@@ -5,7 +5,7 @@
 #   $2 - name of the sha'd manifest json file (to be created)
 #
 # Required environment variables:
-#   $QUAY_TOKEN - you know, the token... to quay (needs to be able to read open-cluster-management stuffs
+#   $QUAY_TOKEN - you know, the token... to quay (needs to be able to read stolostron stuffs
 #
 
 if [[ -z "$QUAY_TOKEN" ]]
