@@ -18,11 +18,11 @@ import (
 	networking "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/connection"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/proxy"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/rewrite"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/store"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations/connection"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations/proxy"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations/rewrite"
+	"github.com/stolostron/management-ingress/pkg/ingress/resolver"
+	"github.com/stolostron/management-ingress/pkg/ingress/store"
 )
 
 var (

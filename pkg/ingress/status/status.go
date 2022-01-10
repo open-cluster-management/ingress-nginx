@@ -43,10 +43,10 @@ import (
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 	"k8s.io/client-go/tools/record"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/class"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/store"
-	"github.com/open-cluster-management/management-ingress/pkg/k8s"
-	"github.com/open-cluster-management/management-ingress/pkg/task"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations/class"
+	"github.com/stolostron/management-ingress/pkg/ingress/store"
+	"github.com/stolostron/management-ingress/pkg/k8s"
+	"github.com/stolostron/management-ingress/pkg/task"
 )
 
 const (
