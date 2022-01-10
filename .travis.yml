@@ -12,7 +12,7 @@ branches:
 
 addons:
   sonarcloud:
-    organization: "open-cluster-management"
+    organization: "stolostron"
     token:
       secure: "WlfynmLyMLl10xlZXauuZvjynoFDxuTJuhWtPMdftCp2lCOpFqr7+dNI8NUqYFY6buWiw4s0o28+SuzH6Nebm+f8kpHNWtQoi1ZHzIFrgIxhlvaJORLaaY/KEHBb48jJVr2yo82DMsnqEySC7aahGWz6gj9tmNtQlrb2Z7q8o7Fss/aePDbp2lPYFUTpsW/44NAGgnziM0MhAGVRTYlcW4AAIMfEYOUWFYbBqHlEgTRLXWU0eDW8GRS/1C8nt3a/PcslpgjutzBQRT0InYGXAkGoO5dRDU0HJmWwQoi/ZyrCWk5q/I9+nD8+q3p9UVgMHjG8wXaLTtz+nN1UHnk/CiSLuanGOdtzDVbwGNs957ZmMjL0AAX0g9yqc+iGtdjcICstUFyDdtSk9BjrOjnJq1ebO7NazrvS3B+bVHG6Iwq6RMz+V5ebM4xdhkvYDG2Fcu6crKKNnlyxaBYZBna3C41mnz34k69kx8FslU1rNgq2uLRemY0cEzUmpWXaHyK+gyJ1lIMcTQJWr0auxIcHZniFni6fjreZAwR1sFwru8vGGV3euJQqaqGBInos5VaMG5A/ogh7qz2cQz9ayqEvbU0IGypwXrBp7rKhkImepIJRIdJUwMCqjW5RKoXierx7TmI+IkIiqUbXIJOAhgfczZicF2ToS77Mzb2F4OESLN4="
 env:
@@ -37,8 +37,8 @@ stages:
 before_script:
   - make init
   - echo "https://${GITHUB_TOKEN}:x-oauth-basic@github.com" >> ~/.git-credentials
-  - export GOPRIVATE=github.com/open-cluster-management
-  - git config --global url."https://$GITHUB_TOKEN@github.com/open-cluster-management".insteadOf "https://github.com/open-cluster-management"
+  - export GOPRIVATE=github.com/stolostron
+  - git config --global url."https://$GITHUB_TOKEN@github.com/stolostron".insteadOf "https://github.com/stolostron"
 
 jobs:
   include:
