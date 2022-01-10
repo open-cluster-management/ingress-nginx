@@ -31,10 +31,10 @@ import (
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 
-	"github.com/open-cluster-management/management-ingress/pkg/file"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/controller/config"
-	ing_net "github.com/open-cluster-management/management-ingress/pkg/net"
+	"github.com/stolostron/management-ingress/pkg/file"
+	"github.com/stolostron/management-ingress/pkg/ingress"
+	"github.com/stolostron/management-ingress/pkg/ingress/controller/config"
+	ing_net "github.com/stolostron/management-ingress/pkg/net"
 )
 
 const (

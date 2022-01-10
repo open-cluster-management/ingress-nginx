@@ -27,9 +27,9 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
-	"github.com/open-cluster-management/management-ingress/pkg/file"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/controller"
-	"github.com/open-cluster-management/management-ingress/pkg/version"
+	"github.com/stolostron/management-ingress/pkg/file"
+	"github.com/stolostron/management-ingress/pkg/ingress/controller"
+	"github.com/stolostron/management-ingress/pkg/version"
 )
 
 func main() {
