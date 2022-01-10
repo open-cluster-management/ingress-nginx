@@ -30,7 +30,7 @@ import (
 	api "k8s.io/api/core/v1"
 	"k8s.io/klog"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress"
+	"github.com/stolostron/management-ingress/pkg/ingress"
 )
 
 // newUpstream creates an upstream without servers.

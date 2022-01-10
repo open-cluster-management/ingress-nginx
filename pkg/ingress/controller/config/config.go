@@ -18,7 +18,7 @@ import (
 
 	"github.com/golang/glog"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress"
+	"github.com/stolostron/management-ingress/pkg/ingress"
 )
 
 const (

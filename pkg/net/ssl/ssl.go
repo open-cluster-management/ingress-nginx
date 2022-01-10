@@ -42,8 +42,8 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 
-	"github.com/open-cluster-management/management-ingress/pkg/file"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress"
+	"github.com/stolostron/management-ingress/pkg/file"
+	"github.com/stolostron/management-ingress/pkg/ingress"
 )
 
 var (
