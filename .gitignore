@@ -1,6 +1,6 @@
 .DS_Store
 /rootfs/management-ingress
-.build-harness-bootstrap
+#.build-harness-bootstrap
 build-harness
 build-harness-extensions
 
