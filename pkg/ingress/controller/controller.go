@@ -22,15 +22,15 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	clientset "k8s.io/client-go/kubernetes"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/class"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/proxy"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/rewrite"
-	ngx_config "github.com/open-cluster-management/management-ingress/pkg/ingress/controller/config"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
-	"github.com/open-cluster-management/management-ingress/pkg/task"
+	"github.com/stolostron/management-ingress/pkg/ingress"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations/class"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations/parser"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations/proxy"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations/rewrite"
+	ngx_config "github.com/stolostron/management-ingress/pkg/ingress/controller/config"
+	"github.com/stolostron/management-ingress/pkg/ingress/resolver"
+	"github.com/stolostron/management-ingress/pkg/task"
 )
 
 const (

@@ -1,6 +1,6 @@
 language: go
 
-go_import_path: github.com/open-cluster-management/management-ingress
+go_import_path: github.com/stolostron/management-ingress
 
 go:
   - "1.10"

@@ -21,9 +21,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/rewrite"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
+	"github.com/stolostron/management-ingress/pkg/ingress"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations/rewrite"
+	"github.com/stolostron/management-ingress/pkg/ingress/resolver"
 )
 
 var (
