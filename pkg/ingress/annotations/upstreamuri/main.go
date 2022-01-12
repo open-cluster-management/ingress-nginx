@@ -11,8 +11,8 @@ package upstreamuri
 import (
 	extensions "k8s.io/api/extensions/v1beta1"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/resolver"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations/parser"
+	"github.com/stolostron/management-ingress/pkg/ingress/resolver"
 )
 
 type at struct {

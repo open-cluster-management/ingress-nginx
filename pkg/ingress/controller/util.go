@@ -27,7 +27,7 @@ import (
 	"k8s.io/klog"
 	"k8s.io/kubernetes/pkg/util/sysctl"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress"
+	"github.com/stolostron/management-ingress/pkg/ingress"
 )
 
 // newUpstream creates an upstream without servers.

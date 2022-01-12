@@ -33,10 +33,10 @@ import (
 
 	apiv1 "k8s.io/api/core/v1"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/annotations/parser"
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/controller"
-	ngx_config "github.com/open-cluster-management/management-ingress/pkg/ingress/controller/config"
-	ing_net "github.com/open-cluster-management/management-ingress/pkg/net"
+	"github.com/stolostron/management-ingress/pkg/ingress/annotations/parser"
+	"github.com/stolostron/management-ingress/pkg/ingress/controller"
+	ngx_config "github.com/stolostron/management-ingress/pkg/ingress/controller/config"
+	ing_net "github.com/stolostron/management-ingress/pkg/net"
 )
 
 func parseFlags() (bool, *controller.Configuration, error) {

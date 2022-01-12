@@ -26,8 +26,8 @@ import (
 
 	"github.com/mitchellh/mapstructure"
 
-	"github.com/open-cluster-management/management-ingress/pkg/ingress/controller/config"
-	ing_net "github.com/open-cluster-management/management-ingress/pkg/net"
+	"github.com/stolostron/management-ingress/pkg/ingress/controller/config"
+	ing_net "github.com/stolostron/management-ingress/pkg/net"
 )
 
 const (

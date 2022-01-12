@@ -2,14 +2,7 @@
 
 include build/Configfile
 
-
-USE_VENDORIZED_BUILD_HARNESS ?=
-
-ifndef USE_VENDORIZED_BUILD_HARNESS
--include $(shell curl -s -H 'Authorization: token ${GITHUB_TOKEN}' -H 'Accept: application/vnd.github.v4.raw' -L https://api.github.com/repos/open-cluster-management/build-harness-extensions/contents/templates/Makefile.build-harness-bootstrap -o .build-harness-bootstrap; echo .build-harness-bootstrap)
-else
--include vbh/.build-harness-vendorized
-endif
+-include $(shell [ -f ".build-harness-bootstrap" ] || curl -sL -o .build-harness-bootstrap -H "Authorization: token $(GITHUB_TOKEN)" -H "Accept: application/vnd.github.v3.raw" "https://raw.github.com/stolostron/build-harness-extensions/main/templates/Makefile.build-harness-bootstrap"; echo .build-harness-bootstrap)
 
 .PHONY: build doc fmt lint run test vendor_clean vendor_get vendor_update vet
 
@@ -28,10 +21,10 @@ lint:
 	golint -set_exit_status=true cmd/
 
 build:
-	go build -v -i -o bin/management-ingress github.com/open-cluster-management/management-ingress/cmd/nginx
+	go build -v -i -o bin/management-ingress github.com/stolostron/management-ingress/cmd/nginx
 
 docker-binary:
-	CGO_ENABLED=0 go build -a -installsuffix cgo -v -i -o rootfs/management-ingress github.com/open-cluster-management/management-ingress/cmd/nginx
+	CGO_ENABLED=0 go build -a -installsuffix cgo -v -i -o rootfs/management-ingress github.com/stolostron/management-ingress/cmd/nginx
 	strip rootfs/management-ingress
 
 test:
