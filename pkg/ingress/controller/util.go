@@ -22,6 +22,7 @@ package controller
 import (
 	"io/ioutil"
 	"path"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -77,7 +78,7 @@ func intInSlice(i int, list []int) bool {
 
 // getSysctl returns the value for the specified sysctl setting
 func getSysctl(sysctl string) (int, error) {
-	data, err := ioutil.ReadFile(path.Join("/proc/sys", sysctl))
+	data, err := ioutil.ReadFile(filepath.Clean(path.Join("/proc/sys", sysctl)))
 	if err != nil {
 		return -1, err
 	}
