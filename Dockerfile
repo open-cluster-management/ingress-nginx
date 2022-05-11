@@ -6,7 +6,7 @@ WORKDIR /go/src/github.com/stolostron/management-ingress
 COPY . .
 RUN make docker-binary
 
-FROM registry.access.redhat.com/ubi8/ubi-minimal
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.5-243.1651231653
 
 # Docker Build Arguments
 ARG PREFIX_DIR="/opt/ibm/router"
