@@ -1,7 +1,7 @@
 # Copyright (c) 2021 Red Hat, Inc.
 # Copyright Contributors to the Open Cluster Management project
 
-FROM registry.ci.openshift.org/stolostron/builder:go1.17-linux AS builder
+FROM registry.ci.openshift.org/stolostron/builder:go1.18-linux AS builder
 WORKDIR /go/src/github.com/stolostron/management-ingress
 COPY . .
 RUN make docker-binary
