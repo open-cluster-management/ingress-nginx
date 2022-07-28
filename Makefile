@@ -12,9 +12,9 @@ all: deps fmt lint coverage copyright-check vet image
 
 .PHONY: deps
 deps:
-	go get golang.org/x/lint/golint
-	go get -u github.com/apg/patter
-	go get -u github.com/wadey/gocovmerge
+	go install golang.org/x/lint/golint
+	go install -u github.com/apg/patter
+	go install -u github.com/wadey/gocovmerge
 
 .PHONY: image
 image: docker-binary docker-image
