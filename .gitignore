@@ -3,6 +3,7 @@
 .build-harness-bootstrap
 build-harness
 build-harness-extensions
+.vscode
 
 .build-harness
 OPENSOURCE.check
