@@ -46,3 +46,5 @@ Follow [management-ingress-chart](https://github.com/stolostron/management-ingre
 
 ## Contributing
 * See [CONTRIBUTING.md](CONTRIBUTING.md) for information about the workflow that we expect, and instructions on the developer certificate of origin that we require.
+
+Rebuild Image: Thu Sep  8 13:29:43 EDT 2022
