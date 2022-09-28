@@ -55,4 +55,7 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
-replace golang.org/x/crypto => golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
+replace (
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
+	golang.org/x/text => golang.org/x/text v0.3.7
+)
