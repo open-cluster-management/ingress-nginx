@@ -21,7 +21,7 @@ image: docker-binary docker-image
 
 .PHONY: docker-binary
 docker-binary:
-	CGO_ENABLED=0 go build -mod=mod -a -installsuffix cgo -v -i -o rootfs/management-ingress github.com/stolostron/management-ingress/cmd/nginx
+	CGO_ENABLED=1 go build -mod=mod -a -installsuffix cgo -v -i -o rootfs/management-ingress github.com/stolostron/management-ingress/cmd/nginx
 	strip rootfs/management-ingress
 
 .PHONY: docker-image
